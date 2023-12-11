@@ -17,7 +17,7 @@ sudo ln -s ~/bin/nvim-linux64/bin/nvim /usr/local/bin/nvim
 ```
 
 install required packages:
-`sudo apt install unzip jq zsh build-essential libc6 libluajit-5.1-2 libmsgpackc2 libtermkey1 libtree-sitter0 libunibilium4 libuv1 libvterm0 lua-luv python3-pynvim xclip xsel xxd nodejs npm`
+`sudo apt install unzip jq zsh build-essential libc6 libluajit-5.1-2 libmsgpackc2 libtermkey1 libtree-sitter0 libunibilium4 libuv1 libvterm0 lua-luv python3-pynvim xclip xsel xxd nodejs npm python3-venv`
 
 set zsh as default shell
 `chsh -s $(which zsh)`
@@ -79,10 +79,31 @@ git config --global user.email "freestone.alex@gmail.com"
 get dotfiles, install nvim dotfiles
 ```
 mkdir -p ~/devel
-cd ~/devel
+pushd ~/devel
 git clone git@github.com:Briansbum/dotfiles.git
 mkdir -p ~/.config/nvim
 ln -s ~/devel/dotfiles/nvim ~/.config/ 
+popd
+```
+
+get golang
+```
+mkdir -p ~/downloads
+pushd ~/downloads
+wget https://go.dev/dl/go1.21.5.linux-amd64.tar.gz
+rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.21.5.linux-amd64.tar.gz
+popd
+echo 'export PATH=$PATH:/usr/local/go/bin' >>~/.zshrc
+```
+
+install glow for nvim
+```
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/charm.gpg
+echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | sudo tee /etc/apt/sources.list.d/charm.list
+sudo apt update && sudo apt install glow
 ```
 
 bootstrap nvim with `:PackerSync`
+
+install nerdfonts (I like https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/Go-Mono.zip)

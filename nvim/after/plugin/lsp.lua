@@ -15,7 +15,6 @@ lsp.configure('lua_ls', {
 })
 
 lsp.ensure_installed({
-    'awk_ls',
     'ansiblels',
     'bashls',
     'dockerls',

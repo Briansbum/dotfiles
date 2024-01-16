@@ -13,7 +13,7 @@ function SteampipeQuery()
     vim.fn.systemlist(spcommand)
 
     local errorsexistcommand = 'test -s ' .. errorsfilename
-    if vim.fn.system(errorsexistcommand) == 0 then
+    if vim.fn.system(errorsexistcommand) ~= 0 then
         vim.fn.system('rm ' .. errorsfilename)
     else
         vim.api.nvim_command('new ' .. errorsfilename)

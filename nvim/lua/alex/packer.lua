@@ -60,4 +60,5 @@ return require('packer').startup(function(use)
     use ('github/copilot.vim')
     use 'mhartington/formatter.nvim'
     use {"ellisonleao/glow.nvim", config = function() require("glow").setup() end}
+    use {'nyoom-engineering/oxocarbon.nvim'}
 end)

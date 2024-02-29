@@ -36,3 +36,12 @@ function gw {
     fi
     pushd $(git worktree list | grep "$1" | cut -d' ' -f1)
 }
+
+function neovim {
+    p="$1"
+    d="$1"
+    if ! stat "$p" | grep "directory" >/dev/null 2>&1; then
+        d="$(dirname $p)"
+    fi
+    zsh -c "pushd $d; nvim $p; popd"
+}

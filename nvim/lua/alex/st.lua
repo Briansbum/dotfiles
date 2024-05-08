@@ -14,7 +14,6 @@ function SteampipeQuery()
 
     local errorsexistcommand = 'test -s ' .. errorsfilename
     if vim.fn.system(errorsexistcommand) ~= 0 then
-        vim.fn.system('rm ' .. errorsfilename)
     else
         vim.api.nvim_command('new ' .. errorsfilename)
     end

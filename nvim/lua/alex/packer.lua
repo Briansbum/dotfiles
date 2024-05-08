@@ -27,6 +27,7 @@ return require('packer').startup(function(use)
         requires = { { 'nvim-lua/plenary.nvim' } }
     }
 
+    use 'nvim-tree/nvim-web-devicons'
     use('nvim-treesitter/nvim-treesitter', { run = ':TSUpdate' })
     use('nvim-treesitter/playground')
     use('theprimeagen/harpoon')
@@ -79,4 +80,6 @@ return require('packer').startup(function(use)
             "nvim-tree/nvim-web-devicons",
         }
     }
+    use "lukas-reineke/indent-blankline.nvim"
+    use "HiPhish/rainbow-delimiters.nvim"
 end)

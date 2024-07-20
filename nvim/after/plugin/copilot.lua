@@ -1,4 +1,4 @@
-vim.cmd("Copilot enable")
+-- vim.cmd("Copilot enable")
 
 vim.keymap.set('i', '<C-]>', 'copilot#Accept("")', {
     expr = true,

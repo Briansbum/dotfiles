@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 set -x
-set -euo pipefail
 
 git fetch --all
 branch=$(git branch -a --format='%(refname:lstrip=2)' | fzf --print-query)

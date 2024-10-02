@@ -21,7 +21,6 @@ lsp.ensure_installed({
     'docker_compose_language_service',
     'dotls',
     'eslint',
-    'tsserver',
     'gopls',
     'html',
     'helm_ls',

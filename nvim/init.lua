@@ -92,9 +92,6 @@ require("lazy").setup(
             end,
         },
         {
-            "github/copilot.vim",
-        },
-        {
             "mhartington/formatter.nvim",
         },
         {
@@ -159,5 +156,11 @@ require("lazy").setup(
         {
             "ctrlpvim/ctrlp.vim",
         },
+        {
+            'ThePrimeagen/vim-be-good',
+        },
+        {
+            'dstein64/vim-startuptime',
+        }
     }
 )

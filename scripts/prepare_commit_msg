@@ -1,0 +1,11 @@
+#!/bin/bash
+
+branch="$(git symbolic-ref --short HEAD)"
+
+if [[ "$branch" == "main" ]]; then
+  exit 0  
+fi
+
+issue="$(basename "$branch" | awk '{split($0,a,"-"); printf("%s-%s", a[1], a[2])}' | tr -d '\n')"
+
+sed -i.bak -e "1s;^;$(echo -n "$issue"):;" "$1"

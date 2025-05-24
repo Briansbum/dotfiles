@@ -5,7 +5,7 @@ function tf --description 'alias tf="terraform"'
 end
 
 function vim --description 'alias vim="nvim"'
-    truncate -s0 /Users/alex/.local/state/nvim/lsp.log
+    truncate -s0 /Users/alex/.local/state/nvim/lsp.log 2>/dev/null
     nvim $argv
 end
 

@@ -62,9 +62,9 @@ require("lazy").setup(
         },
         {
             "nvim-treesitter/nvim-treesitter",
-            config = function()
-                vim.cmd([[TSUpdate]])
-            end,
+	    lazy = false,
+	    branch = 'main',
+	    build = ':TSUpdate'
         },
         {
             "nvim-treesitter/playground",

@@ -10,3 +10,14 @@ export TG_PROVIDER_CACHE=1
 function rmterra
     find . -type d -name '.terragrunt-cache' -exec rm -rf {} +
 end
+
+function kco --description 'loads old kubeconfig as my kubeconfig'
+    set KUBECONFIG '/Users/alex/.kube/config'
+end
+
+function kcn --description 'loads new kubeconfig as my kubeconfig'
+    set KUBECONFIG '/Users/alex/.docctor/config/kubeconfig'
+end
+
+# Set new kubeconfig as the default
+kcn

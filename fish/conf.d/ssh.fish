@@ -12,7 +12,7 @@ function sshagent_add_keys
     set files "$HOME/.ssh/bitwarden"
     for f in $files
         if test -x (command ssh-add -L | grep $f)
-            if test -x (command uname -a | grep Darwin)
+            if test (command uname -a | grep Darwin)
                 sshagent_add_key_macos $f
             else
                 sshagent_add_key $f

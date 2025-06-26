@@ -98,7 +98,6 @@ in
       ripgrep
       easyeffects
       stremio
-      inputs.rofi-themes.packages."${pkgs.system}".default
     ];
   };
 

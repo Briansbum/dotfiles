@@ -4,10 +4,6 @@
     inputs = {
         nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
         home-manager.url = "github:nix-community/home-manager";
-
-        rofi-themes = {
-            url = "path:./nix/flakes/custom/rofi-themes";
-        };
     };
 
     outputs = {self, nixpkgs, ...}@inputs: {

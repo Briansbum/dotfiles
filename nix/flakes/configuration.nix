@@ -44,7 +44,7 @@ in
       brave
       bitwarden
       mako
-      tofi
+      rofi-wayland
       discord
       hyprcursor
       hyprlock

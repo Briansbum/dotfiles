@@ -19,7 +19,7 @@
             owner = "adi1090x";
             repo = "rofi";
             rev = "master";
-            sha256 = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+            sha256 = "sha256-yMKpwxdwvp7ryz2XXunbjC/5ud9HHEDzyYRhM540958=";
             # Run once with incorrect hash to get the correct one
           };
 
@@ -39,7 +39,6 @@
             description = "Themes, fonts and configs for rofi by adi1090x";
             homepage = "https://github.com/adi1090x/rofi";
             license = licenses.gpl3Plus;
-            platforms = platforms.pc;
           };
         };
       });

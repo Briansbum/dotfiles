@@ -12,8 +12,8 @@
                 system = "x86_64-linux";
                 specialArgs = { inherit inputs; };
                 modules = [
-                    ./configuration.nix
-                    ./hardware/mandelbrot.nix
+                    ./nix/flakes/configuration.nix
+                    ./nix/flakes/hardware/mandelbrot.nix
                 ];
             };
         };

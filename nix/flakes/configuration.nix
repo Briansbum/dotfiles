@@ -97,6 +97,7 @@ in
       playerctl
       brightnessctl
       hypridle
+      hyprshot
       yt-dlp
       ffmpeg
       luarocks

@@ -103,6 +103,7 @@ in
       luarocks
       ripgrep
       easyeffects
+      tailscale
       stremio
     ];
   };

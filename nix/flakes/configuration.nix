@@ -105,8 +105,6 @@ in
       easyeffects
       tailscale
       stremio
-      nvidia-utils
-      lib32-nvidia-utils
     ];
   };
 

@@ -13,9 +13,9 @@ with pkgs; let
   GPUOffloadApp = pkg: desktopName: patchDesktop pkg desktopName "^Exec=" "Exec=nvidia-offload ";
 
   sddmHyprTheme = stdenv.mkDerivation {
-    name = "sddm-hyprtheme";
+    pname = "sddm-hyprtheme";
     version = "1.0";
-    src = /home/alex/devel/dotfiles/sddm/hyprtheme;  # path to your dotfiles theme directory
+    src = ../../sddm/hyprtheme;
   
     dontBuild = true;
     installPhase = ''

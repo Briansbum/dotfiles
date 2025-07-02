@@ -28,11 +28,13 @@
   fileSystems."/mnt/tb" =
     { device = "/dev/disk/by-uuid/F8D8B7AAD8B76612";
       fsType = "ntfs3";
+      options = ["nofail"]
     };
 
   fileSystems."/mnt/photos" =
     { device = "192.168.1.137:/mnt/Main Pool/Photos";
       fsType = "nfs";
+      options = ["nofail"]
     };
 
   swapDevices =

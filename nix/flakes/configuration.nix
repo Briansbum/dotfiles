@@ -12,17 +12,17 @@ with pkgs; let
       '');
   GPUOffloadApp = pkg: desktopName: patchDesktop pkg desktopName "^Exec=" "Exec=nvidia-offload ";
 
-#  sddmHyprTheme = stdenv.mkDerivation {
-#    name = "sddm-hyprtheme";
-#    version = "1.0";
-#    src = /home/alex/devel/dotfiles/sddm/hyprtheme;  # path to your dotfiles theme directory
-#  
-#    dontBuild = true;
-#    installPhase = ''
-#      mkdir -p $out/share/sddm/themes/hyprtheme
-#      cp -r $src/* $out/share/sddm/themes/hyprtheme/
-#    '';
-#  };
+  sddmHyprTheme = stdenv.mkDerivation {
+    name = "sddm-hyprtheme";
+    version = "1.0";
+    src = /home/alex/devel/dotfiles/sddm/hyprtheme;  # path to your dotfiles theme directory
+  
+    dontBuild = true;
+    installPhase = ''
+      mkdir -p $out/share/sddm/themes/hyprtheme
+      cp -r $src/* $out/share/sddm/themes/hyprtheme/
+    '';
+  };
 in
 {
   nix.settings = {
@@ -113,9 +113,9 @@ in
   services.devmon.enable = true;
 
   services.displayManager.sddm = {
-    enable = false;
+    enable = true;
     theme = "hyprtheme";
-#    extraPackages = [sddmHyprTheme];
+    extraPackages = [sddmHyprTheme];
   };
   
   fonts.packages = [
@@ -270,7 +270,7 @@ in
       vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
       wget
       cron
-      #sddmHyprTheme
+      sddmHyprTheme
     ];
 
   # Some programs need SUID wrappers, can be configured further or are

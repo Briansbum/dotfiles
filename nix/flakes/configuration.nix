@@ -116,6 +116,7 @@ in
     enable = true;
     theme = "hyprtheme";
     extraPackages = [sddmHyprTheme];
+    wayland.enable = true;
   };
   
   fonts.packages = [

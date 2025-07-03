@@ -12,19 +12,13 @@ with pkgs; let
       '');
   GPUOffloadApp = pkg: desktopName: patchDesktop pkg desktopName "^Exec=" "Exec=nvidia-offload ";
 
-  sddmHyprTheme = stdenv.mkDerivation {
-    pname = "sddm-hyprtheme";
-    version = "1.0";
-    src = ../../sddm/hyprtheme;
-  
-    dontBuild = true;
-    installPhase = ''
-      mkdir -p $out/share/sddm/themes/hyprtheme
-      cp -r $src/* $out/share/sddm/themes/hyprtheme/
-    '';
-  };
+  # SDDM theme removed - using greetd instead
 in
 {
+  imports = [
+    ./greetd.nix  # Replace SDDM with greetd + gtkgreet
+  ];
+
   nix.settings = {
     substituters = ["https://hyprland.cachix.org"];
     trusted-substituters = ["https://hyprland.cachix.org"];
@@ -112,12 +106,7 @@ in
   services.udisks2.enable = true;
   services.devmon.enable = true;
 
-  services.displayManager.sddm = {
-    enable = true;
-    theme = "hyprtheme";
-    extraPackages = [sddmHyprTheme];
-    wayland.enable = true;
-  };
+  # SDDM disabled - using greetd instead
   
   fonts.packages = [
     pkgs.nerd-fonts.go-mono
@@ -271,7 +260,6 @@ in
       vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
       wget
       cron
-      sddmHyprTheme
     ];
 
   # Some programs need SUID wrappers, can be configured further or are

@@ -1,131 +1,128 @@
-{ config, pkgs, lib, ... }:
-
-let
-  # Create custom CSS for gtkgreet that matches your hyprlock aesthetic
-  gtkgreet-css = pkgs.writeText "gtkgreet.css" ''
-    /* Match hyprlock's dark aesthetic */
-    window {
-      background-image: url("${../../images/omnium.png}");
-      background-size: cover;
-      background-position: center;
-    }
-    
-    /* Main container styling to match hyprlock's boxes */
-    #window {
-      background-color: rgba(10, 10, 10, 0.9);
-      padding: 20px;
-      border-radius: 0px;
-    }
-    
-    /* Body and text styling */
-    #body {
-      background-color: transparent;
-      color: rgba(216, 222, 233, 0.80);
-      font-family: "Go Mono", monospace;
-    }
-    
-    /* Clock styling to match hyprlock */
-    #clock {
-      color: rgba(10, 10, 10, 0.75);
-      font-family: "Go Mono", monospace;
-      font-size: 40px;
-      margin-bottom: 10px;
-    }
-    
-    /* Input fields to match hyprlock */
-    #input, #inputbox {
-      background-color: rgba(10, 10, 10, 0.9);
-      color: rgb(200, 200, 200);
-      font-family: "Go Mono", monospace;
-      border: none;
-      padding: 15px;
-      margin: 5px;
-      min-width: 320px;
-      min-height: 55px;
-    }
-    
-    /* Buttons */
-    button {
-      background-color: rgba(10, 10, 10, 0.9);
-      color: rgba(216, 222, 233, 0.80);
-      border: none;
-      padding: 15px 30px;
-      font-family: "Go Mono", monospace;
-      margin: 5px;
-    }
-    
-    button:hover {
-      background-color: rgba(30, 30, 30, 0.9);
-    }
-    
-    /* Labels */
-    label {
-      color: rgba(10, 10, 10, 0.75);
-      font-family: "Go Mono", monospace;
-    }
-  '';
-
-  # Sway config for running gtkgreet
-  greetd-sway-config = pkgs.writeText "greetd-sway-config" ''
-    # Set background
-    output * bg ${../../images/omnium.png} fill
-    
-    # Remove window borders
-    default_border none
-    
-    # Run gtkgreet and exit sway when done
-    exec "${pkgs.greetd.gtkgreet}/bin/gtkgreet -l -s ${gtkgreet-css}; swaymsg exit"
-    
-    # Allow gtkgreet to work properly
-    for_window [app_id=".*"] inhibit_idle fullscreen
-  '';
-in
 {
-  # Disable SDDM
-  services.displayManager.sddm.enable = false;
-  
-  # Enable greetd with gtkgreet
-  services.greetd = {
-    enable = true;
-    settings = {
-      default_session = {
-        # Use cage to run gtkgreet - simpler than sway and perfect for single-app kiosk mode
-        command = "${pkgs.cage}/bin/cage -s -- ${pkgs.greetd.gtkgreet}/bin/gtkgreet -l -s ${gtkgreet-css}";
-        user = "greeter";
-      };
-    };
+  description = "Greetd with Sway + GtkGreet and ricing";
+
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
   };
 
-  # Create greeter user
-  users.users.greeter = {
-    isSystemUser = true;
-    group = "greeter";
-    home = "/var/lib/greeter";
-    createHome = true;
-    extraGroups = [ "video" "input" ];
-  };
-  
-  users.groups.greeter = {};
+  outputs = { self, nixpkgs, flake-utils }:
+    flake-utils.lib.eachDefaultSystem (system:
+      let
+        pkgs = import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+        };
 
-  # Set up session environments
-  environment.etc."greetd/environments".text = ''
-    Hyprland
-  '';
+        backgroundImage = ./images/omnium.png;
 
-  # Required packages
-  environment.systemPackages = with pkgs; [
-    cage
-    greetd.greetd
-    greetd.gtkgreet
-  ];
+        gtkgreetCss = pkgs.writeText "gtkgreet.css" ''
+          window {
+            background-image: url("${backgroundImage}");
+            background-size: cover;
+            background-position: center;
+          }
 
-  # PAM configuration for greetd
-  security.pam.services.greetd = {
-    enableGnomeKeyring = true;
-  };
+          #window {
+            background-color: rgba(10, 10, 10, 0.9);
+            padding: 20px;
+          }
 
-  # Make sure GTK can find the Go Mono font
-  fonts.packages = with pkgs; [
-    nerd-fonts.go-mono
-  ];
+          #body {
+            background-color: transparent;
+            color: rgba(216, 222, 233, 0.80);
+            font-family: "Go Mono", monospace;
+          }
+
+          #clock {
+            color: rgba(10, 10, 10, 0.75);
+            font-size: 40px;
+          }
+
+          #input, #inputbox {
+            background-color: rgba(10, 10, 10, 0.9);
+            color: rgb(200, 200, 200);
+            font-family: "Go Mono", monospace;
+            border: none;
+            padding: 15px;
+            margin: 5px;
+            min-width: 320px;
+            min-height: 55px;
+          }
+
+          button {
+            background-color: rgba(10, 10, 10, 0.9);
+            color: rgba(216, 222, 233, 0.80);
+            padding: 15px 30px;
+            margin: 5px;
+            font-family: "Go Mono", monospace;
+            border: none;
+          }
+
+          button:hover {
+            background-color: rgba(30, 30, 30, 0.9);
+          }
+
+          label {
+            color: rgba(10, 10, 10, 0.75);
+            font-family: "Go Mono", monospace;
+          }
+        '';
+
+        swayGreetConfig = pkgs.writeText "greetd-sway-config" ''
+          output DP-2 resolution 2560x1440 position 0,0
+          output DP-4 resolution 3840x2160 position 2561,0 transform 270
+          output * bg ${backgroundImage} fill
+          default_border none
+
+          exec "${pkgs.greetd.gtkgreet}/bin/gtkgreet -l -s ${gtkgreetCss}; swaymsg exit"
+          for_window [app_id=".*"] inhibit_idle fullscreen
+        '';
+
+      in {
+        nixosConfigurations.default = pkgs.lib.nixosSystem {
+          system = system;
+          modules = [
+            ({ config, ... }: {
+              imports = [ ];
+
+              services.displayManager.sddm.enable = false;
+
+              services.greetd = {
+                enable = true;
+                settings.default_session = {
+                  command = "${pkgs.sway}/bin/sway -c ${swayGreetConfig}";
+                  user = "greeter";
+                };
+              };
+
+              users.users.greeter = {
+                isSystemUser = true;
+                group = "greeter";
+                home = "/var/lib/greeter";
+                createHome = true;
+                extraGroups = [ "video" "input" ];
+              };
+
+              users.groups.greeter = {};
+
+              fonts.packages = with pkgs; [
+                nerd-fonts.go-mono
+              ];
+
+              environment.etc."greetd/environments".text = ''
+                Hyprland
+              '';
+
+              environment.systemPackages = with pkgs; [
+                sway
+                greetd.greetd
+                greetd.gtkgreet
+              ];
+
+              security.pam.services.greetd.enableGnomeKeyring = true;
+            })
+          ];
+        };
+      });
 }

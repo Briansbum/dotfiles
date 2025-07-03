@@ -78,3 +78,7 @@ function fv --description 'runs ff and opens it in nvim'
     set dir (ff $argv)
     nvim .
 end
+
+function kucc --description 'alias kucc="kubectl config unset current-context"'
+    kubectl config unset current-context
+end

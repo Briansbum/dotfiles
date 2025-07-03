@@ -12,10 +12,12 @@ function rmterra
 end
 
 function kco --description 'loads old kubeconfig as my kubeconfig'
+    echo "Setting old kubeconfig"
     set KUBECONFIG '/Users/alex/.kube/config'
 end
 
 function kcn --description 'loads new kubeconfig as my kubeconfig'
+    echo "Setting new kubeconfig"
     set KUBECONFIG '/Users/alex/.docctor/config/kubeconfig'
 end
 

@@ -99,6 +99,7 @@ in
       easyeffects
       tailscale
       stremio
+      heroic
     ];
   };
 

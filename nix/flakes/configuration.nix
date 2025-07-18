@@ -11,8 +11,6 @@ with pkgs; let
       ${gnused}/bin/sed 's#${from}#${to}#g' < ${pkg}/share/applications/${appName}.desktop > $out/share/applications/${appName}.desktop
       '');
   GPUOffloadApp = pkg: desktopName: patchDesktop pkg desktopName "^Exec=" "Exec=nvidia-offload ";
-
-  # SDDM theme removed - using greetd instead
 in
 {
   imports = [
@@ -32,6 +30,19 @@ in
   boot.loader.grub.useOSProber = true;
 
   security.sudo.enable = true;
+
+  systemd.services.photoSync = {
+    wantedBy = ["multi-user.target"];
+
+    after = [ "mnt-photos.mount" "hourly.timer" ];
+
+    description = "rsync's photos from local to zfs";
+
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "/home/alex/devel/dotfiles/scripts/photo-sync.sh";
+    };
+  };
 
   users.users.alex = {
     isNormalUser = true;

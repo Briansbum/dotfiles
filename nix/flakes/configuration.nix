@@ -58,6 +58,7 @@ in
       rofi-wayland
       discord
       hyprcursor
+      gdb
       hyprlock
       lshw
       jq

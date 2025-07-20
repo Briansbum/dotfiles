@@ -41,6 +41,7 @@ in
     serviceConfig = {
       Type = "oneshot";
       ExecStart = "/home/alex/devel/dotfiles/scripts/photo-sync.sh";
+      User = "alex";
     };
   };
 

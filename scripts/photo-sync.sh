@@ -1,5 +1,5 @@
-#!/run/current-system/sw/bin/env bash
+#!/etc/profiles/per-user/alex/bin/bash
 
 set -euo pipefail
 
-rsync -v -a --ignore-existing --partial /home/alex/Pictures/Darktable/ /mnt/photos/sync
+/run/current-system/sw/bin/rsync -v -a --ignore-existing --partial /home/alex/Pictures/Darktable/ /mnt/photos/sync

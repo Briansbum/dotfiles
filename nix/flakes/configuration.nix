@@ -73,6 +73,7 @@ in
       vulkan-tools
       nvidia-vaapi-driver
       egl-wayland
+      darktable
       fd
       fzf
       imagemagick

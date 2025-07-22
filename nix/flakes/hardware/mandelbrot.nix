@@ -34,7 +34,7 @@
   fileSystems."/mnt/photos" =
     { device = "192.168.1.137:/mnt/Main Pool/Photos";
       fsType = "nfs";
-      options = ["nofail"];
+      options = ["nofail" "x-systemd.automount" "noauto"];
     };
 
   swapDevices =

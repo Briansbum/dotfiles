@@ -50,11 +50,15 @@ function ff --description 'finds dirs in ~/devel to a max-depth of 2, can take a
     set dir (fd --type d --max-depth 2 . "$HOME/devel" | fzf)
     cd $dir
     ensure_prepare_commit_msg
+    if test (git status >/dev/null 2>&1)
+        git fetch
+    end
 end
 
 function ensure_prepare_commit_msg
     if test -d .git -a ! -f .git/prepare_commit_msg
-        ln -s $HOME/devel/dotfiles/scripts/prepare_commit_msg .git/hooks/prepare-commit-msg
+        echo "$PWD" >>/tmp/ff
+        ln -s $HOME/devel/dotfiles/scripts/prepare_commit_msg .git/hooks/prepare-commit-msg >>/tmp/ff 2>&1
     end
 end
 

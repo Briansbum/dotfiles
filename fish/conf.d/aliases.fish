@@ -86,3 +86,8 @@ end
 function kucc --description 'alias kucc="kubectl config unset current-context"'
     kubectl config unset current-context
 end
+
+function gssh --description 'copies ghostty terminfo onto ssh targets'
+    infocmp -x xterm-ghostty | ssh $argv[1] tic -x -
+    ssh $argv
+end

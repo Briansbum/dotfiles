@@ -220,7 +220,7 @@ in
   programs.sway = {
     enable = true;
     wrapperFeatures.gtk = true;
-  }
+  };
 
   environment.sessionVariables = {
     NIXOS_OZONE_WL = "1";

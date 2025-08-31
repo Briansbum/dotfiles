@@ -13,14 +13,7 @@ with pkgs; let
   GPUOffloadApp = pkg: desktopName: patchDesktop pkg desktopName "^Exec=" "Exec=nvidia-offload ";
 in
 {
-  imports = [
-    ./greetd.nix  # Replace SDDM with greetd + gtkgreet
-  ];
-
   nix.settings = {
-    substituters = ["https://hyprland.cachix.org"];
-    trusted-substituters = ["https://hyprland.cachix.org"];
-    trusted-public-keys = ["hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="];
     experimental-features = ["nix-command" "flakes"];
   };
 
@@ -57,9 +50,7 @@ in
       mako
       rofi-wayland
       discord
-      hyprcursor
       gdb
-      hyprlock
       lshw
       jq
       starship
@@ -69,7 +60,6 @@ in
       helvum
       pavucontrol
       obs-studio
-      hyprpaper
       vulkan-tools
       nvidia-vaapi-driver
       egl-wayland
@@ -103,8 +93,6 @@ in
       ueberzugpp
       playerctl
       brightnessctl
-      hypridle
-      hyprshot
       yt-dlp
       ffmpeg
       luarocks
@@ -112,6 +100,8 @@ in
       easyeffects
       stremio
       heroic
+      swaybg
+      mako
     ];
   };
 
@@ -119,6 +109,14 @@ in
   services.udisks2.enable = true;
   services.devmon.enable = true;
   services.tailscale.enable = true;
+
+  services.getty = {
+    autologinUser = "alex";
+    autologinOnce = true;
+  };
+  environment.loginShellInit = ''
+      [[ "$(tty)" == /dev/tty1 ]] && sway
+  '';
 
   # SDDM disabled - using greetd instead
   
@@ -219,15 +217,22 @@ in
   # Enable the X11 windowing system.
   services.xserver.enable = true;
   
-  programs.hyprland = {
+  programs.sway = {
     enable = true;
-    withUWSM = true;
-    package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
-    portalPackage = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
-  };
+    wrapperFeatures.gtk = true;
+  }
 
-  environment.sessionVariables.NIXOS_OZONE_WL = "1";
-  environment.variables.EDITOR = "nvim";
+  environment.sessionVariables = {
+    NIXOS_OZONE_WL = "1";
+    LIBVA_DRIVER_NAME = "nvidia";
+    __GLX_VENDOR_LIBRARY_NAME = "nvidia";
+    ELECTRON_OZONE_PLATFORM_HINT = "auto";
+    NVD_BACKEND = "direct";
+  }
+  environment.variables = {
+      EDITOR = "nvim";
+      XCURSOR_SIZE = "24";
+  }
 
   programs.steam = {
     enable = true;
@@ -255,7 +260,7 @@ in
     jack.enable = true;
   };
 
-  services.mediatomb.enable = true;
+  services.gnome.gnome-keyring.enable = true;
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.libinput.enable = true;

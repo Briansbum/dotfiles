@@ -228,11 +228,11 @@ in
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
     ELECTRON_OZONE_PLATFORM_HINT = "auto";
     NVD_BACKEND = "direct";
-  }
+  };
   environment.variables = {
       EDITOR = "nvim";
       XCURSOR_SIZE = "24";
-  }
+  };
 
   programs.steam = {
     enable = true;

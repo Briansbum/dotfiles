@@ -13,9 +13,9 @@ with pkgs; let
   GPUOffloadApp = pkg: desktopName: patchDesktop pkg desktopName "^Exec=" "Exec=nvidia-offload ";
 in
 {
-  imports = [
-    ./greetd.nix  # Replace SDDM with greetd + gtkgreet
-  ];
+#  imports = [
+#    ./greetd.nix  # Replace SDDM with greetd + gtkgreet
+#  ];
 
   nix.settings = {
     substituters = ["https://hyprland.cachix.org"];
@@ -125,11 +125,9 @@ in
     autologinOnce = true;
   };
   environment.loginShellInit = ''
-      [[ "$(tty)" == /dev/tty1 ]] && sway
+      [[ "$(tty)" == /dev/tty1 ]] && Hyprland
   '';
 
-  # SDDM disabled - using greetd instead
-  
   fonts.packages = [
     pkgs.nerd-fonts.go-mono
   ];

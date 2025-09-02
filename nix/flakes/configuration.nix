@@ -128,6 +128,8 @@ in
       [[ "$(tty)" == /dev/tty1 ]] && Hyprland
   '';
 
+  virtualisation.docker.enable = true;
+
   fonts.packages = [
     pkgs.nerd-fonts.go-mono
   ];

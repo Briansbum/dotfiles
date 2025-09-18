@@ -1,7 +1,7 @@
 #!/usr/local/bin/env fish
 
-function tf --description 'alias tf="terraform"'
-    terraform $argv
+function tf --description 'alias tf="tofu"'
+    tofu $argv
 end
 
 function vim --description 'alias vim="nvim"'

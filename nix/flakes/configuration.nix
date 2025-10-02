@@ -53,7 +53,7 @@ in
       description = "runs ollama for model serving";
 
       serviceConfig = {
-        ExecStart = "${pkgs.ollama}/bin ollama serve";
+        ExecStart = "/etc/profiles/per-user/alex/bin/ollama serve";
         User = "alex";
         Restart = "always";
         RestartSec=3;

@@ -44,7 +44,7 @@ in
         ExecStart = "/home/alex/devel/dotfiles/scripts/photo-sync.sh";
         User = "alex";
       };
-    }
+    };
     ollama = {
       wantedBy = ["multi-user.target"];
 
@@ -59,7 +59,7 @@ in
         RestartSec=3;
         Environment="PATH=$PATH";
       };
-    }
+    };
   };
 
   users.users.alex = {

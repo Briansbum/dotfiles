@@ -31,7 +31,7 @@ in
 
   security.sudo.enable = true;
 
-  systemd.services = with pkgs; [
+  systemd.services = with pkgs; {
     photoSync = {
       wantedBy = ["multi-user.target"];
 
@@ -60,7 +60,7 @@ in
         Environment="PATH=$PATH";
       };
     }
-  ]
+  };
 
   users.users.alex = {
     isNormalUser = true;

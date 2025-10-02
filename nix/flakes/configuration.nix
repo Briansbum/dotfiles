@@ -54,6 +54,7 @@ in
 
       serviceConfig = {
         ExecStart = "/etc/profiles/per-user/alex/bin/ollama serve";
+        ExecStartPost = "/run/current-system/sw/bin/tailscale up --operator=$USER";
         ExecStartPost = "/run/current-system/sw/bin/tailscale serve --https=2021 localhost:11434";
         User = "alex";
         Restart = "always";

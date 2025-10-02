@@ -31,19 +31,36 @@ in
 
   security.sudo.enable = true;
 
-  systemd.services.photoSync = {
-    wantedBy = ["multi-user.target"];
+  systemd.services = with pkgs; [
+    photoSync = {
+      wantedBy = ["multi-user.target"];
 
-    after = [ "mnt-photos.mount" "hourly.timer" ];
+      after = [ "mnt-photos.mount" "hourly.timer" ];
 
-    description = "rsync's photos from local to zfs";
+      description = "rsync's photos from local to zfs";
 
-    serviceConfig = {
-      Type = "oneshot";
-      ExecStart = "/home/alex/devel/dotfiles/scripts/photo-sync.sh";
-      User = "alex";
-    };
-  };
+      serviceConfig = {
+        Type = "oneshot";
+        ExecStart = "/home/alex/devel/dotfiles/scripts/photo-sync.sh";
+        User = "alex";
+      };
+    }
+    ollama = {
+      wantedBy = ["multi-user.target"];
+
+      after = [ "network-online.target" ];
+
+      description = "runs ollama for model serving";
+
+      serviceConfig = {
+        ExecStart = "${pkgs.ollama}/bin ollama serve";
+        User = "alex";
+        Restart = "always";
+        RestartSec=3;
+        Environment="PATH=$PATH";
+      };
+    }
+  ]
 
   users.users.alex = {
     isNormalUser = true;
@@ -112,6 +129,7 @@ in
       easyeffects
       stremio
       heroic
+      ollama-cuda
     ];
   };
 

@@ -48,13 +48,12 @@ in
     ollama = {
       wantedBy = ["multi-user.target"];
 
-      after = [ "network-online.target" "tailscaled.service" "" ];
+      after = [ "network-online.target" "tailscaled.service" ];
 
       description = "runs ollama for model serving";
 
       serviceConfig = {
         ExecStart = "/etc/profiles/per-user/alex/bin/ollama serve";
-        ExecStartPost = "/run/current-system/sw/bin/tailscale serve --https=2021 localhost:11434";
         User = "alex";
         Restart = "always";
         RestartSec=3;

@@ -657,25 +657,34 @@ require("lazy").setup({
                 "nvim-lua/plenary.nvim",
                 "nvim-treesitter/nvim-treesitter",
                 'ravitemer/mcphub.nvim',
+                'dyamon/codecompanion-copilot-enterprise.nvim'
             },
             config = function()
                 require("codecompanion").setup({
-                    extensions = {
-                        mcphub = {
-                            callback = "mcphub.extensions.codecompanion",
-                            opts = {
-                                make_vars = true,
-                                make_slash_commands = true,
-                                show_result_in_chat = true
-                            }
-                        }
+                    name = "opencode",
+                    formatted_name = "OpenCode",
+                    type = "acp",
+                    roles = {
+                        llm = "assistant",
+                        user = "user",
                     },
-                    strategies = {
-                        chat = {
-                            adapter = {
-                                name = "copilot",
-                                model = "claude-sonnet-4-20250514",
-                            },
+                    opts = {
+                        vision = false, -- Set to true if OpenCode supports vision
+                    },
+                    commands = {
+                        default = {
+                            "opencode",
+                            "acp",
+                        },
+                    },
+                    defaults = {
+                        timeout = 60000, -- 60 seconds
+                    },
+                    parameters = {
+                        protocolVersion = 1,
+                        clientInfo = {
+                            name = "CodeCompanion.nvim",
+                            version = "1.0.0",
                         },
                     },
                 })
@@ -683,23 +692,23 @@ require("lazy").setup({
         },
 
         -- Copilot GitHub (lazy loaded on InsertEnter)
-        {
-            "github/copilot.vim",
-            lazy = true,
-            event = "InsertEnter",
-            config = function()
-                vim.keymap.set('i', '<C-]>', 'copilot#Accept("")', {
-                    expr = true,
-                    replace_keycodes = false
-                })
-                vim.g.copilot_no_tab_map = true
-
-                vim.keymap.set('i', '<C-j>', 'copilot#Reject("")', {
-                    expr = true,
-                    replace_keycodes = false
-                })
-            end,
-        },
+--        {
+--            "github/copilot.vim",
+--            lazy = true,
+--            event = "InsertEnter",
+--            config = function()
+--                vim.keymap.set('i', '<C-]>', 'copilot#Accept("")', {
+--                    expr = true,
+--                    replace_keycodes = false
+--                })
+--                vim.g.copilot_no_tab_map = true
+--
+--                vim.keymap.set('i', '<C-j>', 'copilot#Reject("")', {
+--                    expr = true,
+--                    replace_keycodes = false
+--                })
+--            end,
+--        },
 
         {
             "Olical/conjure",
@@ -714,6 +723,27 @@ require("lazy").setup({
             dependencies = {
                 "radenling/vim-dispatch-neovim",
             },
+        },
+
+        {
+            "gruntwork-io/terragrunt-ls",
+            ft = 'hcl',
+            config = function()
+                local terragrunt_ls = require 'terragrunt-ls'
+                terragrunt_ls.setup {
+                    cmd_env = {
+                        TG_LS_LOG = vim.fn.expand '/tmp/terragrunt-ls.log',
+                    },
+                }
+                if terragrunt_ls.client then
+                    vim.api.nvim_create_autocmd('FileType', {
+                        pattern = 'hcl',
+                        callback = function()
+                            vim.lsp.buf_attach_client(0, terragrunt_ls.client)
+                        end,
+                    })
+                end
+            end,
         },
     },
     {

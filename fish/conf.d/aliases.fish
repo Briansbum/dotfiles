@@ -9,6 +9,15 @@ function vim --description 'alias vim="nvim"'
     nvim $argv
 end
 
+function v --description 'fuzzy find in the current directory and open the selected file for editing'
+    truncate -s0 /Users/alex/.local/state/nvim/lsp.log 2>/dev/null
+    nvim (fd -H -t f . | rg -v '.git/' | fzf)
+end
+
+function o --description 'open opencode at the current directory'
+    opencode
+end
+
 function notes --description 'alias notes="nvim ~/notes"'
     nvim ~/notes $argv
 end
@@ -90,4 +99,8 @@ end
 function gssh --description 'copies ghostty terminfo onto ssh targets'
     infocmp -x xterm-ghostty | ssh $argv[1] tic -x -
     ssh $argv
+end
+
+function ch --description 'run crush inside of a sandboxed docker container'
+    docker-volume-sandbox -d (pwd) -i crushtainer -e GEMINI_API_KEY=(op read op://employee/gemini_api_key/credential)
 end

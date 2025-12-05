@@ -11,15 +11,4 @@ function rmterra
     find . -type d -name '.terragrunt-cache' -exec rm -rf {} +
 end
 
-function kco --description 'loads old kubeconfig as my kubeconfig'
-    echo "Setting old kubeconfig"
-    set KUBECONFIG '/Users/alex/.kube/config'
-end
-
-function kcn --description 'loads new kubeconfig as my kubeconfig'
-    echo "Setting new kubeconfig"
-    set KUBECONFIG '/Users/alex/.docctor/config/kubeconfig'
-end
-
-# Set new kubeconfig as the default
-kcn
+set KUBECONFIG '/Users/alex/.kube/config:/Users/alex/.docctor/config/kubeconfig'

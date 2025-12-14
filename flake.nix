@@ -2,9 +2,21 @@
     description = "Baby's first nixos flake";
 
     inputs = {
-        nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+        nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+
         home-manager.url = "github:nix-community/home-manager";
         hyprland.url = "github:hyprwm/Hyprland";
+
+        dgop = {
+          url = "github:AvengeMedia/dgop";
+          inputs.nixpkgs.follows = "nixpkgs";
+        };
+
+        dankMaterialShell = {
+          url = "github:AvengeMedia/DankMaterialShell";
+          inputs.nixpkgs.follows = "nixpkgs";
+          inputs.dgop.follows = "dgop";
+        };
     };
 
     outputs = {self, nixpkgs, ...}@inputs: {

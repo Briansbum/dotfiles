@@ -13,9 +13,9 @@ with pkgs; let
   GPUOffloadApp = pkg: desktopName: patchDesktop pkg desktopName "^Exec=" "Exec=nvidia-offload ";
 in
 {
-#  imports = [
-#    ./greetd.nix  # Replace SDDM with greetd + gtkgreet
-#  ];
+  imports = [
+    inputs.dankMaterialShell.nixosModules.dankMaterialShell
+  ];
 
   nix.settings = {
     substituters = ["https://hyprland.cachix.org"];
@@ -88,7 +88,7 @@ in
       git
       ghostty
       brave
-      bitwarden
+      bitwarden-desktop
       mako
       rofi-wayland
       discord
@@ -277,6 +277,24 @@ in
 
   # Enable the X11 windowing system.
   services.xserver.enable = true;
+
+  programs.niri.enable = true;
+  programs.dankMaterialShell = { 
+    enable = true; 
+
+    greeter = {
+      compositor = {
+        name = "niri";
+      };
+
+      configHome = "/home/alex";
+
+      logs = {
+        save = true;
+        path = "/var/log/dms-greeter.log";
+      };
+    };
+  };
   
   programs.hyprland = {
     enable = true;

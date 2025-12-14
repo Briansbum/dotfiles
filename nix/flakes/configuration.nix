@@ -15,6 +15,7 @@ in
 {
   imports = [
     inputs.dankMaterialShell.nixosModules.dankMaterialShell
+    inputs.dankMaterialShell.nixosModules.greeter
   ];
 
   nix.settings = {

@@ -91,7 +91,6 @@ in
       brave
       bitwarden-desktop
       mako
-      rofi-wayland
       discord
       hyprcursor
       gdb

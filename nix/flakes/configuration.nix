@@ -283,6 +283,8 @@ in
     enable = true; 
 
     greeter = {
+      enable = true;
+
       compositor = {
         name = "niri";
       };

@@ -57,7 +57,10 @@ in
         User = "alex";
         Restart = "always";
         RestartSec=3;
-        Environment="PATH=$PATH";
+        Environment= [
+          "PATH=$PATH"
+          "OLLAMA_HOST=0.0.0.0:11434"
+        ];
       };
     };
     ollama_serve = {
@@ -138,13 +141,28 @@ in
       hypridle
       hyprshot
       yt-dlp
-      ffmpeg
+      (ffmpeg.override {
+        withXcb = true;
+      })
       luarocks
       ripgrep
       easyeffects
       stremio
       heroic
       ollama-cuda
+      # Video/Audio data composition framework tools like "gst-inspect", "gst-launch" ...
+      gst_all_1.gstreamer
+      gst_all_1.gst-rtsp-server
+      # Common plugins like "filesrc" to combine within e.g. gst-launch
+      gst_all_1.gst-plugins-base
+      # Specialized plugins separated by quality
+      gst_all_1.gst-plugins-good
+      # Plugins to reuse ffmpeg to play almost every video format
+      gst_all_1.gst-libav
+      # Support the Video Audio (Hardware) Acceleration API
+      gst_all_1.gst-vaapi
+      wf-recorder
+      slurp
     ];
   };
 
@@ -264,10 +282,27 @@ in
     enable = true;
     withUWSM = true;
     package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
-    portalPackage = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
+    xwayland.enable = true;
   };
 
-  environment.sessionVariables.NIXOS_OZONE_WL = "1";
+  xdg.portal = {
+    enable = true;
+    xdgOpenUsePortal = true;
+    config = {
+      common.default = ["gtk"];
+      hyprland.default = ["gtk" "hyprland"];
+    };
+    extraPortals = [
+      pkgs.xdg-desktop-portal-gtk
+    ];
+  };
+
+  environment.sessionVariables = {
+      XDG_CURRENT_DESKTOP = "Hyprland";
+      XDG_SESSION_TYPE = "wayland";
+      MOZ_ENABLE_WAYLAND = "1";
+      NIXOS_OZONE_WL = "1";
+  };
   environment.variables.EDITOR = "nvim";
 
   programs.steam = {
@@ -288,6 +323,7 @@ in
   # Enable sound.
   # hardware.pulseaudio.enable = true;
   # OR
+  security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
     pulse.enable = true;
@@ -334,8 +370,9 @@ in
   # services.openssh.enable = true;
 
   # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [ 2021 ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
+  networking.nftables.enable = true;
+  networking.firewall.allowedTCPPorts = [ 11434 8554 ];
+  networking.firewall.allowedUDPPorts = [ 8554 ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
 

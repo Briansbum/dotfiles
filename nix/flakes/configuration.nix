@@ -33,19 +33,6 @@ in
   security.sudo.enable = true;
 
   systemd.services = with pkgs; {
-    photoSync = {
-      wantedBy = ["multi-user.target"];
-
-      after = [ "mnt-photos.mount" "hourly.timer" ];
-
-      description = "rsync's photos from local to zfs";
-
-      serviceConfig = {
-        Type = "oneshot";
-        ExecStart = "/home/alex/devel/dotfiles/scripts/photo-sync.sh";
-        User = "alex";
-      };
-    };
     ollama = {
       wantedBy = ["multi-user.target"];
 
@@ -99,7 +86,6 @@ in
       jq
       starship
       unzip
-      python3Full
       zig
       helvum
       pavucontrol
@@ -117,7 +103,6 @@ in
       playerctl
       clipse
       wl-clipboard
-      rustup
       cargo
       gcc
       go
@@ -147,7 +132,6 @@ in
       luarocks
       ripgrep
       easyeffects
-      stremio
       heroic
       ollama-cuda
       # Video/Audio data composition framework tools like "gst-inspect", "gst-launch" ...
@@ -163,6 +147,9 @@ in
       gst_all_1.gst-vaapi
       wf-recorder
       slurp
+      rofi
+      xwayland-satellite
+      sunshine
     ];
   };
 
@@ -170,14 +157,15 @@ in
   services.udisks2.enable = true;
   services.devmon.enable = true;
   services.tailscale.enable = true;
+  services.avahi.enable = true;
 
   services.getty = {
     autologinUser = "alex";
     autologinOnce = true;
   };
-  environment.loginShellInit = ''
-      [[ "$(tty)" == /dev/tty1 ]] && Hyprland
-  '';
+#  environment.loginShellInit = ''
+#      [[ "$(tty)" == /dev/tty1 ]] && niri
+#  '';
 
   virtualisation.docker.enable = true;
 
@@ -282,6 +270,11 @@ in
   programs.dankMaterialShell = { 
     enable = true; 
 
+    systemd = {
+      enable = true;
+      restartIfChanged = true;
+    };
+
     greeter = {
       enable = true;
 
@@ -293,13 +286,13 @@ in
 
       logs = {
         save = true;
-        path = "/var/log/dms-greeter.log";
+        path = "/tmp/dms-greeter.log";
       };
     };
   };
   
   programs.hyprland = {
-    enable = true;
+    enable = false;
     withUWSM = true;
     package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
     xwayland.enable = true;
@@ -309,16 +302,17 @@ in
     enable = true;
     xdgOpenUsePortal = true;
     config = {
-      common.default = ["gtk"];
-      hyprland.default = ["gtk" "hyprland"];
+      common.default = ["hyprland" "gtk"];
+     # hyprland.default = ["gtk" "hyprland"];
     };
     extraPortals = [
       pkgs.xdg-desktop-portal-gtk
+      pkgs.xdg-desktop-portal-gnome
     ];
   };
 
   environment.sessionVariables = {
-      XDG_CURRENT_DESKTOP = "Hyprland";
+      XDG_CURRENT_DESKTOP = "niri";
       XDG_SESSION_TYPE = "wayland";
       MOZ_ENABLE_WAYLAND = "1";
       NIXOS_OZONE_WL = "1";
@@ -391,7 +385,7 @@ in
 
   # Open ports in the firewall.
   networking.nftables.enable = true;
-  networking.firewall.allowedTCPPorts = [ 11434 8554 ];
+  networking.firewall.allowedTCPPorts = [ 11434 8554 3923 ];
   networking.firewall.allowedUDPPorts = [ 8554 ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;

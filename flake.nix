@@ -5,6 +5,8 @@
         nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
         home-manager.url = "github:nix-community/home-manager";
+        home-manager.inputs.nixpkgs.follows = "nixpkgs";
+
         hyprland.url = "github:hyprwm/Hyprland";
 
         dgop = {
@@ -25,8 +27,14 @@
                 system = "x86_64-linux";
                 specialArgs = { inherit inputs; };
                 modules = [
-                    ./nix/flakes/configuration.nix
-                    ./nix/flakes/hardware/mandelbrot.nix
+                    ./nix/mandelbrot/configuration.nix
+                    ./nix/mandelbrot/hardware.nix
+                    home-manager.nixosModules.home-manager
+                    {
+                        home-manager.useGlobalPkgs = true;
+                        home-manager.useUserPackages = true;
+                        home-manager.users.alex = ./nix/mandelbrot/alex.nix;
+                    }
                 ];
             };
         };

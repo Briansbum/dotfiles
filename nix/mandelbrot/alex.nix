@@ -78,8 +78,6 @@
   };
 
   # Config for programs with modules
-  programs.fish.enable = true;
-
   programs.neovim = {
     enable = true;
     defaultEditor = true;
@@ -142,6 +140,7 @@
   programs.fd.enable = true;
   programs.fzf.enable = true;
   programs.go.enable = true;
+  programs.fish.enable = true;
 
   # -----------------------------
   # Programs in this section might have partial configs defined here but
@@ -165,6 +164,6 @@
     };
   };
 
-  services.easyEffects.enable = true;
+  services.easyeffects.enable = true;
   services.clipse.enable = true;
 }

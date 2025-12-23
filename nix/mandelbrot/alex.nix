@@ -70,6 +70,7 @@
     "niri/config.kdl".source = ../../config/niri/config.kdl;
     "starship.toml".source = ../../config/starship.toml;
     "yazi".source = ../../config/yazi;
+    "fish/conf.d".source = ../../config/fish/conf.d;
   };
 
   # Config for programs with modules

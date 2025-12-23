@@ -93,6 +93,11 @@
         name = "Alex Freestone";
       };
     };
+    settings = {
+      push = {
+        autoSetupRemote = true;
+      };
+    };
   };
 
   programs.ghostty = {

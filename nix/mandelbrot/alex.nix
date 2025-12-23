@@ -64,6 +64,9 @@
     xwayland-satellite
     mako
     gamescope
+    # Programs below this line have home-manager modules but they
+    # need careful migration because of the way that their config works
+    fish
   ];
 
   # Config file locations for programs that cannot manage themselves
@@ -75,6 +78,9 @@
     "yazi".source = ../../config/yazi;
     "nvim".source = ../../config/nvim;
     "rofi".source = ../../config/rofi;
+    "clipse" = {
+      force = true;
+    };
   };
 
   # Config for programs with modules
@@ -140,7 +146,6 @@
   programs.fd.enable = true;
   programs.fzf.enable = true;
   programs.go.enable = true;
-  programs.fish.enable = true;
 
   # -----------------------------
   # Programs in this section might have partial configs defined here but

@@ -179,7 +179,7 @@ in
   services.xserver.enable = true;
 
   programs.niri.enable = true;
-  programs.dankMaterialShell = { 
+  programs.dank-material-shell = { 
     enable = true; 
 
     systemd = {

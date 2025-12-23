@@ -72,85 +72,6 @@ in
     isNormalUser = true;
     description = "Alex";
     extraGroups = ["wheel" "plugdev"];
-    packages = with pkgs; [
-      git
-      ghostty
-      brave
-      bitwarden-desktop
-      mako
-      discord
-      hyprcursor
-      gdb
-      hyprlock
-      lshw
-      jq
-      starship
-      unzip
-      zig
-      helvum
-      pavucontrol
-      obs-studio
-      hyprpaper
-      vulkan-tools
-      nvidia-vaapi-driver
-      egl-wayland
-      darktable
-      fd
-      fzf
-      imagemagick
-      lxmenu-data
-      shared-mime-info
-      playerctl
-      clipse
-      wl-clipboard
-      cargo
-      gcc
-      go
-      terraform
-      shellcheck
-      python3
-      bash
-      helm
-      jsoncpp
-      yq
-      tflint
-      telegram-desktop
-      yazi
-      tree-sitter
-      udiskie
-      vlc
-      libraw
-      ueberzugpp
-      playerctl
-      brightnessctl
-      hypridle
-      hyprshot
-      yt-dlp
-      (ffmpeg.override {
-        withXcb = true;
-      })
-      luarocks
-      ripgrep
-      easyeffects
-      heroic
-      ollama-cuda
-      # Video/Audio data composition framework tools like "gst-inspect", "gst-launch" ...
-      gst_all_1.gstreamer
-      gst_all_1.gst-rtsp-server
-      # Common plugins like "filesrc" to combine within e.g. gst-launch
-      gst_all_1.gst-plugins-base
-      # Specialized plugins separated by quality
-      gst_all_1.gst-plugins-good
-      # Plugins to reuse ffmpeg to play almost every video format
-      gst_all_1.gst-libav
-      # Support the Video Audio (Hardware) Acceleration API
-      gst_all_1.gst-vaapi
-      wf-recorder
-      slurp
-      rofi
-      xwayland-satellite
-      sunshine
-    ];
   };
 
   services.gvfs.enable = true;
@@ -158,6 +79,7 @@ in
   services.devmon.enable = true;
   services.tailscale.enable = true;
   services.avahi.enable = true;
+  services.playerctld.enable = true;
 
   services.getty = {
     autologinUser = "alex";
@@ -173,7 +95,6 @@ in
     pkgs.nerd-fonts.go-mono
   ];
 
-  programs.fish.enable = true;
   programs.bash = {
     interactiveShellInit = ''
       if [[ $(${pkgs.procps}/bin/ps --no-header --pid=$PPID --format=comm) != "fish" && -z ''${BASH_EXECUTION_STRING} ]]
@@ -182,15 +103,6 @@ in
         exec ${pkgs.fish}/bin/fish $LOGIN_OPTION
       fi
     '';
-  };
-  programs.neovim = {
-    enable = true;
-    defaultEditor = true;
-    withRuby = true;
-    withPython3 = true;
-    withNodeJs = true;
-    vimAlias = true;
-    viAlias = true;
   };
 
   nixpkgs.config.allowUnfree = true; 
@@ -368,6 +280,15 @@ in
       vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
       wget
       cron
+      ollama-cuda
+      unzip
+      helvum
+      pavucontrol
+      vulkan-tools
+      nvidia-vaapi-driver
+      egl-wayland
+      playerctl
+      brightnessctl
     ];
 
   # Some programs need SUID wrappers, can be configured further or are

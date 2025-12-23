@@ -78,9 +78,6 @@
     "yazi".source = ../../config/yazi;
     "nvim".source = ../../config/nvim;
     "rofi".source = ../../config/rofi;
-    "clipse" = {
-      force = true;
-    };
   };
 
   # Config for programs with modules

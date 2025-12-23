@@ -14,7 +14,7 @@ with pkgs; let
 in
 {
   imports = [
-    inputs.dankMaterialShell.nixosModules.dankMaterialShell
+    inputs.dankMaterialShell.nixosModules.dank-material-shell
     inputs.dankMaterialShell.nixosModules.greeter
   ];
 

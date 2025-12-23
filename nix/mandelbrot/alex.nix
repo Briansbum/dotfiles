@@ -92,11 +92,11 @@
 
   programs.git = {
     enable = true;
-    user = {
-      email = "freestone.alex@gmail.com";
-      name = "Alex Freestone";
-    };
     settings = {
+      user = {
+        email = "freestone.alex@gmail.com";
+        name = "Alex Freestone";
+      };
       push = {
         autoSetupRemote = true;
       };

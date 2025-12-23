@@ -63,6 +63,7 @@
     rofi
     xwayland-satellite
     mako
+    gamescope
   ];
 
   # Config file locations for programs that cannot manage themselves

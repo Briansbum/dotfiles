@@ -62,6 +62,7 @@
     slurp
     rofi
     xwayland-satellite
+    mako
   ];
 
   # Config file locations for programs that cannot manage themselves
@@ -69,8 +70,10 @@
     # "foo".source = ../../config/foo;
     "niri/config.kdl".source = ../../config/niri/config.kdl;
     "starship.toml".source = ../../config/starship.toml;
-    "yazi".source = ../../config/yazi;
     "fish/conf.d".source = ../../config/fish/conf.d;
+    "yazi".source = ../../config/yazi;
+    "nvim".source = ../../config/nvim;
+    "rofi".source = ../../config/rofi;
   };
 
   # Config for programs with modules
@@ -88,11 +91,9 @@
 
   programs.git = {
     enable = true;
-    attributes = {
-      user = {
-        email = "freestone.alex@gmail.com";
-        name = "Alex Freestone";
-      };
+    user = {
+      email = "freestone.alex@gmail.com";
+      name = "Alex Freestone";
     };
     settings = {
       push = {
@@ -139,7 +140,6 @@
   programs.obs-studio.enable = true;
   programs.fd.enable = true;
   programs.fzf.enable = true;
-  programs.gcc.enable = true;
   programs.go.enable = true;
 
   # -----------------------------

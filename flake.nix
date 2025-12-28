@@ -40,7 +40,7 @@
             };
         };
         darwinConfigurations = {
-            "Alexs-Macbook-Pro" = nix-darwin.lib.darwinSystem {
+            "Alexs-MacBook-Pro" = nix-darwin.lib.darwinSystem {
                system = "aarch64-darwin";
                specialArgs = { inherit inputs; };
                modules = [

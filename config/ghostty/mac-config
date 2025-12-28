@@ -6,3 +6,6 @@ window-decoration = false
 
 keybind = global:cmd+grave_accent=toggle_quick_terminal
 keybind = unconsumed:ctrl+a=reload_config
+
+command = /run/current-system/sw/bin/fish
+ 

@@ -34,7 +34,7 @@
     "nvim".source = ../../config/nvim;
     
     # macOS-specific configs
-    # ghostty is managed via programs.ghostty module below
+    "ghostty/config".source = ../../config/ghostty/macos-config;
     "zed/settings.json".source = ../../config/zed/settings.json;
     "gh/config.yml".source = ../../config/gh/config.yml;
     "gopass/config".source = ../../config/gopass/config;

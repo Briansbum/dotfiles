@@ -41,7 +41,7 @@ in
       description = "runs ollama for model serving";
 
       serviceConfig = {
-        ExecStart = "/etc/profiles/per-user/alex/bin/ollama serve";
+        ExecStart = "/run/current-system/sw/bin/ollama serve";
         User = "alex";
         Restart = "always";
         RestartSec=3;
@@ -56,7 +56,7 @@ in
 
       after = [ "network-online.target" "tailscaled.service" "ollama.service" ];
 
-      description = "runs ollama for model serving";
+      description = "serves ollama on the tailnet";
 
       serviceConfig = {
         ExecStart = "/run/current-system/sw/bin/tailscale serve --https=2021 localhost:11434";

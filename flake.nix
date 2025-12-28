@@ -44,13 +44,13 @@
                system = "aarch64-darwin";
                specialArgs = { inherit inputs; };
                modules = [
-                    ./nix/Alexs-MacBook-Pro/configuration.nix
-                    ./nix/Alexs-MacBook-Pro/hardware.nix
+                    ./nix/Alexs-Macbook-Pro/configuration.nix
+                    ./nix/Alexs-Macbook-Pro/hardware.nix
                     home-manager.darwinModules.home-manager
                     {
                         home-manager.useGlobalPkgs = true;
                         home-manager.useUserPackages = true;
-                        home-manager.users.alex = ./nix/Alexs-MacBook-Pro/alex.nix;
+                        home-manager.users.alex = ./nix/Alexs-Macbook-Pro/alex.nix;
                     }
                ];
             };

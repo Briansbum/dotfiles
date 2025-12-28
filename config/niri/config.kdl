@@ -79,21 +79,15 @@ output "HDMI-A-4" {
     // off
 
     mode "3840x2160@60.000"
-}
 
-//output "HDMI-A-4" {
-//    // off
-//
-//    mode "3840x2160@60.000"
-//
-//    scale 2
-//
-//    transform "90"
-//
-//    layout {
-//        default-column-width { proportion 1.0; }
-//    }
-//}
+    scale 2
+
+    transform "90"
+
+    layout {
+        default-column-width { proportion 1.0; }
+    }
+}
 
 output "DP-4" {
     // off

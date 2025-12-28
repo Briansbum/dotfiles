@@ -1,13 +1,14 @@
 {
-    description = "Baby's first nixos flake";
+    description = "Alex's Nix systems";
 
     inputs = {
         nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
+        nix-darwin.url = "github:nix-darwin/nix-darwin/master";
+        nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
+
         home-manager.url = "github:nix-community/home-manager";
         home-manager.inputs.nixpkgs.follows = "nixpkgs";
-
-        hyprland.url = "github:hyprwm/Hyprland";
 
         dgop = {
           url = "github:AvengeMedia/dgop";
@@ -21,7 +22,7 @@
         };
     };
 
-    outputs = {self, nixpkgs, home-manager, ...}@inputs: {
+    outputs = {self, nixpkgs, nix-darwin, home-manager, ...}@inputs: {
         nixosConfigurations = {
             mandelbrot = nixpkgs.lib.nixosSystem {
                 system = "x86_64-linux";
@@ -36,6 +37,22 @@
                         home-manager.users.alex = ./nix/mandelbrot/alex.nix;
                     }
                 ];
+            };
+        };
+        darwinConfigurations = {
+            "Alexs-Macbook-Pro" = nix-darwin.lib.darwinSystem {
+               system = "aarch64-darwin";
+               specialArgs = { inherit inputs; };
+               modules = [
+                    ./nix/Alexs-Macbook-Pro/configuration.nix
+                    ./nix/Alexs-Macbook-Pro/hardware.nix
+                    home-manager.darwinModules.home-manager
+                    {
+                        home-manager.useGlobalPkgs = true;
+                        home-manager.useUserPackages = true;
+                        home-manager.users.alex = ./nix/Alexs-Macbook-Pro/alex.nix;
+                    }
+               ];
             };
         };
     };

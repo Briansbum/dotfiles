@@ -58,9 +58,11 @@
 
   programs.git = {
     enable = true;
-    userName = "Alex Freestone";
-    userEmail = "freestone.alex@gmail.com";
-    extraConfig = {
+    settings = {
+      user = {
+        name = "Alex Freestone";
+        email = "freestone.alex@gmail.com";
+      };
       push = {
         autoSetupRemote = true;
       };
@@ -71,8 +73,8 @@
   };
 
   programs.ghostty = {
-    enable = true;
-    enableFishIntegration = true;
+    enable = false;  # Ghostty on macOS is installed via Homebrew cask
+    enableFishIntegration = false;
     installVimSyntax = true;
     # Settings managed via home-manager module (alternative to config file)
     settings = {
@@ -116,14 +118,11 @@
   # Yazi file manager
   programs.yazi = {
     enable = true;
-    enableFishIntegration = true;
+    enableFishIntegration = false;  # Managed manually via fish config files
   };
 
-  # Fish shell configuration
-  programs.fish = {
-    enable = true;
-    # Fish plugins and configuration are handled via xdg.configFile above
-  };
+  # Fish shell configuration - managed manually via xdg.configFile
+  programs.fish.enable = false;
 
   # Tmux configuration
   programs.tmux = {

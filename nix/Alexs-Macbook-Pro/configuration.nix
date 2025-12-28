@@ -1,6 +1,12 @@
 { config, pkgs, ... }:
 
 {
+  # Set primary user for system defaults
+  system.primaryUser = "alex";
+
+  # Allow unfree packages
+  nixpkgs.config.allowUnfree = true;
+
   # System-level packages available to all users
   environment.systemPackages = with pkgs; [
     # Core utilities
@@ -59,7 +65,7 @@
     
     # Kubernetes ecosystem
     kubectl
-    helm
+    kubernetes-helm  # Renamed from helm on darwin
     k9s
     kind
     kubectx
@@ -81,14 +87,14 @@
     jsonnet-bundler
     
     # Monitoring & Observability
-    grafana-agent
+    # grafana-agent  # Not available in nixpkgs for darwin
     trivy
     dive
     
     # Security & Secrets
     gopass
     certbot
-    pinentry-mac
+    pinentry_mac
     wireguard-tools
     aws-vault
     bitwarden-cli
@@ -104,19 +110,20 @@
     irssi
     lynx
     shellcheck
-    thefuck
+    # thefuck  # Removed from nixpkgs, use pay-respects instead
+    pay-respects
     autojump
     
     # Networking
     dnscontrol
-    telnet
+    inetutils  # Provides telnet on darwin
     hurl
     
     # Graphics & Build dependencies
     graphviz
     harfbuzz
     qemu
-    qt6.full
+    # qt6.full  # Removed from nixpkgs, use individual packages if needed
     
     # Other utilities
     uv
@@ -126,9 +133,15 @@
     # Tools from analysis
     steampipe
     buf
-    dblab
+    # dblab  # Broken build on darwin
     ory  # Ory CLI
   ];
+
+  # User configuration
+  users.users.alex = {
+    name = "alex";
+    home = "/Users/alex";
+  };
 
   # Nix configuration
   nix.settings = {
@@ -228,7 +241,7 @@
 
   # Fonts
   fonts.packages = with pkgs; [
-    (nerdfonts.override { fonts = [ "Go-Mono" ]; })
+    (nerd-fonts.go-mono)
   ];
 
   # Shell configuration

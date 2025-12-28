@@ -40,7 +40,7 @@
             };
         };
         darwinConfigurations = {
-            "Alexs-MacBook-Pro" = nix-darwin.lib.darwinSystem {
+            "Alexs-Macbook-Pro" = nix-darwin.lib.darwinSystem {
                system = "aarch64-darwin";
                specialArgs = { inherit inputs; };
                modules = [
@@ -50,6 +50,7 @@
                     {
                         home-manager.useGlobalPkgs = true;
                         home-manager.useUserPackages = true;
+                        home-manager.backupFileExtension = "backup";
                         home-manager.users.alex = ./nix/Alexs-Macbook-Pro/alex.nix;
                     }
                ];

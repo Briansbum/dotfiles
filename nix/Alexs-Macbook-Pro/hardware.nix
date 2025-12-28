@@ -5,7 +5,7 @@
   nixpkgs.hostPlatform = "aarch64-darwin";
 
   # Enable Touch ID for sudo
-  security.pam.enableSudoTouchIdAuth = true;
+  security.pam.services.sudo_local.touchIdAuth = true;
 
   # macOS system defaults (optional but recommended)
   system.defaults = {

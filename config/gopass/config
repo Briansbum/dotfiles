@@ -1,0 +1,4 @@
+[mounts]
+	path = /Users/alex/.local/share/gopass/stores/root
+[recipients]
+	hash = c2007857011dd263f02a1aea5d1564888e7a2f1d9605f60a96306ed979492cb9

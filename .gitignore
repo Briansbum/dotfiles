@@ -1,0 +1,9 @@
+# Build artifacts
+result
+result-*
+
+# Nix build outputs
+*.qcow2
+
+# Fish variables may contain local secrets
+config/fish/fish_variables

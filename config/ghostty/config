@@ -1,0 +1,8 @@
+:font-family = GoMono Nerd Font Mono
+font-style = Bold
+font-thicken = true
+
+window-decoration = false
+
+keybind = global:cmd+grave_accent=toggle_quick_terminal
+keybind = unconsumed:ctrl+a=reload_config

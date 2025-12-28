@@ -23,10 +23,26 @@
 
   # Config file locations for programs that cannot manage themselves
   xdg.configFile = {
+    # Shared configs
     "starship.toml".source = ../../config/starship.toml;
     "fish/conf.d".source = ../../config/fish/conf.d;
+    "fish/config.fish".source = ../../config/fish/config.fish;
+    "fish/functions".source = ../../config/fish/functions;
+    "fish/completions".source = ../../config/fish/completions;
+    "fish/fish_plugins".source = ../../config/fish/fish_plugins;
     "yazi".source = ../../config/yazi;
     "nvim".source = ../../config/nvim;
+    
+    # macOS-specific configs
+    # ghostty is managed via programs.ghostty module below
+    "zed/settings.json".source = ../../config/zed/settings.json;
+    "gh/config.yml".source = ../../config/gh/config.yml;
+    "gopass/config".source = ../../config/gopass/config;
+    "argocd/config".source = ../../config/argocd/config;
+    "thefuck/settings.py".source = ../../config/thefuck/settings.py;
+    
+    # Note: htop, wireshark configs are runtime state - not managed
+    # Note: spotifyd, spotify-tui, opencode, op configs have secrets - not managed
   };
 
   # Config for programs with modules
@@ -58,6 +74,7 @@
     enable = true;
     enableFishIntegration = true;
     installVimSyntax = true;
+    # Settings managed via home-manager module (alternative to config file)
     settings = {
       background-opacity = 0.7;
       background-blur = true;

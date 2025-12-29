@@ -3,7 +3,7 @@
 {
   imports = [
     ../common/common.nix
-    inputs.nixvim.homeManagerModules.nixvim
+    inputs.nixvim.homeModules.nixvim
   ];
 
   # User info

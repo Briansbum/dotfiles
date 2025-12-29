@@ -4,33 +4,9 @@
   plugins = {
     treesitter = {
       enable = true;
-      settings = {
-        highlight = {
-          enable = true;
-        };
-        indent = {
-          enable = true;
-        };
-        ensure_installed = [
-          "c"
-          "lua"
-          "vim"
-          "vimdoc"
-          "query"
-          "javascript"
-          "typescript"
-          "rust"
-          "go"
-          "gomod"
-          "gosum"
-          "bash"
-          "markdown"
-          "markdown_inline"
-        ];
-      };
+      indent.enable = true;
+      highlight.enable = true;
+      settings.auto_install = false;
     };
-
-    # Treesitter playground
-    treesitter-playground.enable = true;
   };
 }

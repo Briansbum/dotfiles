@@ -3,7 +3,7 @@
 {
   imports = [
     ../common/common.nix
-    inputs.nixvim.homeManagerModules.nixvim
+    inputs.nixvim.homeModules.nixvim
   ];
 
   # How does this work in a multi-machine context where I might not provision

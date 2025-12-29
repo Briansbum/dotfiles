@@ -3,12 +3,8 @@
 {
   plugins = {
     # Colorscheme
-    tokyonight = {
+    colorschemes.rose-pine = {
       enable = true;
-      settings = {
-        style = "moon";
-        transparent = true;
-      };
     };
 
     # Statusline
@@ -44,11 +40,9 @@
     glow.enable = true;
   };
 
-  colorscheme = "tokyonight-moon";
-
   # Additional UI configuration
   extraConfigLua = ''
-    -- Tokyonight custom colors
+    -- Custom colors
     vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
     vim.api.nvim_set_hl(0, "NormalFloat", { bg = "none" })
     vim.api.nvim_set_hl(0, 'LineNrAbove', { fg = '#51B3EC', bold = true })
@@ -88,18 +82,18 @@
       options = {
         theme = bubbles_theme,
         component_separators = '|',
-        section_separators = { left = '', right = '' },
+        section_separators = { left = "", right = "" },
       },
       sections = {
         lualine_a = {
-          { 'mode', separator = { left = '' }, right_padding = 2 },
+          { 'mode', separator = { left = "" }, right_padding = 2 },
         },
         lualine_b = { 'filename', 'branch' },
         lualine_c = { 'fileformat' },
         lualine_x = {},
         lualine_y = { 'filetype', 'progress' },
         lualine_z = {
-          { 'location', separator = { right = '' }, left_padding = 2 },
+          { 'location', separator = { right = "" }, left_padding = 2 },
         },
       },
       inactive_sections = {

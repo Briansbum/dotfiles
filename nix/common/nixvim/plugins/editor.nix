@@ -33,16 +33,6 @@
     # Harpoon for file navigation
     harpoon = {
       enable = true;
-      keymaps = {
-        addFile = "<leader>a";
-        toggleQuickMenu = "<C-e>";
-        navFile = {
-          "1" = "<C-h>";
-          "2" = "<C-j>";
-          "3" = "<C-k>";
-          "4" = "<C-l>";
-        };
-      };
     };
 
     # Undotree
@@ -159,6 +149,55 @@
       action = "<cmd>GoImplements<cr>";
       options = {
         desc = "Go Implements";
+      };
+    }
+    # Harpoon keymaps
+    {
+      mode = "n";
+      key = "<leader>a";
+      action.__raw = "function() require('harpoon'):list():add() end";
+      options = {
+        desc = "Harpoon add file";
+      };
+    }
+    {
+      mode = "n";
+      key = "<C-e>";
+      action.__raw = "function() require('harpoon').ui:toggle_quick_menu(require('harpoon'):list()) end";
+      options = {
+        desc = "Harpoon toggle menu";
+      };
+    }
+    {
+      mode = "n";
+      key = "<C-h>";
+      action.__raw = "function() require('harpoon'):list():select(1) end";
+      options = {
+        desc = "Harpoon file 1";
+      };
+    }
+    {
+      mode = "n";
+      key = "<C-j>";
+      action.__raw = "function() require('harpoon'):list():select(2) end";
+      options = {
+        desc = "Harpoon file 2";
+      };
+    }
+    {
+      mode = "n";
+      key = "<C-k>";
+      action.__raw = "function() require('harpoon'):list():select(3) end";
+      options = {
+        desc = "Harpoon file 3";
+      };
+    }
+    {
+      mode = "n";
+      key = "<C-l>";
+      action.__raw = "function() require('harpoon'):list():select(4) end";
+      options = {
+        desc = "Harpoon file 4";
       };
     }
   ];

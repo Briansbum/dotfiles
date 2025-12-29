@@ -12,24 +12,33 @@
     vim-jack-in
 
     # Terragrunt LSP - build from GitHub
+    # Pinned to commit a82e243 from 2025-06-28
+    # To update: change rev to new commit SHA and run:
+    #   nix-prefetch-url --unpack https://github.com/gruntwork-io/terragrunt-ls/archive/<NEW_SHA>.tar.gz
+    #   nix hash convert --to base64 <hash_output>
     (pkgs.vimUtils.buildVimPlugin {
       name = "terragrunt-ls";
       src = pkgs.fetchFromGitHub {
         owner = "gruntwork-io";
         repo = "terragrunt-ls";
-        rev = "main";  # Using main branch - can pin to specific commit if needed
-        sha256 = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";  # Will be fixed by nix on first build
+        rev = "a82e24338bae87e5a3d1e8cf81179ce8a848ae3e";
+        sha256 = "sha256-Ni9TccTLbixtczJvKDUJqgGwFCj9TRNX0zp6421BaYY=";
       };
     })
 
     # CodeCompanion Copilot Enterprise extension
+    # Pinned to commit 2e5edc4 from 2025-09-01
+    # To update: change rev to new commit SHA and run:
+    #   nix-prefetch-url --unpack https://github.com/dyamon/codecompanion-copilot-enterprise.nvim/archive/<NEW_SHA>.tar.gz
+    #   nix hash convert --to base64 <hash_output>
     (pkgs.vimUtils.buildVimPlugin {
       name = "codecompanion-copilot-enterprise-nvim";
+      doCheck = false; # Skip require checks - plugin depends on codecompanion-nvim at runtime
       src = pkgs.fetchFromGitHub {
         owner = "dyamon";
         repo = "codecompanion-copilot-enterprise.nvim";
-        rev = "main";
-        sha256 = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+        rev = "2e5edc4fd32775dfff578c283624ed97334a9372";
+        sha256 = "sha256-io9xsiLGzsGlBfRyfc792gDRN75W329S/b2+n7gRRKg=";
       };
     })
   ];

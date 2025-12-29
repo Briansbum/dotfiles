@@ -10,6 +10,10 @@
         home-manager.url = "github:nix-community/home-manager";
         home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
+        nixvim.url = "github:nix-community/nixvim";
+        # The docs say that using .follows here can cause instability in
+        # nixvim and so it is not used.
+
         dgop = {
           url = "github:AvengeMedia/dgop";
           inputs.nixpkgs.follows = "nixpkgs";
@@ -22,7 +26,7 @@
         };
     };
 
-    outputs = {self, nixpkgs, nix-darwin, home-manager, ...}@inputs: {
+    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, ...}@inputs: {
         nixosConfigurations = {
             mandelbrot = nixpkgs.lib.nixosSystem {
                 system = "x86_64-linux";
@@ -34,6 +38,7 @@
                     {
                         home-manager.useGlobalPkgs = true;
                         home-manager.useUserPackages = true;
+                        home-manager.extraSpecialArgs = { inherit inputs; };
                         home-manager.users.alex = ./nix/mandelbrot/alex.nix;
                     }
                 ];
@@ -51,6 +56,7 @@
                         home-manager.useGlobalPkgs = true;
                         home-manager.useUserPackages = true;
                         home-manager.backupFileExtension = "backup";
+                        home-manager.extraSpecialArgs = { inherit inputs; };
                         home-manager.users.alex = ./nix/Alexs-Macbook-Pro/alex.nix;
                     }
                ];

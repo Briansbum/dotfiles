@@ -1,7 +1,10 @@
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 {
-  imports = [ ../common/common.nix ];
+  imports = [
+    ../common/common.nix
+    inputs.nixvim.homeManagerModules.nixvim
+  ];
 
   # User info
   home.username = "alex";
@@ -26,7 +29,7 @@
     # Shared configs
     "starship.toml".source = ../../config/starship.toml;
     "yazi".source = ../../config/yazi;
-    "nvim".source = ../../config/nvim;
+    # nvim now managed by nixvim - old config at ../../config/nvim for reference
     
     # macOS-specific configs
     "ghostty/config".source = ../../config/ghostty/macos-config;
@@ -40,15 +43,11 @@
     # Note: spotifyd, spotify-tui, opencode, op configs have secrets - not managed
   };
 
-  # Config for programs with modules
-  programs.neovim = {
+  # NixVim configuration
+  programs.nixvim = {
     enable = true;
     defaultEditor = true;
-    withRuby = true;
-    withPython3 = true;
-    withNodeJs = true;
-    vimAlias = true;
-    viAlias = true;
+    imports = [ ../common/nixvim ];
   };
 
   programs.git = {

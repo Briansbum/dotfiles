@@ -1,7 +1,10 @@
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 {
-  imports = [ ../common/common.nix ];
+  imports = [
+    ../common/common.nix
+    inputs.nixvim.homeManagerModules.nixvim
+  ];
 
   # How does this work in a multi-machine context where I might not provision
   # the user myself?
@@ -75,19 +78,15 @@
     "niri/config.kdl".source = ../../config/niri/config.kdl;
     "starship.toml".source = ../../config/starship.toml;
     "yazi".source = ../../config/yazi;
-    "nvim".source = ../../config/nvim;
+    # nvim now managed by nixvim - old config at ../../config/nvim for reference
     "rofi".source = ../../config/rofi;
   };
 
-  # Config for programs with modules
-  programs.neovim = {
+  # NixVim configuration
+  programs.nixvim = {
     enable = true;
     defaultEditor = true;
-    withRuby = true;
-    withPython3 = true;
-    withNodeJs = true;
-    vimAlias = true;
-    viAlias = true;
+    imports = [ ../common/nixvim ];
   };
 
   programs.git = {

@@ -67,9 +67,6 @@
     xwayland-satellite
     mako
     gamescope
-    # Programs below this line have home-manager modules but they
-    # need careful migration because of the way that their config works
-    fish
   ];
 
   # Config file locations for programs that cannot manage themselves
@@ -77,7 +74,6 @@
     # "foo".source = ../../config/foo;
     "niri/config.kdl".source = ../../config/niri/config.kdl;
     "starship.toml".source = ../../config/starship.toml;
-    "fish/conf.d".source = ../../config/fish/conf.d;
     "yazi".source = ../../config/yazi;
     "nvim".source = ../../config/nvim;
     "rofi".source = ../../config/rofi;
@@ -164,6 +160,14 @@
   programs.yazi = {
     enable = true;
     enableFishIntegration = true;
+  };
+
+  # Fish shell configuration - Linux-specific overrides
+  programs.fish = {
+    interactiveShellInit = ''
+      # Autojump integration
+      test -f ${pkgs.autojump}/share/autojump/autojump.fish; and source ${pkgs.autojump}/share/autojump/autojump.fish
+    '';
   };
 
   # Services with home-manager modules go here

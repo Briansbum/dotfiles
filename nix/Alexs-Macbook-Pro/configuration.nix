@@ -102,7 +102,6 @@
     _1password-cli
     
     # Terminal & Shell
-    fish
     tmux
     starship
     htop
@@ -113,7 +112,7 @@
     shellcheck
     # thefuck  # Removed from nixpkgs, use pay-respects instead
     pay-respects
-    autojump
+    # Note: fish and autojump managed via home-manager in common.nix
     
     # Networking
     dnscontrol

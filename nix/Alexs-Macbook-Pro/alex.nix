@@ -25,11 +25,6 @@
   xdg.configFile = {
     # Shared configs
     "starship.toml".source = ../../config/starship.toml;
-    "fish/conf.d".source = ../../config/fish/conf.d;
-    "fish/config.fish".source = ../../config/fish/config.fish;
-    "fish/functions".source = ../../config/fish/functions;
-    "fish/completions".source = ../../config/fish/completions;
-    "fish/fish_plugins".source = ../../config/fish/fish_plugins;
     "yazi".source = ../../config/yazi;
     "nvim".source = ../../config/nvim;
     
@@ -125,8 +120,86 @@
     enableFishIntegration = false;  # Managed manually via fish config files
   };
 
-  # Fish shell configuration - managed manually via xdg.configFile
-  programs.fish.enable = false;
+  # Fish shell configuration - macOS-specific overrides
+  programs.fish = {
+    shellInit = ''
+      # Homebrew paths
+      fish_add_path -p /opt/homebrew/bin
+      fish_add_path -p /opt/homebrew/opt/coreutils/libexec/gnubin
+      
+      # Bun
+      set --export BUN_INSTALL "$HOME/.bun"
+      fish_add_path $BUN_INSTALL/bin
+      
+      # GCloud SDK
+      if test -d /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin
+        fish_add_path /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin
+      end
+      
+      # Legacy GCloud SDK location
+      if test -f '/Users/alex/Downloads/google-cloud-sdk/path.fish.inc'
+        source '/Users/alex/Downloads/google-cloud-sdk/path.fish.inc'
+      end
+      
+      # Rancher Desktop
+      fish_add_path --prepend "/Users/alex/.rd/bin"
+      
+      # KUBECONFIG
+      set -gx KUBECONFIG "$HOME/.kube/config:$HOME/.docctor/config/kubeconfig"
+      
+      # Terragrunt cache
+      set -gx TG_PROVIDER_CACHE 1
+    '';
+    
+    interactiveShellInit = ''
+      # Autojump integration
+      test -f ${pkgs.autojump}/share/autojump/autojump.fish; and source ${pkgs.autojump}/share/autojump/autojump.fish
+    '';
+    
+    functions = {
+      # macOS-specific SSH agent key management
+      sshagent_add_key_macos = {
+        description = "Add SSH key to macOS keychain";
+        body = "ssh-add --apple-use-keychain $argv";
+      };
+      
+      sshagent_add_key = {
+        description = "Add SSH key";
+        body = "ssh-add $argv";
+      };
+      
+      sshagent_add_keys = {
+        description = "Add all SSH keys from bitwarden";
+        body = ''
+          set files "$HOME/.ssh/bitwarden"
+          for f in $files
+            if not ssh-add -L | grep -q $f
+              if uname -a | grep -q Darwin
+                sshagent_add_key_macos $f
+              else
+                sshagent_add_key $f
+              end
+            end
+          end
+        '';
+      };
+      
+      # Ghostty SSH with terminfo
+      gssh = {
+        description = "copies ghostty terminfo onto ssh targets";
+        body = ''
+          infocmp -x xterm-ghostty | ssh $argv[1] tic -x -
+          ssh $argv
+        '';
+      };
+      
+      # macOS-specific rmterra override (uses find instead of fd)
+      rmterra = {
+        description = "recursively find and delete .terragrunt-cache dirs";
+        body = "find . -type d -name '.terragrunt-cache' -exec rm -rf {} +";
+      };
+    };
+  };
 
   # Tmux configuration
   programs.tmux = {

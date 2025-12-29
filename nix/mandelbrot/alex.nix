@@ -51,6 +51,9 @@
     libraw
     ueberzugpp
     yt-dlp
+    gnupg
+    pinentry-curses
+    pinentry-rofi
     (ffmpeg.override {
     withXcb = true;
     })
@@ -97,9 +100,16 @@
       user = {
         email = "freestone.alex@gmail.com";
         name = "Alex Freestone";
+        signingkey = "A0E7C0BF628420C273078074873DF106014C63F7";
+      };
+      commit = {
+        gpgsign = true;
       };
       push = {
         autoSetupRemote = true;
+      };
+      init = {
+        defaultBranch = "main";
       };
     };
   };

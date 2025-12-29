@@ -1,16 +1,16 @@
-#!/usr/local/bin/env fish
+#!/usr/bin/env fish
 
 function tf --description 'alias tf="tofu"'
     tofu $argv
 end
 
 function vim --description 'alias vim="nvim"'
-    truncate -s0 /Users/alex/.local/state/nvim/lsp.log 2>/dev/null
+    truncate -s0 ~/.local/state/nvim/lsp.log 2>/dev/null
     nvim $argv
 end
 
 function v --description 'fuzzy find in the current directory and open the selected file for editing'
-    truncate -s0 /Users/alex/.local/state/nvim/lsp.log 2>/dev/null
+    truncate -s0 ~/.local/state/nvim/lsp.log 2>/dev/null
     nvim (fd -H -t f . | rg -v '.git/' | fzf)
 end
 
@@ -30,8 +30,8 @@ function mist --description 'alias mist="ollama run mistral"'
     ollama run mistral $argv
 end
 
-function stern --description 'alias stern="kubectl stern"'
-    kubectl stern $argv
+function stern --description 'alias stern for multi-pod log tailing'
+    command stern $argv
 end
 
 function b --description 'alias b with git worktree and fzf'

@@ -1,4 +1,4 @@
-#!/usr/local/bin/env fish
+#!/usr/bin/env fish
 
 function sshagent_add_key_macos
     ssh-add --apple-use-keychain $argv

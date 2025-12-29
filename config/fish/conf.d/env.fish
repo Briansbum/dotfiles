@@ -1,3 +1,3 @@
-#!/usr/local/bin/env fish
+#!/usr/bin/env fish
 
-export EDITOR=(which nvim)
+# EDITOR is managed by nix (see nix/common/common.nix)

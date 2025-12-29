@@ -11,4 +11,4 @@ function rmterra
     find . -type d -name '.terragrunt-cache' -exec rm -rf {} +
 end
 
-set KUBECONFIG '/Users/alex/.kube/config:/Users/alex/.docctor/config/kubeconfig'
+set KUBECONFIG "$HOME/.kube/config:$HOME/.docctor/config/kubeconfig"

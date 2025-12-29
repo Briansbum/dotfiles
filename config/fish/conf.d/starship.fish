@@ -1,3 +1,3 @@
-#!/usr/local/bin/env fish
+#!/usr/bin/env fish
 
 starship init fish | source

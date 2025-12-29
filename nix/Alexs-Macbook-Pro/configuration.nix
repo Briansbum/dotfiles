@@ -73,6 +73,7 @@
     kustomize
     minikube
     operator-sdk
+    stern  # Multi pod and container log tailing
     
     # Infrastructure as Code
     opentofu

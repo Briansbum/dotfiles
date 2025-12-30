@@ -5,6 +5,7 @@
   colorschemes.cyberdream = {
     enable = true;
     autoLoad = true;
+    settings.transparent = true;
   };
 
   plugins = {

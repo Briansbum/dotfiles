@@ -1,13 +1,13 @@
 # UI Plugins
 { pkgs, ... }:
 {
-  plugins = {
-    # Colorscheme
-    colorschemes.rose-pine = {
-      enable = true;
-      autoLoad = true;
-    };
+  # Colorscheme
+  colorschemes.rose-pine = {
+    enable = true;
+    autoLoad = true;
+  };
 
+  plugins = {
     # Statusline
     lualine = {
       enable = true;

@@ -78,6 +78,7 @@
     "niri/config.kdl".source = ../../config/niri/config.kdl;
     "starship.toml".source = ../../config/starship.toml;
     "yazi".source = ../../config/yazi;
+    "fish/themes/cyberdream.theme".source = ../../config/fish/themes/cyberdream.theme;
     # nvim now managed by nixvim - old config at ../../config/nvim for reference
     "rofi".source = ../../config/rofi;
   };
@@ -164,6 +165,8 @@
   # Fish shell configuration - Linux-specific overrides
   programs.fish = {
     interactiveShellInit = ''
+      fish_config theme save cyberdream
+
       # Autojump integration
       test -f ${pkgs.autojump}/share/autojump/autojump.fish; and source ${pkgs.autojump}/share/autojump/autojump.fish
     '';

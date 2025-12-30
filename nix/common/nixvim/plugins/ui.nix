@@ -2,7 +2,7 @@
 { pkgs, ... }:
 {
   # Colorscheme
-  colorschemes.rose-pine = {
+  colorschemes.cyberdream = {
     enable = true;
     autoLoad = true;
   };

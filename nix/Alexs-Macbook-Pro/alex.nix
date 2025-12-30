@@ -29,6 +29,7 @@
     # Shared configs
     "starship.toml".source = ../../config/starship.toml;
     "yazi".source = ../../config/yazi;
+    "fish/themes/cyberdream.theme".source = ../../config/fish/themes/cyberdream.theme;
     # nvim now managed by nixvim - old config at ../../config/nvim for reference
     
     # macOS-specific configs
@@ -122,6 +123,8 @@
   # Fish shell configuration - macOS-specific overrides
   programs.fish = {
     shellInit = ''
+      fish_config theme save cyberdream
+
       # Homebrew paths
       fish_add_path -p /opt/homebrew/bin
       fish_add_path -p /opt/homebrew/opt/coreutils/libexec/gnubin

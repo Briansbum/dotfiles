@@ -41,8 +41,6 @@
     glow.enable = true;
   };
 
-  colorscheme = "rose-pine";
-
   # Additional UI configuration
   extraConfigLua = ''
     -- Custom colors

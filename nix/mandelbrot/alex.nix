@@ -117,29 +117,30 @@
     settings = {
       background-opacity = 0.7;
       background-blur = true;
-      background = "#1e100d";
-      foreground = "#f9dcd7";
-      cursor-color = "#ffb4a5";
-      selection-background = "#8f1200";
-      selection-foreground = "#f9dcd7";
+      background = "#16181a";
+      foreground = "#ffffff";
+      cursor-color = "#ffffff";
+      selection-background = "#3c4048";
+      selection-foreground = "#ffffff";
 
       palette = [
-        "1=#1e100d"
-        "2=#e14984"
-        "3=#9bd66e"
-        "4=#dbaa7b"
-        "5=#c76754"
-        "6=#bf9289"
-        "7=#ffb4a5"
-        "8=#abb2bf"
-        "9=#5c6370"
-        "10=#e05f94"
-        "11=#ade086"
-        "12=#e8bf97"
-        "13=#ffc1b0"
-        "14=#bd5c5b"
-        "15=#a16d57"
-        "16=#ffffff"
+        # cyberdream
+        "0=#16181a"
+        "1=#ff6e5e"
+        "2=#5eff6c"
+        "3=#f1ff5e"
+        "4=#5ea1ff"
+        "5=#bd5eff"
+        "6=#5ef1ff"
+        "7=#ffffff"
+        "8=#3c4048"
+        "9=#ff6e5e"
+        "10=#5eff6c"
+        "11=#f1ff5e"
+        "12=#5ea1ff"
+        "13=#bd5eff"
+        "14=#5ef1ff"
+        "15=#ffffff"
       ];
     };
   };

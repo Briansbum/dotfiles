@@ -7,17 +7,47 @@
       enable = true;
 
       servers = {
-        bashls.enable = true;
-        dockerls.enable = true;
-        docker_compose_language_service.enable = true;
-        dotls.enable = true;
-        eslint.enable = true;
-        gopls.enable = true;
-        helm_ls.enable = true;
-        html.enable = true;
-        jsonls.enable = true;
+        bashls = {
+          enable = true;
+          filetypes = [ "sh" "bash" ];
+        };
+        dockerls = {
+          enable = true;
+          filetypes = [ "dockerfile" ];
+        };
+        docker_compose_language_service = {
+          enable = true;
+          filetypes = [ "yaml" "docker-compose" ];
+        };
+        dotls = {
+          enable = true;
+          filetypes = [ "dot" ];
+        };
+        eslint = {
+          enable = true;
+          filetypes = [ "javascript" "javascriptreact" "typescript" "typescriptreact" ];
+        };
+        gopls = {
+          enable = true;
+          filetypes = [ "go" "gomod" "gowork" "gotmpl" ];
+          rootMarkers = [ "go.mod" "go.work" ".git" ];
+        };
+        helm_ls = {
+          enable = true;
+          filetypes = [ "helm" ];
+        };
+        html = {
+          enable = true;
+          filetypes = [ "html" ];
+        };
+        jsonls = {
+          enable = true;
+          filetypes = [ "json" "jsonc" ];
+        };
         lua_ls = {
           enable = true;
+          filetypes = [ "lua" ];
+          rootMarkers = [ ".luarc.json" ".luarc.jsonc" ];
           settings = {
             Lua = {
               diagnostics = {
@@ -26,14 +56,28 @@
             };
           };
         };
-        pylsp.enable = true;
+        pylsp = {
+          enable = true;
+          filetypes = [ "python" ];
+          rootMarkers = [ "pyproject.toml" "setup.py" "setup.cfg" "requirements.txt" "Pipfile" ];
+        };
         rust_analyzer = {
           enable = true;
           installCargo = false;
           installRustc = false;
+          filetypes = [ "rust" ];
+          rootMarkers = [ "Cargo.toml" ];
         };
-        terraformls.enable = true;
-        tflint.enable = true;
+        terraformls = {
+          enable = true;
+          filetypes = [ "terraform" "tf" ];
+          rootMarkers = [ ".terraform" ".git" ];
+        };
+        tflint = {
+          enable = true;
+          filetypes = [ "terraform" "tf" ];
+          rootMarkers = [ ".tflint.hcl" ];
+        };
       };
 
       keymaps = {

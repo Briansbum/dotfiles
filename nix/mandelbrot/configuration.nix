@@ -330,7 +330,7 @@ in
   # Open ports in the firewall.
   networking.nftables.enable = true;
   networking.firewall.allowedTCPPorts = [ 11434 8554 3923 ];
-  networking.firewall.allowedUDPPorts = [ 8554 ];
+  networking.firewall.allowedUDPPorts = [ 8554 16261 16262 ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
 

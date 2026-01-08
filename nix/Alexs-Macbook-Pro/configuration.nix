@@ -76,7 +76,6 @@
     stern  # Multi pod and container log tailing
     
     # Infrastructure as Code
-    opentofu
     terragrunt
     terraform-docs
     tflint

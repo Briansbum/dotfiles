@@ -23,14 +23,9 @@
           url = "github:AvengeMedia/DankMaterialShell";
           inputs.nixpkgs.follows = "nixpkgs";
         };
-
-        kubeswitch = {
-          url = "github:danielfoehrKn/kubeswitch";
-          inputs.nixpkgs.follows = "nixpkgs";
-        };
     };
 
-    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, kubeswitch, ...}@inputs: {
+    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, ...}@inputs: {
         nixosConfigurations = {
             mandelbrot = nixpkgs.lib.nixosSystem {
                 system = "x86_64-linux";

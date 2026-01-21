@@ -4,6 +4,7 @@
   # Common packages that should be available on all systems
   home.packages = with pkgs; [
     autojump
+    kubeswitch
   ];
 
   # Shared program configurations

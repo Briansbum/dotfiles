@@ -60,7 +60,7 @@
     ansible
     argocd
     azure-cli
-    "awscli@2"
+    awscli
     docker
     
     # Kubernetes ecosystem

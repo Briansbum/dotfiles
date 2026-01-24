@@ -70,6 +70,7 @@
     xwayland-satellite
     mako
     gamescope
+    pinta
   ];
 
   # Config file locations for programs that cannot manage themselves

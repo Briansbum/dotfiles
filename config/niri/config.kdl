@@ -348,6 +348,11 @@ window-rule {
     open-fullscreen true
 }
 
+window-rule {
+  match title="Path of Exile 2"
+  open-fullscreen true
+}
+
 // Open the Firefox picture-in-picture player as floating by default.
 /-window-rule {
     // This app-id regular expression will work for both:

@@ -80,6 +80,12 @@ in
   services.tailscale.enable = true;
   services.avahi.enable = true;
   services.playerctld.enable = true;
+  services.resolved.enable = true;
+
+  services.mullvad-vpn = {
+    enable = true;
+    package = pkgs.mullvad-vpn;
+  };
 
   services.getty = {
     autologinUser = "alex";

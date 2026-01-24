@@ -79,7 +79,6 @@
     "niri/config.kdl".source = ../../config/niri/config.kdl;
     "starship.toml".source = ../../config/starship.toml;
     "yazi".source = ../../config/yazi;
-    "fish/themes/cyberdream.theme".source = ../../config/fish/themes/cyberdream.theme;
     # nvim now managed by nixvim - old config at ../../config/nvim for reference
     "rofi".source = ../../config/rofi;
   };

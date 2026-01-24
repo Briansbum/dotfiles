@@ -39,6 +39,7 @@
                         home-manager.useUserPackages = true;
                         home-manager.extraSpecialArgs = { inherit inputs; };
                         home-manager.users.alex = ./nix/mandelbrot/alex.nix;
+                        home-manager.backupFileExtension = ".before";
                     }
                 ];
             };

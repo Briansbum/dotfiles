@@ -121,7 +121,7 @@
   };
 
   # Claude Code
-  programs.claude = {
+  programs.claude-code = {
     enable = true;
     enableMcpIntegration = true;
   };

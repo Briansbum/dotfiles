@@ -23,9 +23,12 @@
           url = "github:AvengeMedia/DankMaterialShell";
           inputs.nixpkgs.follows = "nixpkgs";
         };
+
+        # Provides bleeding edge claude-code updates
+        claude-code.url = "github:sadjow/claude-code-nix";
     };
 
-    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, ...}@inputs: {
+    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, claude-code, ...}@inputs: {
         nixosConfigurations = {
             mandelbrot = nixpkgs.lib.nixosSystem {
                 system = "x86_64-linux";
@@ -53,6 +56,8 @@
                     ./nix/Alexs-Macbook-Pro/hardware.nix
                     home-manager.darwinModules.home-manager
                     {
+                        # This makes it so that wherever I use packages.claude-code it will use sadjow/claude-code-nix
+                        nixpkgs.overlays = [ claude-code.overlays.default ];
                         home-manager.useGlobalPkgs = true;
                         home-manager.useUserPackages = true;
                         home-manager.backupFileExtension = "backup";

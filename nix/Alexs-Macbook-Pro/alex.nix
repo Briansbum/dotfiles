@@ -120,6 +120,52 @@
     enableFishIntegration = false;  # Managed manually via fish config files
   };
 
+  # Claude Code
+  programs.claude-code = {
+    enable = true;
+    enableMcpIntegration = true;
+
+  };
+
+  # MCP Servers
+  programs.mcp = {
+    enable = true;
+    servers = {
+        grafana: {
+            command: [
+                "/Users/alex/go/bin/mcp-grafana"
+            ],
+            environment: {
+                GRAFANA_URL: "https://doccla.grafana.net",
+                GRAFANA_API_KEY: "{env:GRAFANA_API_KEY}"
+            }
+        },
+        nixos: {
+            command: [
+                "nix",
+                "run",
+                "github:utensils/mcp-nixos",
+                "--"
+            ]
+        },
+        awslabs.aws-documentation-mcp-server: {
+            command: [
+                "uvx",
+                "awslabs.aws-documentation-mcp-server@latest"
+            ],
+            environment: {
+                FASTMCP_LOG_LEVEL: "ERROR",
+                AWS_DOCUMENTATION_PARTITION: "aws",
+                MCP_USER_AGENT: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+            }
+        }
+        atlassian: {
+            type: "http",
+            url: "https://mcp.atlassian.com/v1/mcp"
+        }
+    };
+  };
+
   # Fish shell configuration - macOS-specific overrides
   programs.fish = {
     shellInit = ''

@@ -105,7 +105,6 @@
     starship
     htop
     neovim
-    newsboat
     irssi
     lynx
     shellcheck

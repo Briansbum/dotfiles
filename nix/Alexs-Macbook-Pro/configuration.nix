@@ -245,9 +245,9 @@
   programs.zsh.enable = true;  # Keep zsh as fallback
 
   # Install pre-commit via uv (avoids heavy swift/dotnet dependency chain in nixpkgs)
-  system.activationScripts.postUserActivation.text = ''
+  system.activationScripts.postActivation.text = ''
     echo "Installing pre-commit via uv..."
-    ${pkgs.uv}/bin/uv tool install pre-commit --quiet || true
+    sudo -u alex ${pkgs.uv}/bin/uv tool install pre-commit --quiet || true
   '';
 
   # System version

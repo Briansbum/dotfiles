@@ -41,7 +41,6 @@
     
     # Version control & Git tools
     gh
-    pre-commit
     
     # Text processing & CLI tools
     fd
@@ -244,6 +243,12 @@
   # Shell configuration
   programs.fish.enable = true;
   programs.zsh.enable = true;  # Keep zsh as fallback
+
+  # Install pre-commit via uv (avoids heavy swift/dotnet dependency chain in nixpkgs)
+  system.activationScripts.postUserActivation.text = ''
+    echo "Installing pre-commit via uv..."
+    ${pkgs.uv}/bin/uv tool install pre-commit --quiet || true
+  '';
 
   # System version
   system.stateVersion = 5;

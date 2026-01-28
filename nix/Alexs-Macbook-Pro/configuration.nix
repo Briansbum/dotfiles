@@ -214,6 +214,7 @@
     # GUI Applications (Casks)
     casks = [
       "amethyst"
+      "claude"
       "container"
       "ghostty"
       "gimp"

@@ -248,7 +248,7 @@
   # Install pre-commit via uv (avoids heavy swift/dotnet dependency chain in nixpkgs)
   system.activationScripts.postActivation.text = ''
     echo "Installing pre-commit via uv..."
-    sudo -u alex ${pkgs.uv}/bin/uv tool install pre-commit --quiet || true
+    sudo -u alex HOME=/Users/alex ${pkgs.uv}/bin/uv tool install pre-commit --quiet || true
   '';
 
   # System version

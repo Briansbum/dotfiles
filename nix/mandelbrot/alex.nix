@@ -166,7 +166,11 @@
   # Fish shell configuration - Linux-specific overrides
   programs.fish = {
     interactiveShellInit = ''
-      fish_config theme save cyberdream
+      # Apply cyberdream theme (fish 4.3+ style)
+      # __fish_override bypasses the "Overwrite your current theme?" prompt
+      set -x __fish_override true
+      fish_config theme choose cyberdream
+      set -e __fish_override
 
       # Autojump integration
       test -f ${pkgs.autojump}/share/autojump/autojump.fish; and source ${pkgs.autojump}/share/autojump/autojump.fish

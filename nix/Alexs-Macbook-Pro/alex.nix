@@ -171,7 +171,11 @@
   # Fish shell configuration - macOS-specific overrides
   programs.fish = {
     shellInit = ''
-      fish_config theme save cyberdream
+      # Apply cyberdream theme (fish 4.3+ style)
+      # __fish_override bypasses the "Overwrite your current theme?" prompt
+      set -x __fish_override true
+      fish_config theme choose cyberdream
+      set -e __fish_override
 
       # Homebrew paths
       fish_add_path -p /opt/homebrew/bin

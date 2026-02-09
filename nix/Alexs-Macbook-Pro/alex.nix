@@ -267,6 +267,7 @@
       {
         plugin = pkgs.tmuxPlugins.mkTmuxPlugin {
           pluginName = "tmux-pane-focus";
+          rtpFileTmux = "focus.tmux";
           version = "unstable-2025-10-07";
           src = pkgs.fetchFromGitHub {
             owner = "graemedavidson";

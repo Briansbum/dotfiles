@@ -263,5 +263,23 @@
     customPaneNavigationAndResize = true;
     escapeTime = 0;
     historyLimit = 50000;
+    plugins = [
+      {
+        plugin = pkgs.tmuxPlugins.mkTmuxPlugin {
+          pluginName = "tmux-pane-focus";
+          version = "unstable-2025-10-07";
+          src = pkgs.fetchFromGitHub {
+            owner = "graemedavidson";
+            repo = "tmux-pane-focus";
+            rev = "525ce8117220de82331a97fec87fa6b54bad81df";
+            sha256 = "sha256-dkXTWZcNfs1+BelKuRzN268jF1CwIIObz9VJDLwMHvE=";
+          };
+        };
+        extraConfig = ''
+          set -g @pane-focus-size '80'
+          set -g @pane-focus-direction '-'
+        '';
+      }
+    ];
   };
 }

@@ -203,6 +203,9 @@
       
       # Terragrunt cache
       set -gx TG_PROVIDER_CACHE 1
+
+      # Omnissiah shell integration (workspace nav + Claude session resume)
+      omni shell-init fish | source
     '';
     
     interactiveShellInit = ''

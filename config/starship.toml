@@ -29,6 +29,7 @@ $docker_context\
 [](fg:#06969A bg:#F3D17C)\
 $cmd_duration\
 [ ](fg:#F3D17C)\
+$custom\
 $character\
 """
 
@@ -172,3 +173,9 @@ style = "fg:bright-white bg:#F3D17C"
 format = '[ $symbol$context \($namespace\)]($style)'
 style = "bg:#FCA17D"
 disabled = false
+
+[custom.omnissiah]
+command = "omni prompt"
+when = "command -v omni"
+format = "[$output]($style) "
+style = "bold purple"

@@ -246,7 +246,7 @@
         description = "copies ghostty terminfo onto ssh targets";
         body = ''
           infocmp -x xterm-ghostty | ssh $argv[1] tic -x -
-          ssh $argv
+          SHELL=/bin/bash ssh $argv
         '';
       };
       

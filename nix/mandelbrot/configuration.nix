@@ -78,7 +78,7 @@ in
       description = "runs open-webui for gptness";
 
       serviceConfig = {
-        ExecStart = "/run/current-system/sw/bin/docker run -d -p 3000:8080 --add-host=host.docker.internal:host-gateway -v open-webui:/app/backend/data --name open-webui --restart always ghcr.io/open-webui/open-webui:main";
+        ExecStart = "/run/current-system/sw/bin/docker run -p 3000:8080 --add-host=host.docker.internal:host-gateway -v open-webui:/app/backend/data --name open-webui --restart always ghcr.io/open-webui/open-webui:main";
         User = "root";
         Restart = "always";
         RestartSec=3;

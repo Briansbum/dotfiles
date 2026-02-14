@@ -41,13 +41,17 @@ in
       description = "runs ollama for model serving";
 
       serviceConfig = {
-        ExecStart = "/run/current-system/sw/bin/ollama serve";
+        ExecStart = "${pkgs.ollama-cuda}/bin/ollama serve";
         User = "alex";
         Restart = "always";
         RestartSec=3;
         Environment= [
           "PATH=$PATH"
           "OLLAMA_HOST=0.0.0.0:11434"
+          "__NV_PRIME_RENDER_OFFLOAD=1"
+          "__NV_PRIME_RENDER_OFFLOAD_PROVIDER=NVIDIA-GO"
+          "__GLX_VENDOR_LIBRARY_NAME=nvidia"
+          "__VK_LAYER_NV_optimus=NVIDIA_only"
         ];
       };
     };
@@ -60,7 +64,36 @@ in
 
       serviceConfig = {
         ExecStart = "/run/current-system/sw/bin/tailscale serve --https=2021 localhost:11434";
+        User = "alex";
+        Restart = "always";
+        RestartSec=3;
+        Environment="PATH=$PATH";
+      };
+    };
+    open-webui = {
+      wantedBy = ["multi-user.target"];
+
+      after = [ "network-online.target" "tailscaled.service" ];
+
+      description = "runs open-webui for gptness";
+
+      serviceConfig = {
+        ExecStart = "docker run -d -p 3000:8080 --add-host=host.docker.internal:host-gateway -v open-webui:/app/backend/data --name open-webui --restart always ghcr.io/open-webui/open-webui:main";
         User = "root";
+        Restart = "always";
+        RestartSec=3;
+      };
+    };
+    open-webui_serve = {
+      wantedBy = ["multi-user.target"];
+
+      after = [ "network-online.target" "tailscaled.service" "open-webui.service" ];
+
+      description = "serves open-webui on the tailnet";
+
+      serviceConfig = {
+        ExecStart = "/run/current-system/sw/bin/tailscale serve --https=9091 localhost:3000";
+        User = "alex";
         Restart = "always";
         RestartSec=3;
         Environment="PATH=$PATH";
@@ -109,6 +142,13 @@ in
         exec ${pkgs.fish}/bin/fish $LOGIN_OPTION
       fi
     '';
+  };
+
+  programs.gnupg.agent = {
+    enable = true;
+    enableSSHSupport = true;
+    enableBrowserSocket = true;
+    pinentryPackage = wayprompt;
   };
 
   nixpkgs.config.allowUnfree = true; 
@@ -296,6 +336,8 @@ in
     egl-wayland
     playerctl
     brightnessctl
+    wayprompt
+    btop-cuda
   ];
 
   hardware.bluetooth = {

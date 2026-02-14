@@ -71,6 +71,7 @@
     mako
     gamescope
     pinta
+    uv
   ];
 
   # Config file locations for programs that cannot manage themselves

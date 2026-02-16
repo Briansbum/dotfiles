@@ -25,7 +25,7 @@
         };
 
         weir = {
-          url = "github:Briansbum/weir";
+          url = "git+ssh://git@github.com/Briansbum/weir.git";
           inputs.nixpkgs.follows = "nixpkgs";
         };
 

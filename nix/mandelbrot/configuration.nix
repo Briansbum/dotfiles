@@ -120,10 +120,140 @@ in
   # Weir LLM prompt router — uses the existing ollama-cuda service above.
   services.weir = {
     enable = true;
-    configFile = "/etc/weir/models.toml";
     listenAddress = "127.0.0.1:8080";
     ollamaUrl = "http://127.0.0.1:11434";
     environmentFile = "/etc/weir/env";
+
+    settings = {
+      # Providers
+      providers.ollama = {
+        type = "openaicompat";
+        base_url = "http://localhost:11434/v1";
+      };
+      providers.anthropic = {
+        type = "anthropic";
+        api_key_env = "ANTHROPIC_API_KEY";
+      };
+      providers.google = {
+        type = "google";
+        api_key_env = "GOOGLE_AI_API_KEY";
+      };
+      providers.deepseek = {
+        type = "openaicompat";
+        base_url = "https://api.deepseek.com/v1";
+        api_key_env = "DEEPSEEK_API_KEY";
+      };
+
+      # Model tiers
+      tiers.local   = { level = 0; description = "Free local models"; };
+      tiers.cheap   = { level = 1; description = "Low-cost hosted models"; };
+      tiers.mid     = { level = 2; description = "Mid-range hosted models"; };
+      tiers.premium = { level = 3; description = "Top-tier models"; };
+
+      # Models
+      models.deepseek-coder-local = {
+        provider = "ollama";
+        model_id = "deepseek-coder-v2:6.7b";
+        tier = "local";
+        capabilities = [ "code" ];
+        modalities = [ "text" ];
+        context_window = 16384;
+        tokeniser = "approximation";
+        token_ratio = 0.27;
+        local = true;
+      };
+      models.qwen-local = {
+        provider = "ollama";
+        model_id = "qwen2.5:7b";
+        tier = "local";
+        capabilities = [ "code" "prose" "chat" "analysis" ];
+        modalities = [ "text" ];
+        context_window = 32768;
+        tokeniser = "approximation";
+        token_ratio = 0.27;
+        local = true;
+      };
+      models.gemini-flash = {
+        provider = "google";
+        model_id = "gemini-2.5-flash";
+        tier = "cheap";
+        capabilities = [ "code" "prose" "chat" "analysis" "reasoning" ];
+        modalities = [ "text" "image" ];
+        context_window = 1048576;
+        tokeniser = "approximation";
+        token_ratio = 0.25;
+      };
+      models.deepseek-chat = {
+        provider = "deepseek";
+        model_id = "deepseek-chat";
+        tier = "cheap";
+        capabilities = [ "code" "prose" "chat" "analysis" ];
+        modalities = [ "text" ];
+        context_window = 65536;
+        tokeniser = "approximation";
+        token_ratio = 0.27;
+      };
+      models.sonnet = {
+        provider = "anthropic";
+        model_id = "claude-sonnet-4-20250514";
+        tier = "mid";
+        capabilities = [ "code" "prose" "chat" "analysis" "reasoning" ];
+        modalities = [ "text" "image" ];
+        context_window = 200000;
+        tokeniser = "tiktoken-cl100k";
+      };
+      models.opus = {
+        provider = "anthropic";
+        model_id = "claude-opus-4-20250514";
+        tier = "premium";
+        capabilities = [ "code" "prose" "chat" "analysis" "reasoning" ];
+        modalities = [ "text" "image" ];
+        context_window = 200000;
+        tokeniser = "tiktoken-cl100k";
+      };
+
+      # Session
+      session = { ttl_minutes = 120; store = "memory"; };
+
+      # Classifier
+      classifier = {
+        embedding_model = "nomic-embed-text";
+        embedding_provider = "ollama";
+        reference_data = "./data/reference_embeddings.json";
+      };
+
+      # Compaction
+      compaction = {
+        trigger_threshold = 0.8;
+        preserve_tail_exchanges = 3;
+        summary_model = "qwen-local";
+      };
+
+      # Routing table
+      routing.code.trivial    = { model = "deepseek-coder-local"; fallback = "deepseek-chat"; };
+      routing.code.moderate   = { model = "deepseek-chat";        fallback = "sonnet"; };
+      routing.code.hard       = { model = "sonnet";               fallback = "opus"; };
+
+      routing.prose.trivial   = { model = "qwen-local";    fallback = "gemini-flash"; };
+      routing.prose.moderate  = { model = "gemini-flash";   fallback = "sonnet"; };
+      routing.prose.hard      = { model = "sonnet";         fallback = "opus"; };
+
+      routing.analysis.trivial  = { model = "gemini-flash"; fallback = "sonnet"; };
+      routing.analysis.moderate = { model = "sonnet";        fallback = "opus"; };
+      routing.analysis.hard     = { model = "opus";          fallback = "opus"; };
+
+      routing.reasoning.trivial  = { model = "gemini-flash"; fallback = "sonnet"; };
+      routing.reasoning.moderate = { model = "sonnet";        fallback = "opus"; };
+      routing.reasoning.hard     = { model = "opus";          fallback = "opus"; };
+
+      routing.chat.trivial   = { model = "qwen-local";   fallback = "gemini-flash"; };
+      routing.chat.moderate  = { model = "gemini-flash";  fallback = "sonnet"; };
+      routing.chat.hard      = { model = "sonnet";        fallback = "opus"; };
+
+      routing.multimodal.trivial  = { model = "gemini-flash"; fallback = "sonnet"; };
+      routing.multimodal.moderate = { model = "sonnet";        fallback = "opus"; };
+      routing.multimodal.hard     = { model = "opus";          fallback = "opus"; };
+    };
   };
 
   users.users.alex = {

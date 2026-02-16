@@ -16,6 +16,7 @@ in
   imports = [
     inputs.dankMaterialShell.nixosModules.dank-material-shell
     inputs.dankMaterialShell.nixosModules.greeter
+    inputs.weir.nixosModules.default
   ];
 
   nix.settings = {
@@ -70,6 +71,21 @@ in
         Environment="PATH=$PATH";
       };
     };
+    weir_serve = {
+      wantedBy = ["multi-user.target"];
+
+      after = [ "network-online.target" "tailscaled.service" "weir.service" ];
+
+      description = "serves weir on the tailnet";
+
+      serviceConfig = {
+        ExecStart = "/run/current-system/sw/bin/tailscale serve --https=8081 localhost:8080";
+        User = "alex";
+        Restart = "always";
+        RestartSec=3;
+        Environment="PATH=$PATH";
+      };
+    };
     open-webui = {
       wantedBy = ["multi-user.target"];
 
@@ -99,6 +115,15 @@ in
         Environment="PATH=$PATH";
       };
     };
+  };
+
+  # Weir LLM prompt router — uses the existing ollama-cuda service above.
+  services.weir = {
+    enable = true;
+    configFile = "/etc/weir/models.toml";
+    listenAddress = "127.0.0.1:8080";
+    ollamaUrl = "http://127.0.0.1:11434";
+    environmentFile = "/etc/weir/env";
   };
 
   users.users.alex = {

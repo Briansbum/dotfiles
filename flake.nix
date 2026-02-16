@@ -24,6 +24,11 @@
           inputs.nixpkgs.follows = "nixpkgs";
         };
 
+        weir = {
+          url = "github:Briansbum/weir";
+          inputs.nixpkgs.follows = "nixpkgs";
+        };
+
         # Provides bleeding edge claude-code updates
         claude-code.url = "github:sadjow/claude-code-nix";
     };

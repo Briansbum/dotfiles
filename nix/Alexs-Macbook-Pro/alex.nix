@@ -37,7 +37,6 @@
     "zed/settings.json".source = ../../config/zed/settings.json;
     "gh/config.yml".source = ../../config/gh/config.yml;
     "gopass/config".source = ../../config/gopass/config;
-    "argocd/config".source = ../../config/argocd/config;
     "thefuck/settings.py".source = ../../config/thefuck/settings.py;
     
     # Note: htop, wireshark configs are runtime state - not managed

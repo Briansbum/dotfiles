@@ -57,7 +57,6 @@
     
     # DevOps & Cloud
     ansible
-    argocd
     azure-cli
     awscli
     docker

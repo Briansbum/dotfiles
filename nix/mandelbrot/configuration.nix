@@ -122,7 +122,7 @@ in
       description = "serves opencode on the tailnet";
 
       serviceConfig = {
-        ExecStart = "/run/current-system/sw/bin/tailscale serve 4096 localhost:4096";
+        ExecStart = "/run/current-system/sw/bin/tailscale serve --https=4096 localhost:4096";
         User = "alex";
         Restart = "always";
         RestartSec = 3;

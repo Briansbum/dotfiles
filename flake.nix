@@ -24,11 +24,15 @@
           inputs.nixpkgs.follows = "nixpkgs";
         };
 
+        opencode = {
+          url = "github:anomalyco/opencode";
+        };
+
         # Provides bleeding edge claude-code updates
         claude-code.url = "github:sadjow/claude-code-nix";
     };
 
-    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, claude-code, ...}@inputs: {
+    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, claude-code, opencode, ...}@inputs: {
         nixosConfigurations = {
             mandelbrot = nixpkgs.lib.nixosSystem {
                 system = "x86_64-linux";
@@ -43,6 +47,7 @@
                         home-manager.extraSpecialArgs = { inherit inputs; };
                         home-manager.users.alex = ./nix/mandelbrot/alex.nix;
                         home-manager.backupFileExtension = ".before";
+                        nixpkgs.overlays = [ opencode.overlays.default ];
                     }
                 ];
             };

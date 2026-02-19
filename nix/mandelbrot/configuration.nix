@@ -99,6 +99,36 @@ in
         Environment="PATH=$PATH";
       };
     };
+    opencode = {
+      wantedBy = ["multi-user.target"];
+
+      after = [ "network-online.target" "tailscaled.service" ];
+
+      description = "runs opencode in web mode";
+
+      serviceConfig = {
+        ExecStart = "${pkgs.opencode}/bin/opencode serve --port 4096";
+        User = "alex";
+        Restart = "always";
+        RestartSec = 3;
+        Environment = "PATH=$PATH";
+      };
+    };
+    opencode_serve = {
+      wantedBy = ["multi-user.target"];
+
+      after = [ "network-online.target" "tailscaled.service" "opencode.service" ];
+
+      description = "serves opencode on the tailnet";
+
+      serviceConfig = {
+        ExecStart = "/run/current-system/sw/bin/tailscale serve 4096 localhost:4096";
+        User = "alex";
+        Restart = "always";
+        RestartSec = 3;
+        Environment = "PATH=$PATH";
+      };
+    };
   };
 
   users.users.alex = {
@@ -328,6 +358,7 @@ in
     cron
     ollama
     ollama-cuda
+    opencode
     unzip
     helvum
     pavucontrol
@@ -377,7 +408,7 @@ in
 
   # Open ports in the firewall.
   networking.nftables.enable = true;
-  networking.firewall.allowedTCPPorts = [ 11434 8554 3923 ];
+  networking.firewall.allowedTCPPorts = [ 11434 8554 3923 4096 ];
   networking.firewall.allowedUDPPorts = [ 8554 16261 16262 ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;

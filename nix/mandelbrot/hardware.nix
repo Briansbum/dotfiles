@@ -37,6 +37,12 @@
       options = ["nofail" "x-systemd.automount" "noauto"];
     };
 
+  fileSystems."/mnt/state-store" =
+    { device = "192.168.1.137:/mnt/Main Pool/state-store";
+      fsType = "nfs";
+      options = ["nofail" "x-systemd.automount" "noauto"];
+    };
+
   swapDevices =
     [ { device = "/dev/disk/by-uuid/6305ecf6-1c88-4b62-8667-82477ac4b7b0"; }
     ];

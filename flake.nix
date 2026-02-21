@@ -47,7 +47,26 @@
                         home-manager.extraSpecialArgs = { inherit inputs; };
                         home-manager.users.alex = ./nix/mandelbrot/alex.nix;
                         home-manager.backupFileExtension = ".before";
-                        nixpkgs.overlays = [ opencode.overlays.default ];
+                        nixpkgs.overlays = [
+                            opencode.overlays.default
+                            # TODO: remove once fish 4.5.0 lands in nixos-unstable
+                            (final: prev: {
+                              fish = prev.fish.overrideAttrs (old: rec {
+                                version = "4.5.0";
+                                src = prev.fetchFromGitHub {
+                                  owner = "fish-shell";
+                                  repo = "fish-shell";
+                                  tag = version;
+                                  hash = "sha256-9EhvCStAeL+ADkLy9b4gXPx+JrVzUZ5Fdkf+imY3Vw0=";
+                                };
+                                cargoDeps = prev.rustPlatform.fetchCargoVendor {
+                                  inherit src;
+                                  inherit (old) patches;
+                                  hash = "sha256-RVg6Zciy9mqZQwM5P3ngJi2NjC0qwFH7XgVEanaKnsg=";
+                                };
+                              });
+                            })
+                        ];
                     }
                 ];
             };

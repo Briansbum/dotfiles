@@ -149,10 +149,7 @@
   programs.jq.enable = true;
   programs.obs-studio.enable = true;
   programs.fd.enable = true;
-  programs.fzf = {
-    enable = true;
-    enableFishIntegration = false;
-  };
+  programs.fzf.enable = true;
   programs.go.enable = true;
 
   # -----------------------------

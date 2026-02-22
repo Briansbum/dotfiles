@@ -114,7 +114,7 @@
 
   programs.ghostty = {
     enable = true;
-    enableFishIntegration = true;
+    enableFishIntegration = false; # fish 4.x handles shell integration natively
     installVimSyntax = true;
     settings = {
       background-opacity = 0.7;

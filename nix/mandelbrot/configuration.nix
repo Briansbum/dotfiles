@@ -73,7 +73,8 @@ in
     open-webui = {
       wantedBy = ["multi-user.target"];
 
-      after = [ "network-online.target" "tailscaled.service" ];
+      after = [ "network-online.target" "tailscaled.service" "docker.service" ];
+      requires = [ "docker.service" ];
 
       description = "runs open-webui for gptness";
 
@@ -281,9 +282,6 @@ in
   
   programs.hyprland = {
     enable = false;
-    withUWSM = true;
-    package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
-    xwayland.enable = true;
   };
 
   xdg.portal = {

@@ -35,7 +35,7 @@ in
   systemd.services = with pkgs; {
     ollama = {
       wantedBy = ["multi-user.target"];
-
+      wants = [ "network-online.target" ];
       after = [ "network-online.target" "tailscaled.service" ];
 
       description = "runs ollama for model serving";
@@ -57,7 +57,7 @@ in
     };
     ollama_serve = {
       wantedBy = ["multi-user.target"];
-
+      wants = [ "network-online.target" ];
       after = [ "network-online.target" "tailscaled.service" "ollama.service" ];
 
       description = "serves ollama on the tailnet";
@@ -72,7 +72,7 @@ in
     };
     open-webui = {
       wantedBy = ["multi-user.target"];
-
+      wants = [ "network-online.target" ];
       after = [ "network-online.target" "tailscaled.service" "docker.service" ];
       requires = [ "docker.service" ];
 
@@ -87,7 +87,7 @@ in
     };
     open-webui_serve = {
       wantedBy = ["multi-user.target"];
-
+      wants = [ "network-online.target" ];
       after = [ "network-online.target" "tailscaled.service" "open-webui.service" ];
 
       description = "serves open-webui on the tailnet";
@@ -102,7 +102,7 @@ in
     };
     opencode = {
       wantedBy = ["multi-user.target"];
-
+      wants = [ "network-online.target" ];
       after = [ "network-online.target" "tailscaled.service" ];
 
       description = "runs opencode in web mode";
@@ -117,7 +117,7 @@ in
     };
     opencode_serve = {
       wantedBy = ["multi-user.target"];
-
+      wants = [ "network-online.target" ];
       after = [ "network-online.target" "tailscaled.service" "opencode.service" ];
 
       description = "serves opencode on the tailnet";

@@ -77,6 +77,7 @@
   # Config file locations for programs that cannot manage themselves
   xdg.configFile = {
     # "foo".source = ../../config/foo;
+    "fish/themes/cyberdream.theme".source = ../../config/fish/themes/cyberdream.theme;
     "niri/config.kdl".source = ../../config/niri/config.kdl;
     "starship.toml".source = ../../config/starship.toml;
     "yazi".source = ../../config/yazi;

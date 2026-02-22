@@ -327,8 +327,14 @@
 
         # ============ Cloud & AWS ============
         was = {
-          description = "alias was=eval \$(docctor aws export)";
-          body = "eval (docctor aws export)";
+          description = "run docctor aws export and eval the result";
+          body = ''
+            if not command -q docctor
+              echo "docctor is not installed" >&2
+              return 1
+            end
+            eval (docctor aws export)
+          '';
         };
 
         # ============ System & Utilities ============

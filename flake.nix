@@ -28,11 +28,16 @@
           url = "github:anomalyco/opencode";
         };
 
+        nix-software-center = {
+          url = "github:snowfallorg/nix-software-center";
+          inputs.nixpkgs.follows = "nixpkgs";
+        };
+
         # Provides bleeding edge claude-code updates
         claude-code.url = "github:sadjow/claude-code-nix";
     };
 
-    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, claude-code, opencode, ...}@inputs: {
+    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, claude-code, opencode, nix-software-center, ...}@inputs: {
         nixosConfigurations = {
             mandelbrot = nixpkgs.lib.nixosSystem {
                 system = "x86_64-linux";
@@ -46,6 +51,24 @@
                         home-manager.useUserPackages = true;
                         home-manager.extraSpecialArgs = { inherit inputs; };
                         home-manager.users.alex = ./nix/mandelbrot/alex.nix;
+                        home-manager.backupFileExtension = ".before";
+                        nixpkgs.overlays = [ opencode.overlays.default ];
+                    }
+                ];
+            };
+            julia = nixpkgs.lib.nixosSystem {
+                system = "x86_64-linux";
+                specialArgs = { inherit inputs; };
+                modules = [
+                    ./nix/julia/configuration.nix
+                    ./nix/julia/hardware.nix
+                    home-manager.nixosModules.home-manager
+                    {
+                        home-manager.useGlobalPkgs = true;
+                        home-manager.useUserPackages = true;
+                        home-manager.extraSpecialArgs = { inherit inputs; };
+                        home-manager.users.alex = ./nix/julia/alex.nix;
+                        home-manager.users.cass = ./nix/julia/cass.nix;
                         home-manager.backupFileExtension = ".before";
                         nixpkgs.overlays = [ opencode.overlays.default ];
                     }

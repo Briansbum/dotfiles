@@ -159,7 +159,7 @@
         };
 
         f = {
-          description = "alias f=z \$(fd --type d | fzf)";
+          description = "fuzzy find a directory and cd into it";
           body = ''
             set dir (fd --type d | fzf)
             cd $dir

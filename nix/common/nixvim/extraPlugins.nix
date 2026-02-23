@@ -65,7 +65,9 @@
     _99.setup({
       provider = _99.Providers.ClaudeCodeProvider,
       model = "claude-opus-4-6",
+      tmp_dir = vim.fn.stdpath("data") .. "/99",
     })
+    vim.fn.mkdir(vim.fn.stdpath("data") .. "/99", "p")
     -- Core
     vim.keymap.set("v", "<leader>9v", _99.visual, { desc = "99: Send selection to AI" })
     vim.keymap.set("n", "<leader>9s", _99.search, { desc = "99: AI search" })

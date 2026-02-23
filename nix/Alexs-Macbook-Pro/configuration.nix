@@ -173,6 +173,7 @@
       "qmk/qmk"
       "sst/tap"
       "turbot/tap"
+      "atlassian/homebrew-cli"
     ];
 
     # Brew formulae (CLI tools not in nixpkgs or better via brew)
@@ -186,6 +187,7 @@
       "ory/tap/hydra"
       "qmk/qmk/qmk"
       "sst/tap/opencode"
+      "atlassian/homebrew-cli/acli"
       
       # Tools that might need specific versions or macOS integration
       "pam-reattach"  # For tmux Touch ID support

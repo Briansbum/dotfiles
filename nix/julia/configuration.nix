@@ -31,6 +31,14 @@
   services.playerctld.enable = true;
   services.resolved.enable = true;
 
+  services.upower = {
+    enable = true;
+    percentageLow = 20;
+    percentageCritical = 7;
+    percentageAction = 3;
+    criticalPowerAction = "Hibernate";
+  };
+
   services.mullvad-vpn = {
     enable = true;
     package = pkgs.mullvad-vpn;

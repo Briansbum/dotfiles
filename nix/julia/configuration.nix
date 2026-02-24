@@ -1,11 +1,6 @@
 { config, pkgs, inputs, lib, ... }:
 
 {
-  imports = [
-    inputs.dankMaterialShell.nixosModules.dank-material-shell
-    inputs.dankMaterialShell.nixosModules.greeter
-  ];
-
   nix.settings = {
     experimental-features = ["nix-command" "flakes"];
   };
@@ -88,7 +83,7 @@
   services.xserver.enable = true;
 
   programs.niri.enable = true;
-  programs.dank-material-shell = {
+  program.dms-shell = {
     enable = true;
 
     systemd = {
@@ -96,19 +91,23 @@
       restartIfChanged = true;
     };
 
-    greeter = {
-      enable = true;
+    enableSystemMonitoring = true;
+    enableDynamicTheming = true;
+    enableAudioWavelength = true;
+  };
 
-      compositor = {
-        name = "niri";
-      };
-
-      configHome = "/home/alex";
-
-      logs = {
-        save = true;
-        path = "/tmp/dms-greeter.log";
-      };
+  services.displayManager.dms-greeter = {
+    enable = true;
+    
+    compositor = {
+      name = "niri";
+    };
+  
+    configHome = "/home/alex";
+  
+    logs = {
+      save = true;
+      path = "/tmp/dms-greeter.log";
     };
   };
 
@@ -154,6 +153,7 @@
     brightnessctl
     inputs.nix-software-center.packages.${pkgs.system}.nix-software-center
     lxqt.lxqt-policykit
+    accountsservice
   ];
 
   hardware.bluetooth = {

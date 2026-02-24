@@ -13,11 +13,6 @@ with pkgs; let
   GPUOffloadApp = pkg: desktopName: patchDesktop pkg desktopName "^Exec=" "Exec=nvidia-offload ";
 in
 {
-  imports = [
-    inputs.dankMaterialShell.nixosModules.dank-material-shell
-    inputs.dankMaterialShell.nixosModules.greeter
-  ];
-
   nix.settings = {
     substituters = ["https://hyprland.cachix.org"];
     trusted-substituters = ["https://hyprland.cachix.org"];
@@ -256,28 +251,44 @@ in
   services.xserver.enable = true;
 
   programs.niri.enable = true;
-  programs.dank-material-shell = { 
-    enable = true; 
+  program.dms-shell = {
+    enable = true;
 
     systemd = {
       enable = true;
       restartIfChanged = true;
     };
 
-    greeter = {
-      enable = true;
+    enableSystemMonitoring = true;
+    enableDynamicTheming = true;
+    enableAudioWavelength = true;
+  };
 
-      compositor = {
-        name = "niri";
-      };
-
-      configHome = "/home/alex";
-
-      logs = {
-        save = true;
-        path = "/tmp/dms-greeter.log";
-      };
+  services.displayManager.dms-greeter = {
+    enable = true;
+    
+    compositor = {
+      name = "niri";
     };
+  
+    configHome = "/home/alex";
+  
+    logs = {
+      save = true;
+      path = "/tmp/dms-greeter.log";
+    };
+  };
+
+  xdg.portal = {
+    enable = true;
+    xdgOpenUsePortal = true;
+    config = {
+      common.default = ["gtk"];
+    };
+    extraPortals = [
+      pkgs.xdg-desktop-portal-gtk
+      pkgs.xdg-desktop-portal-gnome
+    ];
   };
   
   programs.hyprland = {

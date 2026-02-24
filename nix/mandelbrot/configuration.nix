@@ -251,7 +251,7 @@ in
   services.xserver.enable = true;
 
   programs.niri.enable = true;
-  program.dms-shell = {
+  programs.dms-shell = {
     enable = true;
 
     systemd = {

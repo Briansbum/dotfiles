@@ -272,11 +272,6 @@ in
     };
   
     configHome = "/home/alex";
-  
-    logs = {
-      save = true;
-      path = "/tmp/dms-greeter.log";
-    };
   };
 
   xdg.portal = {

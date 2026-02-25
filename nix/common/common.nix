@@ -6,6 +6,8 @@
     autojump
     flyctl
     kubeswitch
+    obsidian
+    opencode
   ];
 
   # Shared program configurations

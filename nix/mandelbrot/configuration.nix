@@ -14,9 +14,6 @@ with pkgs; let
 in
 {
   nix.settings = {
-    substituters = ["https://hyprland.cachix.org"];
-    trusted-substituters = ["https://hyprland.cachix.org"];
-    trusted-public-keys = ["hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="];
     experimental-features = ["nix-command" "flakes"];
   };
 
@@ -279,23 +276,6 @@ in
     xdgOpenUsePortal = true;
     config = {
       common.default = ["gtk"];
-    };
-    extraPortals = [
-      pkgs.xdg-desktop-portal-gtk
-      pkgs.xdg-desktop-portal-gnome
-    ];
-  };
-  
-  programs.hyprland = {
-    enable = false;
-  };
-
-  xdg.portal = {
-    enable = true;
-    xdgOpenUsePortal = true;
-    config = {
-      common.default = ["hyprland" "gtk"];
-     # hyprland.default = ["gtk" "hyprland"];
     };
     extraPortals = [
       pkgs.xdg-desktop-portal-gtk

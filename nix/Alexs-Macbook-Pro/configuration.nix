@@ -58,7 +58,7 @@
     # DevOps & Cloud
     ansible
     azure-cli
-    awscli
+    awscli2
     docker
     
     # Kubernetes ecosystem
@@ -235,6 +235,25 @@
   # Services
   services.tailscale = {
     enable = true;
+  };
+
+  # Steampipe service (local Postgres endpoint for cloud queries)
+  launchd.user.agents.steampipe = {
+    serviceConfig = {
+      Label = "com.turbot.steampipe";
+      ProgramArguments = [
+        "${pkgs.steampipe}/bin/steampipe"
+        "service"
+        "start"
+        "--foreground"
+        "--database-listen"
+        "local"
+      ];
+      RunAtLoad = true;
+      KeepAlive = true;
+      StandardOutPath = "/tmp/steampipe.log";
+      StandardErrorPath = "/tmp/steampipe.err.log";
+    };
   };
 
   # Fonts

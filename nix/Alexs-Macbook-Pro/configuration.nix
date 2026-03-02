@@ -187,7 +187,7 @@
       "ory/tap/hydra"
       "qmk/qmk/qmk"
       "sst/tap/opencode"
-      "atlassian/homebrew-cli/acli"
+      "atlassian/acli/acli"
       
       # Tools that might need specific versions or macOS integration
       "pam-reattach"  # For tmux Touch ID support

@@ -173,7 +173,7 @@
       "qmk/qmk"
       "sst/tap"
       "turbot/tap"
-      "atlassian/homebrew-cli"
+      "atlassian/acli"
     ];
 
     # Brew formulae (CLI tools not in nixpkgs or better via brew)

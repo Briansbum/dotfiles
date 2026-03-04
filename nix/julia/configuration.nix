@@ -160,6 +160,9 @@
     inputs.nix-software-center.packages.${pkgs.system}.nix-software-center
     lxqt.lxqt-policykit
     accountsservice
+    libthai
+    pango
+    harfbuzz
   ];
 
   hardware.bluetooth = {

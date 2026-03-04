@@ -35,6 +35,7 @@
 
   services.logind.settings.Login = {
     HandleLidSwitch = "suspend-then-hibernate";
+    LidSwitch = "suspend-then-hibernate";
     HandleLidSwitchExternalPower = "suspend-then-hibernate";
     HandleLidSwitchDocken = "suspend-then-hibernate";
   };

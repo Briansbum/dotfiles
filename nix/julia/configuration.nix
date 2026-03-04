@@ -75,12 +75,6 @@
     pinentryPackage = pkgs.pinentry-gtk2;
   };
 
-  programs.steam = {
-    enable = true;
-    gamescopeSession.enable = true;
-  };
-  programs.gamescope.enable = true;
-
   nixpkgs.config.allowUnfree = true;
 
   # Intel integrated graphics
@@ -131,6 +125,13 @@
       pkgs.xdg-desktop-portal-gnome
     ];
   };
+
+  swapDevices = [
+    {
+      device = "/var/lib/swapfile";
+      size = 16*1024; # 16GB in MiB
+    }
+  ];
 
   environment.sessionVariables = {
       XDG_CURRENT_DESKTOP = "niri";

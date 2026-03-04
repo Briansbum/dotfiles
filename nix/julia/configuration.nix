@@ -34,9 +34,9 @@
   services.power-profiles-daemon.enable = true;
 
   services.logind.settings.Login = {
-    LidSwitch = "suspend-then-hibernate";
-    LidSwitchExternalPower = "suspend-then-hibernate";
-    LidSwitchDocken = "suspend-then-hibernate";
+    HandleLidSwitch = "suspend-then-hibernate";
+    HandleLidSwitchExternalPower = "suspend-then-hibernate";
+    HandleLidSwitchDocken = "suspend-then-hibernate";
   };
 
   services.upower = {

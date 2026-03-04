@@ -30,6 +30,14 @@
   services.avahi.enable = true;
   services.playerctld.enable = true;
   services.resolved.enable = true;
+  services.thermald.enable = true;
+  services.power-profiles-daemon.enable = true;
+
+  services.logind.settings.Login = {
+    LidSwitch = "suspend-then-hibernate";
+    LidSwitchExternalPower = "suspend-then-hibernate";
+    LidSwitchDocken = "suspend-then-hibernate";
+  };
 
   services.upower = {
     enable = true;
@@ -126,6 +134,15 @@
     ];
   };
 
+  boot.kernelParams = ["resume_offset=2047" "mem_sleep_default=deep"];
+  boot.resumeDevice = "/dev/disk/by-uuid/851c22a2-4127-4a0d-983d-f6da6525b82b";
+  boot.initrd.systemd.enable = true;
+
+  systemd.sleep.extraConfig = ''
+    HibernateDelaySec=30m
+    SuspendState=mem
+  '';
+  
   swapDevices = [
     {
       device = "/var/lib/swapfile";

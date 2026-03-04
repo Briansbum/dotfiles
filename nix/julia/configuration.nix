@@ -75,12 +75,8 @@
     pinentryPackage = pkgs.pinentry-gtk2;
   };
 
-  programs.steam = {
-    enable = true;
-    gamescopeSession = {
-      enable = true;
-    };
-  };
+  programs.steam.enable = true;
+  programs.gamescope.enable = true;
 
   nixpkgs.config.allowUnfree = true;
 

@@ -4,6 +4,12 @@
 
 { config, pkgs, inputs, lib, ... }:
 
+# Tailscale serve routes:
+#   https://mandelbrot/ollama     -> localhost:11434
+#   https://mandelbrot/open-webui -> localhost:3000
+#   https://mandelbrot/opencode   -> localhost:4096
+#   https://mandelbrot/octoprint  -> localhost:5000
+
 with pkgs; let
   patchDesktop = pkg: appName: from: to: lib.hiPrio (
     pkgs.runCommand "$patched-desktop-entry-for-${appName}" {} ''
@@ -47,21 +53,6 @@ in
         ];
       };
     };
-    ollama_serve = {
-      wantedBy = ["multi-user.target"];
-      wants = [ "network-online.target" ];
-      after = [ "network-online.target" "tailscaled.service" "ollama.service" ];
-
-      description = "serves ollama on the tailnet";
-
-      serviceConfig = {
-        ExecStart = "/run/current-system/sw/bin/tailscale serve --https=2021 localhost:11434";
-        User = "alex";
-        Restart = "always";
-        RestartSec=3;
-        Environment="PATH=$PATH";
-      };
-    };
     open-webui = {
       wantedBy = ["multi-user.target"];
       wants = [ "network-online.target" ];
@@ -75,21 +66,6 @@ in
         User = "root";
         Restart = "always";
         RestartSec=3;
-      };
-    };
-    open-webui_serve = {
-      wantedBy = ["multi-user.target"];
-      wants = [ "network-online.target" ];
-      after = [ "network-online.target" "tailscaled.service" "open-webui.service" ];
-
-      description = "serves open-webui on the tailnet";
-
-      serviceConfig = {
-        ExecStart = "/run/current-system/sw/bin/tailscale serve --https=9091 localhost:3000";
-        User = "alex";
-        Restart = "always";
-        RestartSec=3;
-        Environment="PATH=$PATH";
       };
     };
     opencode = {
@@ -107,27 +83,36 @@ in
         Environment = "PATH=$PATH";
       };
     };
-    opencode_serve = {
-      wantedBy = ["multi-user.target"];
-      wants = [ "network-online.target" ];
-      after = [ "network-online.target" "tailscaled.service" "opencode.service" ];
+  };
 
-      description = "serves opencode on the tailnet";
-
-      serviceConfig = {
-        ExecStart = "/run/current-system/sw/bin/tailscale serve --https=4096 localhost:4096";
-        User = "alex";
-        Restart = "always";
-        RestartSec = 3;
-        Environment = "PATH=$PATH";
+  # OctoPrint for 3D printer management
+  services.octoprint = {
+    enable = true;
+    port = 5000;
+    extraConfig = {
+      server.baseUrl = "/octoprint";
+      serial = {
+        port = "/dev/ttyUSB0";
+        baudrate = 250000;
       };
     };
+  };
+
+  # Give octoprint user access to serial devices
+  users.users.octoprint.extraGroups = [ "dialout" ];
+
+  # Tailscale proxies — all on https://mandelbrot/<path>
+  services.tailscaleServe = {
+    ollama       = { localPort = 11434; path = "ollama";     afterService = "ollama";   };
+    open-webui   = { localPort = 3000;  path = "open-webui"; afterService = "open-webui"; };
+    opencode     = { localPort = 4096;  path = "opencode";   afterService = "opencode"; };
+    octoprint    = { localPort = 5000;  path = "octoprint";  afterService = "octoprint"; };
   };
 
   users.users.alex = {
     isNormalUser = true;
     description = "Alex";
-    extraGroups = ["wheel" "plugdev"];
+    extraGroups = ["wheel" "plugdev" "dialout"];
   };
 
   services.gvfs.enable = true;

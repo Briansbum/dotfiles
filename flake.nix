@@ -38,6 +38,7 @@
                 system = "x86_64-linux";
                 specialArgs = { inherit inputs; };
                 modules = [
+                    ./nix/modules/tailscale-serve.nix
                     ./nix/mandelbrot/configuration.nix
                     ./nix/mandelbrot/hardware.nix
                     home-manager.nixosModules.home-manager

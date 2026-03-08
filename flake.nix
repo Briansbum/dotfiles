@@ -30,9 +30,21 @@
 
         # Provides bleeding edge claude-code updates
         claude-code.url = "github:sadjow/claude-code-nix";
+
+        # koch (NAS) dependencies
+        disko = {
+          url = "github:nix-community/disko";
+          inputs.nixpkgs.follows = "nixpkgs";
+        };
+
+        sops-nix = {
+          url = "github:Mic92/sops-nix";
+          inputs.nixpkgs.follows = "nixpkgs";
+        };
+
     };
 
-    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, claude-code, opencode, nix-software-center, ...}@inputs: {
+    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, claude-code, opencode, nix-software-center, disko, sops-nix, ...}@inputs: {
         nixosConfigurations = {
             mandelbrot = nixpkgs.lib.nixosSystem {
                 system = "x86_64-linux";
@@ -68,6 +80,33 @@
                         home-manager.backupFileExtension = ".before";
                         nixpkgs.overlays = [ opencode.overlays.default ];
                     }
+                ];
+            };
+            koch = nixpkgs.lib.nixosSystem {
+                system = "x86_64-linux";
+                specialArgs = { inherit inputs; };
+                modules = [
+                    disko.nixosModules.disko
+                    sops-nix.nixosModules.sops
+                    ./nix/koch/configuration.nix
+                    ./nix/koch/hardware.nix
+                    ./nix/koch/disk-config.nix
+                    home-manager.nixosModules.home-manager
+                    {
+                        home-manager.useGlobalPkgs = true;
+                        home-manager.useUserPackages = true;
+                        home-manager.extraSpecialArgs = { inherit inputs; };
+                        home-manager.users.alex = ./nix/koch/alex.nix;
+                        home-manager.backupFileExtension = ".before";
+                    }
+                ];
+            };
+            # Build with: nix build .#nixosConfigurations.koch-installer.config.system.build.isoImage
+            koch-installer = nixpkgs.lib.nixosSystem {
+                system = "x86_64-linux";
+                specialArgs = { inherit inputs; };
+                modules = [
+                    ./nix/koch/iso.nix
                 ];
             };
         };

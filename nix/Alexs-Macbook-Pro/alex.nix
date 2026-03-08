@@ -117,6 +117,7 @@
   programs.yazi = {
     enable = true;
     enableFishIntegration = false;  # Managed manually via fish config files
+    shellWrapperName = "y";
   };
 
   # Claude Code

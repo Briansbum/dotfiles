@@ -145,6 +145,7 @@
   programs.yazi = {
     enable = true;
     enableFishIntegration = true;
+    shellWrapperName = "y";
   };
 
   # Fish shell configuration - Linux-specific overrides

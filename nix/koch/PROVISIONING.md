@@ -14,13 +14,13 @@ Koch is an HP Z420 workstation running NixOS as a headless NAS.
 
 ## Prerequisites
 
-1. A machine with nix installed (your Mac works fine)
+1. A machine with nix installed (any Linux or macOS host works)
 2. Root SSH access to the target box (any running Linux — Proxmox is fine)
 3. All data backed up to B2 (see [Pre-migration backups](#pre-migration-backups) below)
 
 ## Pre-migration backups
 
-If migrating from TrueNAS, do these first. If provisioning fresh, skip to [Install](#install).
+If migrating from TrueNAS, complete these steps first. If provisioning fresh, skip to [Install](#install).
 
 ### Immich database dump
 
@@ -54,9 +54,9 @@ installer in RAM, runs disko to partition/format all disks, and installs
 NixOS — all remotely. No USB stick or physical access needed.
 
 **This destroys everything on the target machine.** Proxmox, TrueNAS,
-all VMs, all local data — gone. Make sure backups are verified.
+all VMs, all local data — gone. Verify backups before proceeding.
 
-From your Mac (or any machine with nix and SSH access to the target):
+Run the following from any machine with nix and SSH access to the target:
 
 ```bash
 cd ~/dotfiles
@@ -77,7 +77,7 @@ The install takes ~10-20 minutes depending on download speed.
 ### First login
 
 nixos-anywhere sets no root password and root SSH login is disabled in
-our config. You need console access (or leave a monitor plugged in) for
+the config. Console access is required (or leave a monitor plugged in) for
 this one step:
 
 ```bash
@@ -117,7 +117,7 @@ sudo mkdir -p /var/lib/sops-nix
 sudo age-keygen -o /var/lib/sops-nix/keys.txt
 # Note the public key printed
 
-# On your Mac, add the public key to .sops.yaml and re-encrypt:
+# On the admin machine, add the public key to .sops.yaml and re-encrypt:
 sops updatekeys nix/koch/secrets.yaml
 sudo nixos-rebuild switch --flake ~/dotfiles#koch
 ```

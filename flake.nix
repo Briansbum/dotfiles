@@ -101,14 +101,6 @@
                     }
                 ];
             };
-            # Build with: nix build .#nixosConfigurations.koch-installer.config.system.build.isoImage
-            koch-installer = nixpkgs.lib.nixosSystem {
-                system = "x86_64-linux";
-                specialArgs = { inherit inputs; };
-                modules = [
-                    ./nix/koch/iso.nix
-                ];
-            };
         };
         darwinConfigurations = {
             "Alexs-MacBook-Pro" = nix-darwin.lib.darwinSystem {

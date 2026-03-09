@@ -152,7 +152,7 @@
   # rclone config lives at /etc/rclone/rclone.conf, populated from sops secrets.
   # Two backup jobs:
   #   - rclone-photos: hourly, photos -> truenas-photos-pool bucket
-  #   - rclone-data:   daily, alex-storage + grocy + copyparty -> koch-data-backup bucket
+  #   - rclone-data:   daily, alex-storage + grocy + copyparty -> nas-migration-spring-2026 bucket
   # ---------------------------------------------------------------------------
 
   # TODO: wire up sops-nix for B2 credentials and generate /etc/rclone/rclone.conf
@@ -210,8 +210,8 @@
       ExecStart = pkgs.writeShellScript "rclone-data-backup" ''
         RCLONE="${pkgs.rclone}/bin/rclone"
         CONF="--config /etc/rclone/rclone.conf --transfers 4 --log-level INFO --log-file /var/log/rclone-data.log"
-        $RCLONE copy /data/alex-storage b2:koch-data-backup/alex-storage $CONF
-        $RCLONE copy /data/grocy b2:koch-data-backup/grocy $CONF
+        $RCLONE copy /data/alex-storage b2:nas-migration-spring-2026/alex-storage $CONF
+        $RCLONE copy /data/grocy b2:nas-migration-spring-2026/grocy $CONF
       '';
     };
   };

@@ -2,6 +2,7 @@ format = """
 [](#9A348E)\
 $os\
 $username\
+$hostname\
 [](bg:#DA627D fg:#9A348E)\
 $directory\
 [](fg:#DA627D bg:#FCA17D)\
@@ -51,7 +52,13 @@ vimcmd_visual_symbol      = "[V](bold blue)"
 show_always = true
 style_user = "bg:#9A348E"
 style_root = "bg:#9A348E"
-format = '[$user ]($style)'
+format = '[$user@]($style)'
+disabled = false
+
+[hostname]
+ssh_only = false
+style = "bg:#9A348E"
+format = '[$hostname ]($style)'
 disabled = false
 
 # An alternative to the username module which displays a symbol that

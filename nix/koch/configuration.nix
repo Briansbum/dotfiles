@@ -152,27 +152,39 @@
   # ---------------------------------------------------------------------------
   # B2 backups via rclone
   #
-  # rclone config lives at /etc/rclone/rclone.conf, populated from sops secrets.
-  # Two backup jobs:
-  #   - rclone-photos: hourly, photos -> truenas-photos-pool bucket
-  #   - rclone-data:   daily, alex-storage + grocy + copyparty -> nas-migration-spring-2026 bucket
+  # Photos sync is bidirectional (pull then push) so it doubles as restore.
+  # B2 credentials provided by sops-nix at /run/secrets/.
   # ---------------------------------------------------------------------------
 
-  # TODO: wire up sops-nix for B2 credentials and generate /etc/rclone/rclone.conf
-  # For now the rclone services reference a config that will be created by sops.
+  sops.defaultSopsFile = ./secrets.yaml;
+  sops.age.keyFile = "/var/lib/sops-nix/keys.txt";
+
+  sops.secrets."b2_photos_account_id" = {};
+  sops.secrets."b2_photos_application_key" = {};
 
   systemd.services.rclone-photos = {
-    description = "Backup photos to Backblaze B2";
+    description = "Bidirectional photos sync with Backblaze B2";
     after = [ "network-online.target" ];
     wants = [ "network-online.target" ];
     serviceConfig = {
       Type = "oneshot";
-      ExecStart = "${pkgs.rclone}/bin/rclone copy /data/photos b2:truenas-photos-pool --config /etc/rclone/rclone.conf --transfers 4 --log-level INFO --log-file /var/log/rclone-photos.log";
+      ExecStart = pkgs.writeShellScript "rclone-photos-sync" ''
+        ACCT=$(cat /run/secrets/b2_photos_account_id)
+        KEY=$(cat /run/secrets/b2_photos_application_key)
+        RCLONE="${pkgs.rclone}/bin/rclone"
+        OPTS="--transfers 4 --log-level INFO --log-file /var/log/rclone-photos.log"
+        REMOTE=":b2,account=$ACCT,key=$KEY:truenas-photos-pool"
+
+        # Pull missing files from B2
+        $RCLONE copy "$REMOTE" /data/photos $OPTS
+        # Push missing files to B2
+        $RCLONE copy /data/photos "$REMOTE" $OPTS
+      '';
     };
   };
 
   systemd.timers.rclone-photos = {
-    description = "Hourly photos backup to B2";
+    description = "Hourly photos sync with B2";
     wantedBy = [ "timers.target" ];
     timerConfig = {
       OnCalendar = "hourly";
@@ -201,31 +213,6 @@
     timerConfig = {
       OnCalendar = "daily";
       Persistent = true;
-    };
-  };
-
-  systemd.services.rclone-data = {
-    description = "Backup non-photo data to Backblaze B2";
-    after = [ "network-online.target" "immich-db-dump.service" ];
-    wants = [ "network-online.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      ExecStart = pkgs.writeShellScript "rclone-data-backup" ''
-        RCLONE="${pkgs.rclone}/bin/rclone"
-        CONF="--config /etc/rclone/rclone.conf --transfers 4 --log-level INFO --log-file /var/log/rclone-data.log"
-        $RCLONE copy /data/alex-storage b2:nas-migration-spring-2026/alex-storage $CONF
-        $RCLONE copy /data/grocy b2:nas-migration-spring-2026/grocy $CONF
-      '';
-    };
-  };
-
-  systemd.timers.rclone-data = {
-    description = "Daily non-photo data backup to B2";
-    wantedBy = [ "timers.target" ];
-    timerConfig = {
-      OnCalendar = "*-*-* 04:00:00"; # 4am, after immich-db-dump
-      Persistent = true;
-      RandomizedDelaySec = "15m";
     };
   };
 

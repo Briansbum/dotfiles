@@ -246,6 +246,8 @@
   # ---------------------------------------------------------------------------
 
   environment.systemPackages = with pkgs; [
+    age
+    sops
     vim
     wget
     htop

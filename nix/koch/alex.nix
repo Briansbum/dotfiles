@@ -1,11 +1,12 @@
 # Home-manager configuration for alex on koch (NAS)
 # Minimal server profile — no GUI, no desktop services
 
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 {
   imports = [
     ../common/common.nix
+    inputs.nixvim.homeModules.nixvim
   ];
 
   home.username = "alex";

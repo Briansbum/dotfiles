@@ -172,7 +172,7 @@
         ACCT=$(cat /run/secrets/b2_photos_account_id)
         KEY=$(cat /run/secrets/b2_photos_application_key)
         RCLONE="${pkgs.rclone}/bin/rclone"
-        OPTS="--transfers 4 --log-level INFO --log-file /var/log/rclone-photos.log"
+        OPTS="--config /dev/null --transfers 4 --log-level INFO --log-file /var/log/rclone-photos.log"
         REMOTE=":b2,account=$ACCT,key=$KEY:truenas-photos-pool"
 
         # Pull missing files from B2

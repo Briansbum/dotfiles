@@ -1,0 +1,7 @@
+keys:
+  - &koch age13ajx5lt624w5sfht2tr064fyfnk4ula3x4xn67qgvhszlsgtrgvq0zr9x0
+creation_rules:
+  - path_regex: nix/koch/secrets\.yaml$
+    key_groups:
+      - age:
+          - *koch

@@ -52,6 +52,9 @@
   # Core services
   # ---------------------------------------------------------------------------
 
+  # Auto-login on tty1 — headless server, physical access implies trust
+  services.getty.autologinUser = "alex";
+
   services.openssh = {
     enable = true;
     settings = {

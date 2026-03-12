@@ -1,6 +1,6 @@
 # System configuration for koch (NAS)
 #
-# Services: Immich, Grocy, Copyparty, Tailscale, NFS, SMART, btrfs scrub, B2 backups
+# Services: Immich, Grocy, Tailscale, NFS, SMART, btrfs scrub, B2 backups, Grafana Alloy
 # No GUI — headless server managed via SSH and Tailscale
 
 { config, pkgs, inputs, lib, ... }:
@@ -161,6 +161,12 @@
 
   sops.secrets."b2_photos_account_id" = {};
   sops.secrets."b2_photos_application_key" = {};
+  sops.secrets."alloy_env" = {
+    owner = "alloy";
+    group = "alloy";
+    mode = "0440";
+    restartUnits = [ "alloy.service" ];
+  };
 
   systemd.services.rclone-photos = {
     description = "Bidirectional photos sync with Backblaze B2";
@@ -227,6 +233,38 @@
   };
 
   # ---------------------------------------------------------------------------
+  # Grafana Alloy — system metrics + journal logs -> Grafana Cloud
+  # Also accepts OTLP from local services (Immich, microvms, etc.)
+  # ---------------------------------------------------------------------------
+
+  users.users.alloy = {
+    isSystemUser = true;
+    group = "alloy";
+    extraGroups = [ "systemd-journal" ];
+  };
+  users.groups.alloy = {};
+
+  services.alloy = {
+    enable = true;
+    configPath = "/etc/alloy";
+    environmentFile = config.sops.secrets.alloy_env.path;
+    extraFlags = [
+      "--stability.level=generally-available"
+      "--server.http.listen-addr=127.0.0.1:12345"
+      "--disable-reporting"
+    ];
+  };
+
+  systemd.services.alloy.serviceConfig.DynamicUser = lib.mkForce false;
+  systemd.services.alloy.serviceConfig.User = lib.mkForce "alloy";
+  systemd.services.alloy.serviceConfig.Group = lib.mkForce "alloy";
+
+  environment.etc."alloy/config.alloy" = {
+    source = ./alloy-config.alloy;
+    mode = "0644";
+  };
+
+  # ---------------------------------------------------------------------------
   # Firewall
   # ---------------------------------------------------------------------------
 
@@ -236,6 +274,8 @@
     80    # Grocy (nginx)
     2049  # NFS
     2283  # Immich
+    4317  # OTLP gRPC (Alloy receiver for local services)
+    4318  # OTLP HTTP (Alloy receiver for local services)
   ];
 
   # ---------------------------------------------------------------------------

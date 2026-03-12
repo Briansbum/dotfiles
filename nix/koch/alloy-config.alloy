@@ -1,0 +1,330 @@
+// ---------------------------------------------------------------------------
+// Grafana Alloy — koch NAS observability
+//
+// Collects: system metrics, disk/storage health, service states,
+//           structured journal logs -> Grafana Cloud via OTLP
+// ---------------------------------------------------------------------------
+
+logging {
+  level  = "info"
+  format = "logfmt"
+}
+
+// ===========================================================================
+// OTLP RECEIVER — accept telemetry from local services and microvms
+//
+// gRPC :4317, HTTP :4318 on all interfaces so containers, microvms,
+// and LAN hosts can send OTLP directly to Alloy.
+// ===========================================================================
+
+otelcol.receiver.otlp "local" {
+  grpc {
+    endpoint = "0.0.0.0:4317"
+  }
+  http {
+    endpoint = "0.0.0.0:4318"
+  }
+
+  output {
+    metrics = [otelcol.processor.attributes.local_services.input]
+    logs    = [otelcol.processor.attributes.local_services.input]
+    traces  = [otelcol.processor.attributes.local_services.input]
+  }
+}
+
+// Tag inbound OTLP with the receiving host
+otelcol.processor.attributes "local_services" {
+  action {
+    key    = "receiver.host"
+    value  = "koch"
+    action = "upsert"
+  }
+
+  output {
+    metrics = [otelcol.processor.batch.default.input]
+    logs    = [otelcol.processor.batch.default.input]
+    traces  = [otelcol.processor.batch.default.input]
+  }
+}
+
+// ===========================================================================
+// METRICS
+// ===========================================================================
+
+// ---------------------------------------------------------------------------
+// Node exporter — system, disk, network, hardware
+// ---------------------------------------------------------------------------
+
+prometheus.exporter.unix "node" {
+  set_collectors = [
+    "cpu",
+    "cpufreq",
+    "diskstats",
+    "filesystem",
+    "hwmon",
+    "loadavg",
+    "meminfo",
+    "netdev",
+    "netstat",
+    "nfs",
+    "os",
+    "pressure",
+    "stat",
+    "time",
+    "uname",
+    "vmstat",
+  ]
+
+  filesystem {
+    // Only monitor real filesystems, skip tmpfs/proc/cgroup noise
+    fs_types_exclude = "^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs|tmpfs)$"
+  }
+
+  netdev {
+    // Focus on real interfaces, skip veth/docker/tailscale bridge noise
+    device_exclude = "^(veth.*|br-.*|docker0)$"
+  }
+}
+
+prometheus.scrape "node" {
+  targets         = prometheus.exporter.unix.node.targets
+  forward_to      = [prometheus.relabel.add_host.receiver]
+  scrape_interval = "60s"
+}
+
+// ---------------------------------------------------------------------------
+// Systemd service states — are critical services up?
+// ---------------------------------------------------------------------------
+
+prometheus.exporter.unix "systemd" {
+  set_collectors = ["systemd"]
+
+  systemd {
+    // Only track services we care about, not every unit on the system
+    unit_include = "(immich-server|immich-machine-learning|postgresql|grocy|tailscaled|alloy|rclone-photos|immich-db-dump|smartd|sshd|nfs-server|docker|firecracker.*)\\.service"
+  }
+}
+
+prometheus.scrape "systemd" {
+  targets         = prometheus.exporter.unix.systemd.targets
+  forward_to      = [prometheus.relabel.add_host.receiver]
+  scrape_interval = "30s"
+  // Shorter interval — we want to know quickly if a service drops
+}
+
+// ---------------------------------------------------------------------------
+// PostgreSQL — Immich database health
+// ---------------------------------------------------------------------------
+
+prometheus.exporter.postgres "immich" {
+  data_source_names = ["postgresql:///immich?host=/run/postgresql&user=postgres"]
+}
+
+prometheus.scrape "postgres" {
+  targets         = prometheus.exporter.postgres.immich.targets
+  forward_to      = [prometheus.relabel.add_host.receiver]
+  scrape_interval = "60s"
+}
+
+// ---------------------------------------------------------------------------
+// Host labels — attach hostname + instance to all metrics
+// ---------------------------------------------------------------------------
+
+prometheus.relabel "add_host" {
+  forward_to = [otelcol.receiver.prometheus.default.receiver]
+
+  rule {
+    target_label = "instance"
+    replacement  = "koch"
+  }
+  rule {
+    target_label = "host"
+    replacement  = "koch"
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Prometheus -> OTLP bridge
+// ---------------------------------------------------------------------------
+
+otelcol.receiver.prometheus "default" {
+  output {
+    metrics = [otelcol.processor.batch.default.input]
+  }
+}
+
+// ===========================================================================
+// LOGS
+// ===========================================================================
+
+// ---------------------------------------------------------------------------
+// Journal log collection — structured labels per service
+// ---------------------------------------------------------------------------
+
+loki.relabel "journal" {
+  forward_to = []
+
+  // Service/unit name
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    target_label  = "unit"
+  }
+
+  // Hostname
+  rule {
+    source_labels = ["__journal__hostname"]
+    target_label  = "host"
+  }
+
+  // Log priority as human-readable level
+  rule {
+    source_labels = ["__journal_priority_keyword"]
+    target_label  = "level"
+  }
+
+  // Container/cgroup for docker and microvm attribution
+  rule {
+    source_labels = ["__journal__systemd_cgroup"]
+    target_label  = "cgroup"
+  }
+
+  // Transport (stdout, journal, syslog, kernel)
+  rule {
+    source_labels = ["__journal__transport"]
+    target_label  = "transport"
+  }
+
+  // Process name for non-unit logs
+  rule {
+    source_labels = ["__journal__comm"]
+    target_label  = "process"
+  }
+}
+
+loki.source.journal "default" {
+  forward_to    = [loki.process.filter.receiver]
+  max_age       = "12h"
+  relabel_rules = loki.relabel.journal.rules
+  labels        = {
+    job      = "systemd-journal",
+    instance = "koch",
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Log processing — filter noise, enrich useful logs
+// ---------------------------------------------------------------------------
+
+loki.process "filter" {
+  forward_to = [otelcol.receiver.loki.default.receiver]
+
+  // Drop verbose systemd session spam
+  stage.drop {
+    expression = ".*pam_unix.*session (opened|closed).*"
+  }
+
+  // Drop dhcpcd/networkd chatter unless it's an error
+  stage.match {
+    selector = "{unit=~\"systemd-networkd.*|dhcpcd.*\"} |~ \"(?i)error|fail|timeout\""
+    action   = "keep"
+  }
+
+  // Tag immich logs
+  stage.match {
+    selector = "{unit=~\"immich.*\"}"
+    stage.static_labels {
+      values = { service = "immich" }
+    }
+  }
+
+  // Tag rclone/backup logs
+  stage.match {
+    selector = "{unit=~\"rclone.*\"}"
+    stage.static_labels {
+      values = { service = "rclone" }
+    }
+  }
+
+  // Tag storage health logs
+  stage.match {
+    selector = "{unit=~\"smartd.*|btrfs-scrub.*\"}"
+    stage.static_labels {
+      values = { service = "storage-health" }
+    }
+  }
+
+  // Tag docker logs
+  stage.match {
+    selector = "{unit=~\"docker.*\"}"
+    stage.static_labels {
+      values = { service = "docker" }
+    }
+  }
+
+  // Tag tailscale logs
+  stage.match {
+    selector = "{unit=\"tailscaled.service\"}"
+    stage.static_labels {
+      values = { service = "tailscale" }
+    }
+  }
+
+  // Tag firecracker/microvm logs
+  stage.match {
+    selector = "{unit=~\"firecracker.*|microvm.*\"}"
+    stage.static_labels {
+      values = { service = "microvm" }
+    }
+  }
+
+  // Tag postgres logs
+  stage.match {
+    selector = "{unit=\"postgresql.service\"}"
+    stage.static_labels {
+      values = { service = "postgresql" }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Loki -> OTLP bridge
+// ---------------------------------------------------------------------------
+
+otelcol.receiver.loki "default" {
+  output {
+    logs = [otelcol.processor.batch.default.input]
+  }
+}
+
+// ===========================================================================
+// PIPELINE — batch + export
+// ===========================================================================
+
+otelcol.processor.batch "default" {
+  timeout             = "10s"
+  send_batch_size     = 1000
+  send_batch_max_size = 2000
+
+  output {
+    metrics = [otelcol.exporter.otlphttp.grafana_cloud.input]
+    logs    = [otelcol.exporter.otlphttp.grafana_cloud.input]
+    traces  = [otelcol.exporter.otlphttp.grafana_cloud.input]
+  }
+}
+
+// ---------------------------------------------------------------------------
+// OTLP/HTTP -> Grafana Cloud
+// Credentials injected via systemd EnvironmentFile from sops-nix
+// ---------------------------------------------------------------------------
+
+otelcol.auth.basic "grafana_cloud" {
+  username = sys.env("GRAFANA_INSTANCE_ID")
+  password = sys.env("GRAFANA_API_TOKEN")
+}
+
+otelcol.exporter.otlphttp "grafana_cloud" {
+  client {
+    endpoint = sys.env("GRAFANA_OTLP_ENDPOINT")
+    auth     = otelcol.auth.basic.grafana_cloud.handler
+  }
+}

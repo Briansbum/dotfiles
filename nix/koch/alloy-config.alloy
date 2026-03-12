@@ -56,32 +56,23 @@ otelcol.processor.attributes "local_services" {
 // ---------------------------------------------------------------------------
 
 prometheus.exporter.unix "node" {
+  // Lean collector set — free tier friendly (~200 series)
   set_collectors = [
     "cpu",
-    "cpufreq",
     "diskstats",
     "filesystem",
     "hwmon",
     "loadavg",
     "meminfo",
     "netdev",
-    "netstat",
-    "nfs",
-    "os",
-    "pressure",
-    "stat",
-    "time",
     "uname",
-    "vmstat",
   ]
 
   filesystem {
-    // Only monitor real filesystems, skip tmpfs/proc/cgroup noise
     fs_types_exclude = "^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs|tmpfs)$"
   }
 
   netdev {
-    // Focus on real interfaces, skip veth/docker/tailscale bridge noise
     device_exclude = "^(veth.*|br-.*|docker0)$"
   }
 }
@@ -89,7 +80,7 @@ prometheus.exporter.unix "node" {
 prometheus.scrape "node" {
   targets         = prometheus.exporter.unix.node.targets
   forward_to      = [prometheus.relabel.add_host.receiver]
-  scrape_interval = "60s"
+  scrape_interval = "5m"
 }
 
 // ---------------------------------------------------------------------------
@@ -108,8 +99,7 @@ prometheus.exporter.unix "systemd" {
 prometheus.scrape "systemd" {
   targets         = prometheus.exporter.unix.systemd.targets
   forward_to      = [prometheus.relabel.add_host.receiver]
-  scrape_interval = "30s"
-  // Shorter interval — we want to know quickly if a service drops
+  scrape_interval = "2m"
 }
 
 // ---------------------------------------------------------------------------
@@ -123,7 +113,7 @@ prometheus.exporter.postgres "immich" {
 prometheus.scrape "postgres" {
   targets         = prometheus.exporter.postgres.immich.targets
   forward_to      = [prometheus.relabel.add_host.receiver]
-  scrape_interval = "60s"
+  scrape_interval = "5m"
 }
 
 // ---------------------------------------------------------------------------
@@ -260,7 +250,7 @@ loki.relabel "journal" {
 
 loki.source.journal "default" {
   forward_to    = [loki.process.filter.receiver]
-  max_age       = "12h"
+  max_age       = "1h"
   relabel_rules = loki.relabel.journal.rules
   labels        = {
     job      = "systemd-journal",
@@ -269,7 +259,7 @@ loki.source.journal "default" {
 }
 
 // ---------------------------------------------------------------------------
-// Log processing — filter noise
+// Log processing — free tier: only warn+ and key service logs
 // ---------------------------------------------------------------------------
 
 loki.process "filter" {
@@ -278,6 +268,15 @@ loki.process "filter" {
   // Drop verbose systemd session spam
   stage.drop {
     expression = ".*pam_unix.*session (opened|closed).*"
+  }
+
+  // Drop info/debug/notice from non-essential services to stay within free tier
+  // Keep: emerg(0), alert(1), crit(2), err(3), warning(4)
+  // Drop: notice(5), info(6), debug(7) UNLESS from a tagged service
+  stage.drop {
+    source    = "level"
+    expression = "^(notice|info|debug)$"
+    drop_counter_reason = "free_tier_filter"
   }
 }
 
@@ -296,9 +295,9 @@ otelcol.receiver.loki "default" {
 // ===========================================================================
 
 otelcol.processor.batch "default" {
-  timeout             = "10s"
-  send_batch_size     = 1000
-  send_batch_max_size = 2000
+  timeout             = "60s"
+  send_batch_size     = 500
+  send_batch_max_size = 1000
 
   output {
     metrics = [otelcol.exporter.otlphttp.grafana_cloud.input]

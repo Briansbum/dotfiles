@@ -96,7 +96,6 @@
         grocy = {
           rule = "Host(`koch.tuxedo-burbot.ts.net`) && PathPrefix(`/grocy`)";
           service = "grocy";
-          middlewares = [ "strip-grocy" ];
           priority = 20;
           tls.certResolver = "tailscale";
         };
@@ -107,7 +106,6 @@
           tls.certResolver = "tailscale";
         };
       };
-      middlewares.strip-grocy.stripPrefix.prefixes = [ "/grocy" ];
       services = {
         immich.loadBalancer.servers = [{ url = "http://localhost:2283"; }];
         grocy.loadBalancer.servers = [{ url = "http://localhost:8080"; }];
@@ -191,6 +189,12 @@
 
   # Move Grocy's nginx to 8080 so Traefik can own 80/443
   services.nginx.virtualHosts."koch".listen = [{ addr = "127.0.0.1"; port = 8080; }];
+
+  # Tell Grocy it lives under /grocy
+  services.phpfpm.pools.grocy.phpEnv = {
+    GROCY_BASE_PATH = "/grocy";
+    GROCY_BASE_URL = "/grocy";
+  };
 
   # ---------------------------------------------------------------------------
   # NFS server

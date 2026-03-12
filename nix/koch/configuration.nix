@@ -63,23 +63,46 @@
     };
   };
 
-  services.tailscale.enable = true;
+  services.tailscale = {
+    enable = true;
+    permitCertUid = "traefik";
+  };
   services.resolved.enable = true;
   services.avahi.enable = true;
 
-  # Expose services on the tailnet via tailscale serve
-  # Immich gets its own port — it's a SPA that expects to own /
-  # Grocy gets path-routed under /grocy
-  services.tailscaleServe = {
-    immich = {
-      localPort = 2283;
-      tsPort = 2283;
-      afterService = "immich-server";
+  # ---------------------------------------------------------------------------
+  # Traefik — reverse proxy with Tailscale TLS
+  # Immich is the default service, Grocy under /grocy
+  # ---------------------------------------------------------------------------
+
+  services.traefik = {
+    enable = true;
+    staticConfigOptions = {
+      entryPoints.websecure = {
+        address = ":443";
+        http.tls.certResolver = "tailscale";
+      };
+      certificatesResolvers.tailscale.tailscale = {};
     };
-    grocy = {
-      localPort = 80;
-      path = "/grocy";
-      afterService = "grocy";
+    dynamicConfigOptions.http = {
+      routers = {
+        grocy = {
+          rule = "Host(`koch.tuxedo-burbot.ts.net`) && PathPrefix(`/grocy`)";
+          service = "grocy";
+          priority = 20;
+          tls = {};
+        };
+        immich = {
+          rule = "Host(`koch.tuxedo-burbot.ts.net`)";
+          service = "immich";
+          priority = 10;
+          tls = {};
+        };
+      };
+      services = {
+        immich.loadBalancer.servers = [{ url = "http://localhost:2283"; }];
+        grocy.loadBalancer.servers = [{ url = "http://localhost:80"; }];
+      };
     };
   };
 
@@ -130,7 +153,7 @@
   services.immich = {
     enable = true;
     port = 2283;
-    openFirewall = true;
+    openFirewall = false; # Traefik fronts this
     mediaLocation = "/data/photos/immich";
     # machine-learning has known NixOS issues — if it fails, set enable = false
     # and use the server without ML, or run ML remotely from mandelbrot
@@ -292,9 +315,8 @@
   networking.nftables.enable = true;
   networking.firewall.allowedTCPPorts = [
     22    # SSH
-    80    # Grocy (nginx)
+    443   # Traefik (HTTPS)
     2049  # NFS
-    2283  # Immich
     4317  # OTLP gRPC (Alloy receiver for local services)
     4318  # OTLP HTTP (Alloy receiver for local services)
   ];

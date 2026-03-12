@@ -67,6 +67,22 @@
   services.resolved.enable = true;
   services.avahi.enable = true;
 
+  # Expose services on the tailnet via tailscale serve
+  # Immich gets its own port — it's a SPA that expects to own /
+  # Grocy gets path-routed under /grocy
+  services.tailscaleServe = {
+    immich = {
+      localPort = 2283;
+      tsPort = 2283;
+      afterService = "immich-server";
+    };
+    grocy = {
+      localPort = 80;
+      path = "/grocy";
+      afterService = "grocy";
+    };
+  };
+
   # ---------------------------------------------------------------------------
   # NIC tuning — disable offloading on e1000e
   # The e1000e driver misbehaves with offloading enabled; this matches the

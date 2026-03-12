@@ -88,6 +88,7 @@
                 modules = [
                     disko.nixosModules.disko
                     sops-nix.nixosModules.sops
+                    ./nix/modules/tailscale-serve.nix
                     ./nix/koch/configuration.nix
                     ./nix/koch/hardware.nix
                     ./nix/koch/disk-config.nix

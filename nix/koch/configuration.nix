@@ -96,6 +96,7 @@
         grocy = {
           rule = "Host(`koch.tuxedo-burbot.ts.net`) && PathPrefix(`/grocy`)";
           service = "grocy";
+          middlewares = [ "strip-grocy" ];
           priority = 20;
           tls.certResolver = "tailscale";
         };
@@ -106,6 +107,7 @@
           tls.certResolver = "tailscale";
         };
       };
+      middlewares.strip-grocy.stripPrefix.prefixes = [ "/grocy" ];
       services = {
         immich.loadBalancer.servers = [{ url = "http://localhost:2283"; }];
         grocy.loadBalancer.servers = [{ url = "http://localhost:8080"; }];

@@ -78,6 +78,13 @@
   services.traefik = {
     enable = true;
     staticConfigOptions = {
+      entryPoints.web = {
+        address = ":80";
+        http.redirections.entryPoint = {
+          to = "websecure";
+          scheme = "https";
+        };
+      };
       entryPoints.websecure = {
         address = ":443";
         http.tls.certResolver = "tailscale";
@@ -101,7 +108,7 @@
       };
       services = {
         immich.loadBalancer.servers = [{ url = "http://localhost:2283"; }];
-        grocy.loadBalancer.servers = [{ url = "http://localhost:80"; }];
+        grocy.loadBalancer.servers = [{ url = "http://localhost:8080"; }];
       };
     };
   };
@@ -172,13 +179,16 @@
   services.grocy = {
     enable = true;
     hostName = "koch";
-    nginx.enableSSL = false; # Tailscale handles encryption
+    nginx.enableSSL = false;
     settings = {
       currency = "GBP";
       culture = "en_GB";
       calendar.firstDayOfWeek = 1; # Monday
     };
   };
+
+  # Move Grocy's nginx to 8080 so Traefik can own 80/443
+  services.nginx.virtualHosts."koch".listen = [{ addr = "127.0.0.1"; port = 8080; }];
 
   # ---------------------------------------------------------------------------
   # NFS server
@@ -315,6 +325,7 @@
   networking.nftables.enable = true;
   networking.firewall.allowedTCPPorts = [
     22    # SSH
+    80    # Traefik (HTTP -> HTTPS redirect)
     443   # Traefik (HTTPS)
     2049  # NFS
     4317  # OTLP gRPC (Alloy receiver for local services)

@@ -193,14 +193,24 @@
     };
   };
 
-  systemd.services.immich-db-dump = {
-    description = "Dump Immich PostgreSQL database for backup";
+  systemd.services.immich-db-dump-prep = {
+    description = "immich-db-dump runs as a postgres user and can't make its own backup directory";
     after = [ "postgresql.service" ];
     requires = [ "postgresql.service" ];
     serviceConfig = {
       Type = "oneshot";
-      User = "postgres";
       ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p /data/photos/immich/db-backup";
+      ExecStart = "${pkgs.coreutils}/bin/chmod -R 762 /data/photos/immich/db-backup";
+    };
+  };
+
+  systemd.services.immich-db-dump = {
+    description = "Dump Immich PostgreSQL database for backup";
+    after = [ "postgresql.service" "immich-db-dump-prep.service" ];
+    requires = [ "postgresql.service" "immich-db-dump-prep.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      User = "postgres";
       ExecStart = pkgs.writeShellScript "immich-db-dump" ''
         ${config.services.postgresql.package}/bin/pg_dump immich | ${pkgs.gzip}/bin/gzip > /data/photos/immich/db-backup/immich-dump.sql.gz
       '';

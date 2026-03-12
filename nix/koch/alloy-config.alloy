@@ -117,7 +117,7 @@ prometheus.scrape "systemd" {
 // ---------------------------------------------------------------------------
 
 prometheus.exporter.postgres "immich" {
-  data_source_names = ["postgresql:///immich?host=/run/postgresql&user=postgres"]
+  data_source_names = ["postgresql:///immich?host=/run/postgresql&user=alloy"]
 }
 
 prometheus.scrape "postgres" {

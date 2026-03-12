@@ -121,6 +121,11 @@
     machine-learning.enable = true;
   };
 
+  # Allow Alloy to read Immich's PostgreSQL for metrics
+  services.postgresql.authentication = lib.mkAfter ''
+    local immich alloy peer
+  '';
+
   # ---------------------------------------------------------------------------
   # Grocy — household management
   # ---------------------------------------------------------------------------

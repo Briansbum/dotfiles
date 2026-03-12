@@ -97,13 +97,13 @@
           rule = "Host(`koch.tuxedo-burbot.ts.net`) && PathPrefix(`/grocy`)";
           service = "grocy";
           priority = 20;
-          tls = {};
+          tls.certResolver = "tailscale";
         };
         immich = {
           rule = "Host(`koch.tuxedo-burbot.ts.net`)";
           service = "immich";
           priority = 10;
-          tls = {};
+          tls.certResolver = "tailscale";
         };
       };
       services = {

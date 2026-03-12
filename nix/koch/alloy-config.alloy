@@ -199,6 +199,63 @@ loki.relabel "journal" {
     source_labels = ["__journal__comm"]
     target_label  = "process"
   }
+
+  // --- Service tagging: derive "service" from unit name ---
+
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    regex         = "immich.*"
+    target_label  = "service"
+    replacement   = "immich"
+  }
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    regex         = "rclone.*"
+    target_label  = "service"
+    replacement   = "rclone"
+  }
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    regex         = "(smartd|btrfs-scrub).*"
+    target_label  = "service"
+    replacement   = "storage-health"
+  }
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    regex         = "docker.*"
+    target_label  = "service"
+    replacement   = "docker"
+  }
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    regex         = "tailscaled\\.service"
+    target_label  = "service"
+    replacement   = "tailscale"
+  }
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    regex         = "(firecracker|microvm).*"
+    target_label  = "service"
+    replacement   = "microvm"
+  }
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    regex         = "postgresql\\.service"
+    target_label  = "service"
+    replacement   = "postgresql"
+  }
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    regex         = "nfs.*"
+    target_label  = "service"
+    replacement   = "nfs"
+  }
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    regex         = "alloy\\.service"
+    target_label  = "service"
+    replacement   = "alloy"
+  }
 }
 
 loki.source.journal "default" {
@@ -212,7 +269,7 @@ loki.source.journal "default" {
 }
 
 // ---------------------------------------------------------------------------
-// Log processing — filter noise, enrich useful logs
+// Log processing — filter noise
 // ---------------------------------------------------------------------------
 
 loki.process "filter" {
@@ -221,68 +278,6 @@ loki.process "filter" {
   // Drop verbose systemd session spam
   stage.drop {
     expression = ".*pam_unix.*session (opened|closed).*"
-  }
-
-  // Drop dhcpcd/networkd chatter unless it's an error
-  stage.match {
-    selector = "{unit=~\"systemd-networkd.*|dhcpcd.*\"} |~ \"(?i)error|fail|timeout\""
-    action   = "keep"
-  }
-
-  // Tag immich logs
-  stage.match {
-    selector = "{unit=~\"immich.*\"}"
-    stage.static_labels {
-      values = { service = "immich" }
-    }
-  }
-
-  // Tag rclone/backup logs
-  stage.match {
-    selector = "{unit=~\"rclone.*\"}"
-    stage.static_labels {
-      values = { service = "rclone" }
-    }
-  }
-
-  // Tag storage health logs
-  stage.match {
-    selector = "{unit=~\"smartd.*|btrfs-scrub.*\"}"
-    stage.static_labels {
-      values = { service = "storage-health" }
-    }
-  }
-
-  // Tag docker logs
-  stage.match {
-    selector = "{unit=~\"docker.*\"}"
-    stage.static_labels {
-      values = { service = "docker" }
-    }
-  }
-
-  // Tag tailscale logs
-  stage.match {
-    selector = "{unit=\"tailscaled.service\"}"
-    stage.static_labels {
-      values = { service = "tailscale" }
-    }
-  }
-
-  // Tag firecracker/microvm logs
-  stage.match {
-    selector = "{unit=~\"firecracker.*|microvm.*\"}"
-    stage.static_labels {
-      values = { service = "microvm" }
-    }
-  }
-
-  // Tag postgres logs
-  stage.match {
-    selector = "{unit=\"postgresql.service\"}"
-    stage.static_labels {
-      values = { service = "postgresql" }
-    }
   }
 }
 

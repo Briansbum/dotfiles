@@ -1,7 +1,10 @@
 keys:
-  - &koch age13ajx5lt624w5sfht2tr064fyfnk4ula3x4xn67qgvhszlsgtrgvq0zr9x0
+  - &admin_gpg 873DF106014C63F7
+  - &host_koch age12gr6jhhkgdjmgj7aj3kjgq6s439tsmgzg07muk7h2g525smc9c7q7k8dw8
+
 creation_rules:
   - path_regex: nix/koch/secrets\.yaml$
-    key_groups:
-      - age:
-          - *koch
+    age:
+      - *host_koch
+    pgp:
+      - *admin_gpg

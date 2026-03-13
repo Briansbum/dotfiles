@@ -17,6 +17,11 @@
   time.timeZone = "Europe/London";
   environment.variables.EDITOR = "nvim";
 
+  # sops values show up at /run/secrets/
+  sops.defaultSopsFile = ./secrets.yaml;
+  sops.age.keyFile = "/var/lib/sops-nix/keys.txt";
+
+
   # ---------------------------------------------------------------------------
   # Users
   # ---------------------------------------------------------------------------
@@ -216,17 +221,8 @@
   # B2 credentials provided by sops-nix at /run/secrets/.
   # ---------------------------------------------------------------------------
 
-  sops.defaultSopsFile = ./secrets.yaml;
-  sops.age.keyFile = "/var/lib/sops-nix/keys.txt";
-
   sops.secrets."b2_photos_account_id" = {};
   sops.secrets."b2_photos_application_key" = {};
-  sops.secrets."alloy_env" = {
-    owner = "alloy";
-    group = "alloy";
-    mode = "0440";
-    restartUnits = [ "alloy.service" ];
-  };
 
   systemd.services.rclone-photos = {
     description = "Bidirectional photos sync with Backblaze B2";
@@ -296,6 +292,14 @@
   # Grafana Alloy — system metrics + journal logs -> Grafana Cloud
   # Also accepts OTLP from local services (Immich, microvms, etc.)
   # ---------------------------------------------------------------------------
+
+  # secrets show up at /run/secrets
+  sops.secrets."alloy_env" = {
+    owner = "alloy";
+    group = "alloy";
+    mode = "0440";
+    restartUnits = [ "alloy.service" ];
+  };
 
   users.users.alloy = {
     isSystemUser = true;

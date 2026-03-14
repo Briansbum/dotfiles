@@ -82,13 +82,13 @@
 
   systemd.services.dnscontrol = let
     dnsConfig = pkgs.writeText "dnsconfig.js" ''
-	var REG_NONE = NewRegistrar("none");
-	var DSP_DESEC = NewDnsProvider("desec");
-
-	D("brians.skin", REG_NONE, DnsProvider(DSP_DESEC), NO_PURGE
-	  CNAME("immich.koch", "koch.tuxedo-burbot.ts.net"),
-	  CNAME("grocy.koch", "koch.tuxedo-burbot.ts.net"),
-	);
+    var REG_NONE = NewRegistrar("none");
+    var DSP_DESEC = NewDnsProvider("desec");
+    
+    D("brians.skin", REG_NONE, DnsProvider(DSP_DESEC), NO_PURGE
+      CNAME("immich.koch", "koch.tuxedo-burbot.ts.net"),
+      CNAME("grocy.koch", "koch.tuxedo-burbot.ts.net"),
+    );
     '';
   in {
     description = "Runs dnscontrol push";

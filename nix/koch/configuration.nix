@@ -120,10 +120,6 @@
   in {
     enable = true;
     staticConfigOptions = {
-      api = {
-	dashboard = true;
-	insecure = true;
-      };
       entryPoints.web = {
         address = ":80";
         http.redirections.entryPoint = {

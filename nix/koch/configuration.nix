@@ -113,12 +113,9 @@
 
   sops.secrets."desec_token" = {};
 
-  services.traefik = let 
-    envFile = pkgs.writeText "traefik.env" ''
-    DESEC_TOKEN_FILE=${config.sops.secrets.desec_token.path}
-    '';
-  in {
+  services.traefik = {
     enable = true;
+    environmentFiles = [config.sops.secrets.desec_token.path];
     staticConfigOptions = {
       entryPoints.web = {
         address = ":80";
@@ -136,6 +133,7 @@
         email = "freestone.alex@gmail.com";
 	dnsChallenge = {
 	  provider = "desec";
+          disablePropagationCheck = true;
         };
       };
     };

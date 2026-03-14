@@ -87,7 +87,7 @@
     
     D("brians.skin", REG_NONE, DnsProvider(DSP_DESEC), NO_PURGE,
       CNAME("immich.koch", "koch.tuxedo-burbot.ts.net."),
-      CNAME("grocy.koch", "koch.tuxedo-burbot.ts.net".),
+      CNAME("grocy.koch", "koch.tuxedo-burbot.ts.net."),
     );
     '';
   in {

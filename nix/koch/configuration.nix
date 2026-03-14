@@ -376,6 +376,7 @@
     22    # SSH
     80    # Traefik (HTTP -> HTTPS redirect)
     443   # Traefik (HTTPS)
+    8080  # Traefik dashboard
     2049  # NFS
     4317  # OTLP gRPC (Alloy receiver for local services)
     4318  # OTLP HTTP (Alloy receiver for local services)

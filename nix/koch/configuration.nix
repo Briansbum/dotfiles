@@ -234,7 +234,7 @@
   };
 
   # Move Grocy's nginx to 8080 so Traefik can own 80/443
-  services.nginx.virtualHosts."koch".listen = [{ addr = "127.0.0.1"; port = 2383; }];
+  services.nginx.virtualHosts."grocy.koch.brians.skin".listen = [{ addr = "127.0.0.1"; port = 2383; }];
 
   # ---------------------------------------------------------------------------
   # NFS server

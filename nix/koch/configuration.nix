@@ -144,13 +144,11 @@
         grocy = {
           rule = "Host(`grocy.koch.brians.skin`)";
           service = "grocy";
-          priority = 20;
           tls.certResolver = "desec";
         };
         immich = {
           rule = "Host(`immich.koch.brians.skin`)";
           service = "immich";
-          priority = 10;
           tls.certResolver = "desec";
         };
       };

@@ -120,6 +120,10 @@
   in {
     enable = true;
     staticConfigOptions = {
+      api = {
+	dashboard = true;
+	insecure = true;
+      };
       entryPoints.web = {
         address = ":80";
         http.redirections.entryPoint = {
@@ -154,7 +158,7 @@
       };
       services = {
         immich.loadBalancer.servers = [{ url = "http://localhost:2283"; }];
-        grocy.loadBalancer.servers = [{ url = "http://localhost:8080"; }];
+        grocy.loadBalancer.servers = [{ url = "http://localhost:2383"; }];
       };
     };
   };
@@ -234,7 +238,7 @@
   };
 
   # Move Grocy's nginx to 8080 so Traefik can own 80/443
-  services.nginx.virtualHosts."koch".listen = [{ addr = "127.0.0.1"; port = 8080; }];
+  services.nginx.virtualHosts."koch".listen = [{ addr = "127.0.0.1"; port = 2383; }];
 
   # ---------------------------------------------------------------------------
   # NFS server

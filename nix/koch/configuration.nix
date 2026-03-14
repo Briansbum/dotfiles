@@ -101,7 +101,7 @@
       ExecStart = pkgs.writeShellScript "dnscontrol-push" ''
 	${pkgs.dnscontrol}/bin/dnscontrol \
 	  --creds ${config.sops.secrets.dnscontrol_creds_json.path} \
-          --config ${dnsconfig} push;
+          --config ${dnsConfig} push;
       '';
     };
   };

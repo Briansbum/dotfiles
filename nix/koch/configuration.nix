@@ -75,11 +75,49 @@
   services.avahi.enable = true;
 
   # ---------------------------------------------------------------------------
+  # DNSControl - a oneshot used by services that have names to run dnscontrol
+  # ---------------------------------------------------------------------------
+
+  sops.secrets."dnscontrol_creds_json" = {};
+
+  systemd.services.dnscontrol = let
+    dnsConfig = pkgs.writeText "dnsconfig.js" ''
+	var REG_NONE = NewRegistrar("none");
+	var DSP_DESEC = NewDnsProvider("desec");
+
+	D("brians.skin", REG_NONE, DnsProvider(DSP_DESEC), NO_PURGE
+	  CNAME("immich.koch", "koch.tuxedo-burbot.ts.net"),
+	  CNAME("grocy.koch", "koch.tuxedo-burbot.ts.net"),
+	);
+    '';
+  in {
+    description = "Runs dnscontrol push";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = pkgs.writeShellScript "dnscontrol-push" ''
+	${pkgs.dnscontrol}/bin/dnscontrol \
+	  --creds ${config.sops.secrets.dnscontrol_creds_json.path} \
+          --config ${dnsconfig} push;
+      '';
+    };
+  };
+
+  # ---------------------------------------------------------------------------
   # Traefik — reverse proxy with Tailscale TLS
   # Immich is the default service, Grocy under /grocy
   # ---------------------------------------------------------------------------
 
-  services.traefik = {
+  sops.secrets."desec_token" = {};
+
+  services.traefik = let 
+    envFile = pkgs.writeText "traefik.env" ''
+    DESEC_TOKEN_FILE=${config.sops.secrets.desec_token.path}
+    '';
+  in {
     enable = true;
     staticConfigOptions = {
       entryPoints.web = {
@@ -91,23 +129,29 @@
       };
       entryPoints.websecure = {
         address = ":443";
-        http.tls.certResolver = "tailscale";
+        http.tls.certResolver = "desec";
       };
       certificatesResolvers.tailscale.tailscale = {};
+      certificatesResolvers.desec.acme = {
+        email = "freestone.alex@gmail.com";
+	dnsChallenge = {
+	  provider = "desec";
+        };
+      };
     };
     dynamicConfigOptions.http = {
       routers = {
         grocy = {
-          rule = "Host(`koch.tuxedo-burbot.ts.net`) && PathPrefix(`/grocy`)";
+          rule = "Host(`grocy.koch.brians.skin`)";
           service = "grocy";
           priority = 20;
-          tls.certResolver = "tailscale";
+          tls.certResolver = "desec";
         };
         immich = {
-          rule = "Host(`koch.tuxedo-burbot.ts.net`)";
+          rule = "Host(`immich.koch.brians.skin`)";
           service = "immich";
           priority = 10;
-          tls.certResolver = "tailscale";
+          tls.certResolver = "desec";
         };
       };
       services = {
@@ -182,7 +226,7 @@
 
   services.grocy = {
     enable = true;
-    hostName = "koch";
+    hostName = "grocy.koch.brians.skin";
     nginx.enableSSL = false;
     settings = {
       currency = "GBP";
@@ -193,12 +237,6 @@
 
   # Move Grocy's nginx to 8080 so Traefik can own 80/443
   services.nginx.virtualHosts."koch".listen = [{ addr = "127.0.0.1"; port = 8080; }];
-
-  # Tell Grocy it lives under /grocy
-  services.phpfpm.pools.grocy.phpEnv = {
-    GROCY_BASE_PATH = "/grocy";
-    GROCY_BASE_URL = "/grocy";
-  };
 
   # ---------------------------------------------------------------------------
   # NFS server
@@ -357,6 +395,7 @@
     ethtool
     lshw
     tmux
+    dnscontrol
   ];
 
   # ---------------------------------------------------------------------------

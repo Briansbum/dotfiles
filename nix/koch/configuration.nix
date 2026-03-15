@@ -435,7 +435,7 @@
       ProtectHome = true;
       PrivateTmp = true;
       NoNewPrivileges = true;
-      MemoryDenyWriteExecute = true;
+      MemoryDenyWriteExecute = false;
       PrivateDevices = true;
       ProtectKernelTunables = true;
       ProtectControlGroups = true;

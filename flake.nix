@@ -31,6 +31,12 @@
         # Provides bleeding edge claude-code updates
         claude-code.url = "github:sadjow/claude-code-nix";
 
+        # nix-openclaw for AI agent capabilities
+        nix-openclaw = {
+          url = "github:openclaw/nix-openclaw";
+          inputs.nixpkgs.follows = "nixpkgs";
+        };
+
         # koch (NAS) dependencies
         disko = {
           url = "github:nix-community/disko";
@@ -44,7 +50,7 @@
 
     };
 
-    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, claude-code, opencode, nix-software-center, disko, sops-nix, ...}@inputs: {
+    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, claude-code, opencode, nix-openclaw, nix-software-center, disko, sops-nix, ...}@inputs: {
         nixosConfigurations = {
             mandelbrot = nixpkgs.lib.nixosSystem {
                 system = "x86_64-linux";

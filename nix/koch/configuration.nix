@@ -21,6 +21,14 @@
   sops.defaultSopsFile = ./secrets.yaml;
   sops.age.keyFile = "/var/lib/sops-nix/keys.txt";
 
+  # nix-openclaw secret values - each secret is stored in secrets.yaml as key-value pairs
+  # openclaw_gateway_token: ENC[AES256_GCM,data:YOUR_ENCRYPTED_TOKEN,iv:RANDOM_IV,tag:TAG,type:str]
+  # openclaw_telegram_token: ENC[AES256_GCM,data:YOUR_ENCRYPTED_TELEGRAM_TOKEN,iv:RANDOM_IV,tag:TAG,type:str]
+  # openclaw_openrouter_key: ENC[AES256_GCM,data:YOUR_ENCRYPTED_OPENROUTER_KEY,iv:RANDOM_IV,tag:TAG,type:str]
+  sops.secrets."openclaw_gateway_token" = {};
+  sops.secrets."openclaw_telegram_token" = {};
+  sops.secrets."openclaw_openrouter_key" = {};
+
   # ---------------------------------------------------------------------------
   # Users
   # ---------------------------------------------------------------------------
@@ -377,6 +385,74 @@
     4317  # OTLP gRPC (Alloy receiver for local services)
     4318  # OTLP HTTP (Alloy receiver for local services)
   ];
+
+  # ---------------------------------------------------------------------------
+  # nix-openclaw - AI Assistant with external comms only and strong isolation
+  # ---------------------------------------------------------------------------
+  
+  # Create a systemd user service with strong isolation for nix-openclaw
+  systemd.services.nix-openclaw = {
+    description = "OpenClaw AI Assistant (isolated)";
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+    wantedBy = [ "multi-user.target" ];
+    
+    environment = {
+      # This variable will be overridden by the EnvironmentFile below
+      # but we include it here as a fallback and for documentation
+      OPENCLAW_GATEWAY_TOKEN = "placeholder_replaced_by_secret";
+      # Don't expose any ports - external comms only
+      OPENCLAW_NO_SERVER = "1";
+    };
+    
+    serviceConfig = {
+      # Run as dedicated user with minimal privileges
+      DynamicUser = true;
+      ProtectSystem = "strict";
+      ProtectHome = true;
+      PrivateTmp = true;
+      NoNewPrivileges = true;
+      MemoryDenyWriteExecute = true;
+      PrivateDevices = true;
+      ProtectKernelTunables = true;
+      ProtectControlGroups = true;
+      RestrictAddressFamilies = "AF_INET AF_INET6 AF_UNIX";
+      RestrictNamespaces = true;
+      RestrictRealtime = true;
+      ProtectKernelModules = true;
+      ProtectKernelLogs = true;
+      ProtectClock = true;
+      ProtectProc = "invisible";
+      ProcSubset = "pid";
+      CapabilityBoundingSet = "";
+      
+      # Resource limits
+      MemoryMax = "2G";
+      CPUQuota = "200%";
+      
+      # Service execution
+      Type = "simple";
+      ExecStart = "${inputs.nix-openclaw.packages.${pkgs.system}.openclaw}/bin/openclaw gateway";
+      Restart = "on-failure";
+      RestartSec = "10s";
+      
+      # Secrets setup - creates a file with environment variables from the secrets
+      # Format of the environment file will be:
+      # OPENCLAW_GATEWAY_TOKEN=your_token_value
+      # OPENAI_API_KEY=your_openrouter_key (OpenRouter uses the OpenAI API format)
+      # OPENAI_API_BASE=https://openrouter.ai/api/v1
+      # OPENCLAW_TELEGRAM_BOT_TOKEN=your_telegram_token
+      ExecStartPre = pkgs.writeShellScript "prepare-openclaw-env" ''
+        mkdir -p /run/openclaw
+        echo "OPENCLAW_GATEWAY_TOKEN=$(cat ${config.sops.secrets.openclaw_gateway_token.path})" > /run/openclaw/env
+        echo "OPENAI_API_KEY=$(cat ${config.sops.secrets.openclaw_openrouter_key.path})" >> /run/openclaw/env
+        echo "OPENAI_API_BASE=https://openrouter.ai/api/v1" >> /run/openclaw/env
+        echo "OPENCLAW_TELEGRAM_BOT_TOKEN=$(cat ${config.sops.secrets.openclaw_telegram_token.path})" >> /run/openclaw/env
+        chmod 400 /run/openclaw/env
+      '';
+      EnvironmentFile = "/run/openclaw/env";
+    };
+  };
 
   # ---------------------------------------------------------------------------
   # System packages

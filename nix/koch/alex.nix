@@ -25,6 +25,9 @@
     gnupg
     pinentry-curses
     ripgrep
+    
+    # Add nix-openclaw
+    inputs.nix-openclaw.packages.${pkgs.system}.openclaw
   ];
 
   xdg.configFile = {

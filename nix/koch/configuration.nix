@@ -136,7 +136,6 @@
 	  provider = "desec";
           resolvers = ["ns1.desec.io:53" "ns2.desec.org:53"];
           delayBeforeCheck = "30s";
-          disablePropagationCheck = true;
         };
       };
     };

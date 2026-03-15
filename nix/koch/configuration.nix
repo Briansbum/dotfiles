@@ -25,9 +25,24 @@
   # openclaw_gateway_token: ENC[AES256_GCM,data:YOUR_ENCRYPTED_TOKEN,iv:RANDOM_IV,tag:TAG,type:str]
   # openclaw_telegram_token: ENC[AES256_GCM,data:YOUR_ENCRYPTED_TELEGRAM_TOKEN,iv:RANDOM_IV,tag:TAG,type:str]
   # openclaw_openrouter_key: ENC[AES256_GCM,data:YOUR_ENCRYPTED_OPENROUTER_KEY,iv:RANDOM_IV,tag:TAG,type:str]
-  sops.secrets."openclaw_gateway_token" = {};
-  sops.secrets."openclaw_telegram_token" = {};
-  sops.secrets."openclaw_openrouter_key" = {};
+  sops.secrets."openclaw_gateway_token" = {
+    owner = "openclaw";
+    group = "openclaw";
+    mode = "0400";
+    restartUnits = [ "nix-openclaw.service" ];
+  };
+  sops.secrets."openclaw_telegram_token" = {
+    owner = "openclaw";
+    group = "openclaw";
+    mode = "0400";
+    restartUnits = [ "nix-openclaw.service" ];
+  };
+  sops.secrets."openclaw_openrouter_key" = {
+    owner = "openclaw";
+    group = "openclaw";
+    mode = "0400";
+    restartUnits = [ "nix-openclaw.service" ];
+  };
 
   # ---------------------------------------------------------------------------
   # Users
@@ -41,6 +56,12 @@
       "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBIfEsNDo0qIws3jPsuD9YNlqS+a4/T9Zl5p8TmjGv7UVnYaiDBNU/MSedshMGo9OsRW9Eu7NFVz7b+w3dmj+XNY= alex@AlexF.local"
     ];
   };
+
+  users.users.openclaw = {
+    isSystemUser = true;
+    group = "openclaw";
+  };
+  users.groups.openclaw = {};
 
   # ---------------------------------------------------------------------------
   # Shell — bash redirects to fish (same pattern as mandelbrot)
@@ -407,7 +428,9 @@
     
     serviceConfig = {
       # Run as dedicated user with minimal privileges
-      DynamicUser = true;
+      DynamicUser = false;
+      User = "openclaw";
+      Group = "openclaw";
       ProtectSystem = "strict";
       ProtectHome = true;
       PrivateTmp = true;
@@ -425,6 +448,9 @@
       ProtectProc = "invisible";
       ProcSubset = "pid";
       CapabilityBoundingSet = "";
+      RuntimeDirectory = "openclaw";
+      RuntimeDirectoryMode = "0750";
+      Slice = "openclaw.slice";
       
       # Resource limits
       MemoryMax = "2G";
@@ -450,7 +476,15 @@
         echo "OPENCLAW_TELEGRAM_BOT_TOKEN=$(cat ${config.sops.secrets.openclaw_telegram_token.path})" >> /run/openclaw/env
         chmod 400 /run/openclaw/env
       '';
-      EnvironmentFile = "/run/openclaw/env";
+      EnvironmentFile = "-/run/openclaw/env";
+    };
+  };
+
+  systemd.slices.openclaw = {
+    description = "OpenClaw isolated slice";
+    sliceConfig = {
+      MemoryMax = "32G";
+      CPUQuota = "200%";
     };
   };
 

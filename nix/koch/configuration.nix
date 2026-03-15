@@ -439,7 +439,7 @@
       PrivateDevices = true;
       ProtectKernelTunables = true;
       ProtectControlGroups = true;
-      RestrictAddressFamilies = "AF_INET AF_INET6 AF_UNIX";
+      RestrictAddressFamilies = "AF_INET AF_INET6 AF_UNIX AF_NETLINK";
       RestrictNamespaces = true;
       RestrictRealtime = true;
       ProtectKernelModules = true;

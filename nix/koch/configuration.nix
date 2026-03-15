@@ -60,6 +60,8 @@
   users.users.openclaw = {
     isSystemUser = true;
     group = "openclaw";
+    home = "/var/lib/openclaw";
+    createHome = true;
   };
   users.groups.openclaw = {};
 
@@ -450,6 +452,9 @@
       CapabilityBoundingSet = "";
       RuntimeDirectory = "openclaw";
       RuntimeDirectoryMode = "0750";
+      StateDirectory = "openclaw";
+      StateDirectoryMode = "0750";
+      WorkingDirectory = "/var/lib/openclaw";
       Slice = "openclaw.slice";
       
       # Resource limits

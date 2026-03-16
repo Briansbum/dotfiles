@@ -119,6 +119,7 @@ in
 
       channels.telegram = {
         tokenFile = config.sops.secrets.openclaw_telegram_token.path;
+        dmPolicy = "open";
         allowFrom = [
           560918177
         ];

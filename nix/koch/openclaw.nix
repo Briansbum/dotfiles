@@ -18,6 +18,10 @@ let
     { name = "xuezh";     path = "${inputs.xuezh}/skills/xuezh"; }
   ];
 
+  # Copy the nix-generated config to a writable location so the gateway
+  # can persist runtime changes (e.g. plugin auto-enable).
+  configDir = "${stateDir}/config";
+
   prepareEnv = pkgs.writeShellScript "prepare-openclaw-env" ''
     set -euo pipefail
     env_path="/run/openclaw/env"
@@ -30,9 +34,17 @@ let
     } > "$env_path"
   '';
 
-  # Runs as root (+ prefix) to copy skills from nix store into btrfs state
-  installSkills = pkgs.writeShellScript "install-openclaw-skills" ''
+  # Runs as root (+ prefix) to copy skills and config from nix store into btrfs state
+  prepareState = pkgs.writeShellScript "prepare-openclaw-state" ''
     set -euo pipefail
+
+    # Copy config to writable location so gateway can persist runtime changes
+    ${pkgs.coreutils}/bin/mkdir -p "${configDir}"
+    ${pkgs.coreutils}/bin/cp -f /etc/openclaw/openclaw.json "${configDir}/openclaw.json"
+    ${pkgs.coreutils}/bin/chown openclaw:openclaw "${configDir}/openclaw.json"
+    ${pkgs.coreutils}/bin/chmod 0640 "${configDir}/openclaw.json"
+
+    # Copy skills from nix store
     target="${stateDir}/skills"
     ${pkgs.coreutils}/bin/mkdir -p "$target"
     for skill in ${skillsDir}/*; do
@@ -77,6 +89,8 @@ in
     restart = "on-failure";
     restartSec = 10;
     config = {
+      model = "anthropic/claude-sonnet-4";
+
       gateway = {
         mode = "local";
       };
@@ -90,12 +104,13 @@ in
     };
     environment = {
       OPENCLAW_NO_SERVER = "1";
+      OPENCLAW_CONFIG_PATH = "${configDir}/openclaw.json";
     };
     environmentFiles = [ "-/run/openclaw/env" ];
     servicePath = [ openclawPkg xuezhPkg ];
     execStartPre = [
       "${prepareEnv} ${config.sops.secrets.openclaw_gateway_token.path} ${config.sops.secrets.openclaw_openrouter_key.path} ${config.sops.secrets.openclaw_telegram_token.path}"
-      "+${installSkills}"
+      "+${prepareState}"
     ];
   };
 

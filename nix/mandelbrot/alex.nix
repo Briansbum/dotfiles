@@ -195,6 +195,4 @@
 
   services.easyeffects.enable = true;
   services.clipse.enable = true;
-
-
 }

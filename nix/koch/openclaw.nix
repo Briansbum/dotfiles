@@ -5,7 +5,8 @@ let
   # The upstream build moves compiled JS to dist/extensions/ but leaves the
   # openclaw.plugin.json manifests in the source extensions/ directory.
   gatewayPkg = (inputs.nix-openclaw.packages.${pkgs.system}.openclaw-gateway).overrideAttrs (old: {
-    installPhase = old.installPhase + ''
+    installPhase = ''
+      ${old.installPhase}
       for manifest in $out/lib/openclaw/extensions/*/openclaw.plugin.json; do
         [ -f "$manifest" ] || continue
         name=$(basename $(dirname "$manifest"))

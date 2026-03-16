@@ -77,10 +77,6 @@ in
     restart = "on-failure";
     restartSec = 10;
     config = {
-      plugins = {
-        enabled = false;
-      };
-
       gateway = {
         mode = "local";
       };

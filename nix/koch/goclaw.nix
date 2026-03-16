@@ -135,7 +135,7 @@ in
       GOCLAW_HOST = "127.0.0.1";
       GOCLAW_PORT = "18789";
       GOCLAW_DATA_DIR = stateDir;
-      GOCLAW_CONFIG_PATH = "${stateDir}/config/goclaw.json";
+      GOCLAW_CONFIG = "${stateDir}/config/goclaw.json";
       GOCLAW_MIGRATIONS_DIR = "${goclawPkg}/share/goclaw/migrations";
       GOCLAW_BUNDLED_SKILLS_DIR = "${goclawPkg}/share/goclaw/skills";
       GOCLAW_SKILLS_DIR = "${stateDir}/skills";

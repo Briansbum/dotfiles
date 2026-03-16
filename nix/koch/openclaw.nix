@@ -7,20 +7,21 @@ let
   unitName = "nix-openclaw";
   stateDir = "/data/state-store/openclaw";
 
-  # The nix-openclaw package ships extension JS but strips the openclaw.plugin.json
-  # manifests. Generate stubs so the gateway can discover and load extensions.
+  # The nix-openclaw package strips openclaw.plugin.json manifests from extensions.
+  # Generate stubs and bind-mount each file individually so the original JS files
+  # (which use relative imports) stay in place in the nix store.
   gatewayPkg = inputs.nix-openclaw.packages.${pkgs.system}.openclaw-gateway;
   extensionsDir = "${gatewayPkg}/lib/openclaw/dist/extensions";
-  patchedExtensions = pkgs.runCommand "openclaw-patched-extensions" {} ''
-    cp -rL ${extensionsDir} $out
-    chmod -R u+w $out
-    for ext in $out/*/; do
-      name=$(basename "$ext")
-      if [ ! -f "$ext/openclaw.plugin.json" ]; then
-        echo '{"id":"'"$name"'","configSchema":{}}' > "$ext/openclaw.plugin.json"
-      fi
-    done
-  '';
+  extensionNames = builtins.attrNames (builtins.readDir extensionsDir);
+  manifestStubs = pkgs.runCommand "openclaw-manifest-stubs" {} (
+    "mkdir -p $out\n" +
+    lib.concatMapStringsSep "\n" (name:
+      "echo '{\"id\":\"${name}\",\"configSchema\":{}}' > $out/${name}.json"
+    ) extensionNames
+  );
+  manifestBinds = map (name:
+    "${manifestStubs}/${name}.json:${extensionsDir}/${name}/openclaw.plugin.json"
+  ) extensionNames;
 
   # Collect all skill directories into a single nix store path
   skillsDir = pkgs.linkFarm "openclaw-skills" [
@@ -156,7 +157,7 @@ in
       RuntimeDirectory = "openclaw";
       RuntimeDirectoryMode = "0750";
       ReadWritePaths = [ stateDir ];
-      BindReadOnlyPaths = [ "${patchedExtensions}:${extensionsDir}" ];
+      BindReadOnlyPaths = manifestBinds;
       Slice = "openclaw.slice";
 
       MemoryMax = "2G";

@@ -134,6 +134,22 @@
         "type": "github"
       }
     },
+    "goclaw-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1773676450,
+        "narHash": "sha256-w/cnlyMFGdxAwR6JP/GntzPtB2nRKvCSOcK/njWKT1g=",
+        "owner": "nextlevelbuilder",
+        "repo": "goclaw",
+        "rev": "365f41f81c5eff3ee6e7221e9b6ba13536902073",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nextlevelbuilder",
+        "repo": "goclaw",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -408,6 +424,7 @@
         "claude-code": "claude-code",
         "dgop": "dgop",
         "disko": "disko",
+        "goclaw-src": "goclaw-src",
         "home-manager": "home-manager",
         "nix-darwin": "nix-darwin",
         "nix-openclaw": "nix-openclaw",

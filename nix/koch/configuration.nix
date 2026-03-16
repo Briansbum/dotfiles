@@ -1,13 +1,13 @@
 # System configuration for koch (NAS)
 #
-# Services: Immich, Grocy, Tailscale, NFS, SMART, btrfs scrub, B2 backups, Grafana Alloy, OpenClaw
+# Services: Immich, Grocy, Tailscale, NFS, SMART, btrfs scrub, B2 backups, Grafana Alloy, GoClaw
 # No GUI — headless server managed via SSH and Tailscale
 
 { config, pkgs, inputs, lib, ... }:
 
 {
   imports = [
-    ./openclaw.nix
+    ./goclaw.nix
   ];
   nix.settings = {
     experimental-features = [ "nix-command" "flakes" ];

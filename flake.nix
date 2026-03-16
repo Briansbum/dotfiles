@@ -31,7 +31,7 @@
         # Provides bleeding edge claude-code updates
         claude-code.url = "github:sadjow/claude-code-nix";
 
-        # nix-openclaw for AI agent capabilities
+        # nix-openclaw — kept for steipete-tools skill binaries
         nix-openclaw = {
           url = "github:openclaw/nix-openclaw";
           inputs.nixpkgs.follows = "nixpkgs";
@@ -41,6 +41,12 @@
         xuezh = {
           url = "github:joshp123/xuezh";
           inputs.nixpkgs.follows = "nixpkgs";
+        };
+
+        # GoClaw source (no flake.nix — built locally via buildGoModule)
+        goclaw-src = {
+          url = "github:nextlevelbuilder/goclaw";
+          flake = false;
         };
 
         # koch (NAS) dependencies
@@ -56,7 +62,7 @@
 
     };
 
-    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, claude-code, opencode, nix-openclaw, xuezh, nix-software-center, disko, sops-nix, ...}@inputs: {
+    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, claude-code, opencode, nix-openclaw, xuezh, goclaw-src, nix-software-center, disko, sops-nix, ...}@inputs: {
         nixosConfigurations = {
             mandelbrot = nixpkgs.lib.nixosSystem {
                 system = "x86_64-linux";
@@ -98,7 +104,15 @@
                 system = "x86_64-linux";
                 specialArgs = { inherit inputs; };
                 modules = [
-                    { nixpkgs.overlays = [ nix-openclaw.overlays.default ]; }
+                    {
+                      nixpkgs.overlays = [
+                        (final: prev: {
+                          goclaw = final.callPackage ./nix/pkgs/goclaw.nix {
+                            inherit goclaw-src;
+                          };
+                        })
+                      ];
+                    }
                     disko.nixosModules.disko
                     sops-nix.nixosModules.sops
                     ./nix/modules/tailscale-serve.nix

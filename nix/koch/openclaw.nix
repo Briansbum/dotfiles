@@ -14,16 +14,32 @@ let
   extensionsDir = "${gatewayPkg}/lib/openclaw/dist/extensions";
   patchedExtensions = pkgs.runCommand "openclaw-patched-extensions" {} ''
     mkdir -p $out
+
+    # Channel and provider extensions need their type declared in the manifest
+    # so the gateway knows how to route them.
+    channels="telegram discord slack signal whatsapp matrix msteams line feishu irc \
+      googlechat mattermost synology-chat nostr nextcloud-talk tlon bluebubbles \
+      imessage twitch zalo zalouser"
+    providers="openai anthropic openrouter google ollama mistral nvidia together \
+      perplexity huggingface amazon-bedrock byteplus minimax moonshot qianfan \
+      qwen-portal-auth sglang vllm volcengine xai xiaomi venice modelstudio \
+      kimi-coding lobster zai cloudflare-ai-gateway vercel-ai-gateway github-copilot \
+      copilot-proxy brave"
+
     for ext in ${extensionsDir}/*/; do
       name=$(basename "$ext")
       mkdir -p "$out/$name"
-      # Symlink all original files (JS etc) back to nix store so relative imports work
       for f in "$ext"/*; do
         ln -s "$f" "$out/$name/$(basename "$f")"
       done
-      # Add stub manifest if missing
       if [ ! -f "$ext/openclaw.plugin.json" ]; then
-        echo "{\"id\":\"$name\",\"configSchema\":{}}" > "$out/$name/openclaw.plugin.json"
+        extra=""
+        if echo " $channels " | grep -q " $name "; then
+          extra=',"channels":["'"$name"'"]'
+        elif echo " $providers " | grep -q " $name "; then
+          extra=',"providers":["'"$name"'"]'
+        fi
+        echo "{\"id\":\"$name\",\"configSchema\":{}$extra}" > "$out/$name/openclaw.plugin.json"
       fi
     done
   '';

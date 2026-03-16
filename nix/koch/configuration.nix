@@ -89,9 +89,9 @@
     var DSP_DESEC = NewDnsProvider("desec");
     
     D("brians.skin", REG_NONE, DnsProvider(DSP_DESEC), NO_PURGE,
-      CNAME("immich.koch", "koch.tuxedo-burbot.ts.net."),
-      CNAME("grocy.koch", "koch.tuxedo-burbot.ts.net."),
-      CNAME("goclaw.koch", "koch.tuxedo-burbot.ts.net."),
+      A("immich.koch", "100.113.219.76"),
+      A("grocy.koch", "100.113.219.76"),
+      A("goclaw.koch", "100.113.219.76"),
     );
     '';
   in {

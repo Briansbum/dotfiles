@@ -412,6 +412,42 @@
   # ---------------------------------------------------------------------------
   # nix-openclaw - AI Assistant with external comms only and strong isolation
   # ---------------------------------------------------------------------------
+
+  programs.openclaw = {
+    # Eventually I should drive the documents through here
+    # documents = ./documents;
+    config = {
+      gateway = {
+        mode = "local";
+      };
+
+      channels.telegram = {
+        tokenFile = "/run/agenix/telegram-bot-token";
+        allowFrom = [
+          560918177
+    #-1001234567890   # couples group (no @mention required)
+    #-1002345678901   # noisy group (require @mention)
+        ];
+    #    groups = {
+    #      "*" = { requireMention = true; };
+    #      "-1001234567890" = { requireMention = false; }; # couples group
+    #      "-1002345678901" = { requireMention = true; };  # noisy group
+    #    };
+      };
+    };
+
+    instances.default = {
+      enable = true;
+      package = pkgs.openclaw; 
+      stateDir = "~/.openclaw";
+      workspaceDir = "~/.openclaw/workspace";
+
+      plugins = [
+        { source = "github:openclaw/nix-steipete-tools"; }
+        { source = "github:joshp123/xuezh"; }
+      ];
+    };
+  };
   
   # Create a systemd user service with strong isolation for nix-openclaw
   systemd.services.nix-openclaw = {

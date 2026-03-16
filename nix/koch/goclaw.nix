@@ -131,7 +131,7 @@ in
     path = [ goclawPkg xuezhPkg ];
 
     environment = {
-      GOCLAW_POSTGRES_DSN = "postgres://goclaw@localhost:5432/goclaw?sslmode=disable";
+      GOCLAW_POSTGRES_DSN = "postgres://goclaw@/goclaw?host=/run/postgresql";
       GOCLAW_HOST = "127.0.0.1";
       GOCLAW_PORT = "18789";
       GOCLAW_DATA_DIR = stateDir;

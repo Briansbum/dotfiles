@@ -4,6 +4,7 @@
   imports = [
     ../common/common.nix
     inputs.nixvim.homeModules.nixvim
+    ./openclaw.nix
   ];
 
   # User info

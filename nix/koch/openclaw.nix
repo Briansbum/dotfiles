@@ -141,7 +141,6 @@ in
       };
     };
     environment = {
-      OPENCLAW_NO_SERVER = "1";
       OPENCLAW_CONFIG_PATH = "${configDir}/openclaw.json";
     };
     environmentFiles = [ "-/run/openclaw/env" ];

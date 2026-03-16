@@ -1,11 +1,18 @@
 { config, pkgs, ... }:
 
 {
+  imports = [
+    ./goclaw.nix
+  ];
   # Set primary user for system defaults
   system.primaryUser = "alex";
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
+
+  # sops-nix — age-encrypted secrets for goclaw
+  sops.defaultSopsFile = ./secrets.yaml;
+  sops.age.keyFile = "/Users/alex/Library/Application Support/sops/age/keys.txt";
 
   # System-level packages available to all users
   environment.systemPackages = with pkgs; [
@@ -90,6 +97,8 @@
     dive
     
     # Security & Secrets
+    age
+    sops
     gopass
     certbot
     pinentry_mac
@@ -200,6 +209,13 @@
       "terraformer"  # If not available in nixpkgs
       "kubelogin"  # Azure kubelogin from tap
       
+      # GoClaw dependencies
+      {
+        name = "postgresql@17";
+        restart_service = "changed";
+      }
+      "pgvector"
+
       # Services (no nix-darwin modules yet)
       {
         name = "ollama";

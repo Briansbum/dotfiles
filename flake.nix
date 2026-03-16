@@ -92,6 +92,7 @@
                 system = "x86_64-linux";
                 specialArgs = { inherit inputs; };
                 modules = [
+                    { nixpkgs.overlays = [ nix-openclaw.overlays.default ]; }
                     disko.nixosModules.disko
                     sops-nix.nixosModules.sops
                     ./nix/modules/tailscale-serve.nix

@@ -193,14 +193,17 @@ in
   };
 
   # -------------------------------------------------------------------------
-  # Tailscale — expose dashboard on tailnet
+  # Traefik — expose dashboard on tailnet via HTTPS
   # -------------------------------------------------------------------------
 
-  services.tailscaleServe.goclaw = {
-    localPort = 18789;
-    tsPort = 18789;
-    afterService = "goclaw";
+  services.traefik.dynamicConfigOptions.http.routers.goclaw = {
+    rule = "Host(`goclaw.koch.brians.skin`)";
+    service = "goclaw";
+    tls.certResolver = "desec";
   };
+  services.traefik.dynamicConfigOptions.http.services.goclaw.loadBalancer.servers = [
+    { url = "http://localhost:18789"; }
+  ];
 
   systemd.slices.goclaw = {
     description = "GoClaw isolated slice";

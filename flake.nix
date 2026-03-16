@@ -222,12 +222,15 @@
                system = "aarch64-darwin";
                specialArgs = { inherit inputs; };
                modules = [
+                    nix-openclaw.darwinModules.openclaw
                     ./nix/Alexs-Macbook-Pro/configuration.nix
                     ./nix/Alexs-Macbook-Pro/hardware.nix
                     home-manager.darwinModules.home-manager
                     {
-                        # This makes it so that wherever I use packages.claude-code it will use sadjow/claude-code-nix
-                        nixpkgs.overlays = [ claude-code.overlays.default ];
+                        nixpkgs.overlays = [
+                            claude-code.overlays.default
+                            nix-openclaw.overlays.default
+                        ];
                         home-manager.useGlobalPkgs = true;
                         home-manager.useUserPackages = true;
                         home-manager.backupFileExtension = "backup";

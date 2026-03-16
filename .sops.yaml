@@ -1,7 +1,14 @@
 keys:
   - &koch age13ajx5lt624w5sfht2tr064fyfnk4ula3x4xn67qgvhszlsgtrgvq0zr9x0
+  # Generate with: age-keygen -o ~/Library/Application\ Support/sops/age/keys.txt
+  # Then paste the public key here and re-encrypt secrets.yaml
+  - &alexs-macbook-pro REPLACE_WITH_AGE_PUBLIC_KEY
 creation_rules:
   - path_regex: nix/koch/secrets\.yaml$
     key_groups:
       - age:
           - *koch
+  - path_regex: nix/Alexs-Macbook-Pro/secrets\.yaml$
+    key_groups:
+      - age:
+          - *alexs-macbook-pro

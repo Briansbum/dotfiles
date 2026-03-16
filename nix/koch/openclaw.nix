@@ -7,6 +7,21 @@ let
   unitName = "nix-openclaw";
   stateDir = "/data/state-store/openclaw";
 
+  # The nix-openclaw package ships extension JS but strips the openclaw.plugin.json
+  # manifests. Generate stubs so the gateway can discover and load extensions.
+  gatewayPkg = inputs.nix-openclaw.packages.${pkgs.system}.openclaw-gateway;
+  extensionsDir = "${gatewayPkg}/lib/openclaw/dist/extensions";
+  patchedExtensions = pkgs.runCommand "openclaw-patched-extensions" {} ''
+    cp -rL ${extensionsDir} $out
+    chmod -R u+w $out
+    for ext in $out/*/; do
+      name=$(basename "$ext")
+      if [ ! -f "$ext/openclaw.plugin.json" ]; then
+        echo '{"id":"'"$name"'","configSchema":{}}' > "$ext/openclaw.plugin.json"
+      fi
+    done
+  '';
+
   # Collect all skill directories into a single nix store path
   skillsDir = pkgs.linkFarm "openclaw-skills" [
     { name = "summarize"; path = "${steipeteTools}/tools/summarize/skills/summarize"; }
@@ -141,6 +156,7 @@ in
       RuntimeDirectory = "openclaw";
       RuntimeDirectoryMode = "0750";
       ReadWritePaths = [ stateDir ];
+      BindReadOnlyPaths = [ "${patchedExtensions}:${extensionsDir}" ];
       Slice = "openclaw.slice";
 
       MemoryMax = "2G";

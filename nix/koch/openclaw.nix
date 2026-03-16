@@ -40,10 +40,9 @@ in
     stateDir = "/var/lib/openclaw";
     workingDirectory = "/var/lib/openclaw";
     config = {
-      plugins = [
-        { source = "github:openclaw/nix-steipete-tools"; }
-        { source = "github:joshp123/xuezh"; }
-      ];
+      plugins = {
+        enabled = true;
+      };
 
       gateway = {
         mode = "local";

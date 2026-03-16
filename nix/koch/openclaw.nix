@@ -7,39 +7,30 @@ let
   unitName = "nix-openclaw";
   stateDir = "/data/state-store/openclaw";
 
-  # The nix-openclaw package strips openclaw.plugin.json manifests from extensions.
-  # Build a patched extensions dir that symlinks original JS files (preserving
-  # their relative imports to ../../*.js in the nix store) and adds stub manifests.
+  # The nix-openclaw build strips openclaw.plugin.json manifests from extensions.
+  # Fetch the real manifests from the openclaw source and inject them alongside
+  # symlinked JS files so relative imports still resolve to the nix store.
   gatewayPkg = inputs.nix-openclaw.packages.${pkgs.system}.openclaw-gateway;
   extensionsDir = "${gatewayPkg}/lib/openclaw/dist/extensions";
+  openclawSrc = pkgs.fetchFromGitHub {
+    owner = "openclaw";
+    repo = "openclaw";
+    rev = "303f690dd9c4d626dca76dace925a94190758f8f";
+    hash = "sha256-oM61vInL7To6saPPGIiitljrPKGyk8If9uaLtOCGrd4=";
+  };
   patchedExtensions = pkgs.runCommand "openclaw-patched-extensions" {} ''
     mkdir -p $out
-
-    # Channel and provider extensions need their type declared in the manifest
-    # so the gateway knows how to route them.
-    channels="telegram discord slack signal whatsapp matrix msteams line feishu irc \
-      googlechat mattermost synology-chat nostr nextcloud-talk tlon bluebubbles \
-      imessage twitch zalo zalouser"
-    providers="openai anthropic openrouter google ollama mistral nvidia together \
-      perplexity huggingface amazon-bedrock byteplus minimax moonshot qianfan \
-      qwen-portal-auth sglang vllm volcengine xai xiaomi venice modelstudio \
-      kimi-coding lobster zai cloudflare-ai-gateway vercel-ai-gateway github-copilot \
-      copilot-proxy brave"
-
     for ext in ${extensionsDir}/*/; do
       name=$(basename "$ext")
       mkdir -p "$out/$name"
+      # Symlink JS files back to nix store so relative imports work
       for f in "$ext"/*; do
         ln -s "$f" "$out/$name/$(basename "$f")"
       done
-      if [ ! -f "$ext/openclaw.plugin.json" ]; then
-        extra=""
-        if echo " $channels " | grep -q " $name "; then
-          extra=',"channels":["'"$name"'"]'
-        elif echo " $providers " | grep -q " $name "; then
-          extra=',"providers":["'"$name"'"]'
-        fi
-        echo "{\"id\":\"$name\",\"configSchema\":{}$extra}" > "$out/$name/openclaw.plugin.json"
+      # Use the real manifest from the openclaw source tree
+      manifest="${openclawSrc}/extensions/$name/openclaw.plugin.json"
+      if [ -f "$manifest" ]; then
+        cp "$manifest" "$out/$name/openclaw.plugin.json"
       fi
     done
   '';

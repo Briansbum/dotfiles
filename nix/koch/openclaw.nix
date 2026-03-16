@@ -50,7 +50,7 @@ in
     restartSec = 10;
     config = {
       plugins = {
-        enabled = true;
+        enabled = false;
       };
 
       gateway = {

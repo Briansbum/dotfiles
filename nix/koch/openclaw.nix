@@ -8,20 +8,25 @@ let
   stateDir = "/data/state-store/openclaw";
 
   # The nix-openclaw package strips openclaw.plugin.json manifests from extensions.
-  # Generate stubs and bind-mount each file individually so the original JS files
-  # (which use relative imports) stay in place in the nix store.
+  # Build a patched extensions dir that symlinks original JS files (preserving
+  # their relative imports to ../../*.js in the nix store) and adds stub manifests.
   gatewayPkg = inputs.nix-openclaw.packages.${pkgs.system}.openclaw-gateway;
   extensionsDir = "${gatewayPkg}/lib/openclaw/dist/extensions";
-  extensionNames = builtins.attrNames (builtins.readDir extensionsDir);
-  manifestStubs = pkgs.runCommand "openclaw-manifest-stubs" {} (
-    "mkdir -p $out\n" +
-    lib.concatMapStringsSep "\n" (name:
-      "echo '{\"id\":\"${name}\",\"configSchema\":{}}' > $out/${name}.json"
-    ) extensionNames
-  );
-  manifestBinds = map (name:
-    "${manifestStubs}/${name}.json:${extensionsDir}/${name}/openclaw.plugin.json"
-  ) extensionNames;
+  patchedExtensions = pkgs.runCommand "openclaw-patched-extensions" {} ''
+    mkdir -p $out
+    for ext in ${extensionsDir}/*/; do
+      name=$(basename "$ext")
+      mkdir -p "$out/$name"
+      # Symlink all original files (JS etc) back to nix store so relative imports work
+      for f in "$ext"/*; do
+        ln -s "$f" "$out/$name/$(basename "$f")"
+      done
+      # Add stub manifest if missing
+      if [ ! -f "$ext/openclaw.plugin.json" ]; then
+        echo "{\"id\":\"$name\",\"configSchema\":{}}" > "$out/$name/openclaw.plugin.json"
+      fi
+    done
+  '';
 
   # Collect all skill directories into a single nix store path
   skillsDir = pkgs.linkFarm "openclaw-skills" [
@@ -157,7 +162,7 @@ in
       RuntimeDirectory = "openclaw";
       RuntimeDirectoryMode = "0750";
       ReadWritePaths = [ stateDir ];
-      BindReadOnlyPaths = manifestBinds;
+      BindReadOnlyPaths = [ "${patchedExtensions}:${extensionsDir}" ];
       Slice = "openclaw.slice";
 
       MemoryMax = "2G";

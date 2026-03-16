@@ -37,6 +37,12 @@
           inputs.nixpkgs.follows = "nixpkgs";
         };
 
+        # openclaw plugins
+        xuezh = {
+          url = "github:joshp123/xuezh";
+          inputs.nixpkgs.follows = "nixpkgs";
+        };
+
         # koch (NAS) dependencies
         disko = {
           url = "github:nix-community/disko";
@@ -50,7 +56,7 @@
 
     };
 
-    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, claude-code, opencode, nix-openclaw, nix-software-center, disko, sops-nix, ...}@inputs: {
+    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, claude-code, opencode, nix-openclaw, xuezh, nix-software-center, disko, sops-nix, ...}@inputs: {
         nixosConfigurations = {
             mandelbrot = nixpkgs.lib.nixosSystem {
                 system = "x86_64-linux";

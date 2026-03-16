@@ -2,7 +2,21 @@
 
 let
   openclawPkg = inputs.nix-openclaw.packages.${pkgs.system}.openclaw;
+  xuezhPkg = inputs.xuezh.packages.${pkgs.system}.default;
+  steipeteTools = inputs.nix-openclaw.inputs.nix-steipete-tools;
   unitName = "nix-openclaw";
+  stateDir = "/data/state-store/openclaw";
+
+  # Collect all skill directories into a single nix store path
+  skillsDir = pkgs.linkFarm "openclaw-skills" [
+    { name = "summarize"; path = "${steipeteTools}/tools/summarize/skills/summarize"; }
+    { name = "gog";       path = "${steipeteTools}/tools/gogcli/skills/gog"; }
+    { name = "goplaces";  path = "${steipeteTools}/tools/goplaces/skills/goplaces"; }
+    { name = "camsnap";   path = "${steipeteTools}/tools/camsnap/skills/camsnap"; }
+    { name = "sag";       path = "${steipeteTools}/tools/sag/skills/sag"; }
+    { name = "sonoscli";  path = "${steipeteTools}/tools/sonoscli/skills/sonoscli"; }
+    { name = "xuezh";     path = "${inputs.xuezh}/skills/xuezh"; }
+  ];
 
   prepareEnv = pkgs.writeShellScript "prepare-openclaw-env" ''
     set -euo pipefail
@@ -14,6 +28,20 @@ let
       printf 'OPENAI_API_BASE=https://openrouter.ai/api/v1\n'
       printf 'OPENCLAW_TELEGRAM_BOT_TOKEN=%s\n' "$(cat "$3")"
     } > "$env_path"
+  '';
+
+  # Runs as root (+ prefix) to copy skills from nix store into btrfs state
+  installSkills = pkgs.writeShellScript "install-openclaw-skills" ''
+    set -euo pipefail
+    target="${stateDir}/skills"
+    ${pkgs.coreutils}/bin/mkdir -p "$target"
+    for skill in ${skillsDir}/*; do
+      name=$(${pkgs.coreutils}/bin/basename "$skill")
+      ${pkgs.coreutils}/bin/rm -rf "$target/$name"
+      ${pkgs.coreutils}/bin/cp -rL "$skill" "$target/$name"
+    done
+    ${pkgs.coreutils}/bin/chmod -R u+rw "$target"
+    ${pkgs.coreutils}/bin/chown -R openclaw:openclaw "$target"
   '';
 in
 {
@@ -44,8 +72,8 @@ in
     enable = true;
     unitName = unitName;
     package = openclawPkg;
-    stateDir = "/var/lib/openclaw";
-    workingDirectory = "/var/lib/openclaw";
+    stateDir = stateDir;
+    workingDirectory = stateDir;
     restart = "on-failure";
     restartSec = 10;
     config = {
@@ -68,8 +96,10 @@ in
       OPENCLAW_NO_SERVER = "1";
     };
     environmentFiles = [ "-/run/openclaw/env" ];
+    servicePath = [ openclawPkg xuezhPkg ];
     execStartPre = [
       "${prepareEnv} ${config.sops.secrets.openclaw_gateway_token.path} ${config.sops.secrets.openclaw_openrouter_key.path} ${config.sops.secrets.openclaw_telegram_token.path}"
+      "+${installSkills}"
     ];
   };
 
@@ -98,8 +128,7 @@ in
       CapabilityBoundingSet = "";
       RuntimeDirectory = "openclaw";
       RuntimeDirectoryMode = "0750";
-      StateDirectory = "openclaw";
-      StateDirectoryMode = "0750";
+      ReadWritePaths = [ stateDir ];
       Slice = "openclaw.slice";
 
       MemoryMax = "2G";

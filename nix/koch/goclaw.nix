@@ -192,6 +192,16 @@ in
     };
   };
 
+  # -------------------------------------------------------------------------
+  # Tailscale — expose dashboard on tailnet
+  # -------------------------------------------------------------------------
+
+  services.tailscaleServe.goclaw = {
+    localPort = 18789;
+    tsPort = 18789;
+    afterService = "goclaw";
+  };
+
   systemd.slices.goclaw = {
     description = "GoClaw isolated slice";
     sliceConfig = {

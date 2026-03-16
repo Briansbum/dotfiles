@@ -89,7 +89,7 @@ in
     restart = "on-failure";
     restartSec = 10;
     config = {
-      model = "anthropic/claude-sonnet-4";
+      agents.defaults.model = "anthropic/claude-sonnet-4";
 
       gateway = {
         mode = "local";

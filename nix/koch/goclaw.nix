@@ -151,8 +151,8 @@ in
       ExecStartPre = [
         # Create pgcrypto + pgvector extensions (requires superuser)
         "+${pkgs.writeShellScript "goclaw-ensure-extensions" ''
-          ${config.services.postgresql.package}/bin/psql -U postgres -d goclaw -c 'CREATE EXTENSION IF NOT EXISTS "pgcrypto";'
-          ${config.services.postgresql.package}/bin/psql -U postgres -d goclaw -c 'CREATE EXTENSION IF NOT EXISTS "vector";'
+          ${pkgs.util-linux}/bin/runuser -u postgres -- ${config.services.postgresql.package}/bin/psql -d goclaw -c 'CREATE EXTENSION IF NOT EXISTS "pgcrypto";'
+          ${pkgs.util-linux}/bin/runuser -u postgres -- ${config.services.postgresql.package}/bin/psql -d goclaw -c 'CREATE EXTENSION IF NOT EXISTS "vector";'
         ''}"
         "${prepareEnv} ${config.sops.secrets.goclaw_gateway_token.path} ${config.sops.secrets.goclaw_encryption_key.path} ${config.sops.secrets.goclaw_telegram_token.path} ${config.sops.secrets.goclaw_openrouter_key.path}"
         "+${prepareState}"

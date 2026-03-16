@@ -1,39 +1,26 @@
 { config, pkgs, inputs, lib, ... }:
 
 let
+  # Patch the openclaw-gateway package to include plugin manifests in dist/extensions/.
+  # The upstream build moves compiled JS to dist/extensions/ but leaves the
+  # openclaw.plugin.json manifests in the source extensions/ directory.
+  gatewayPkg = (inputs.nix-openclaw.packages.${pkgs.system}.openclaw-gateway).overrideAttrs (old: {
+    installPhase = old.installPhase + ''
+      for manifest in $out/lib/openclaw/extensions/*/openclaw.plugin.json; do
+        [ -f "$manifest" ] || continue
+        name=$(basename $(dirname "$manifest"))
+        target="$out/lib/openclaw/dist/extensions/$name"
+        if [ -d "$target" ] && [ ! -f "$target/openclaw.plugin.json" ]; then
+          cp "$manifest" "$target/openclaw.plugin.json"
+        fi
+      done
+    '';
+  });
   openclawPkg = inputs.nix-openclaw.packages.${pkgs.system}.openclaw;
   xuezhPkg = inputs.xuezh.packages.${pkgs.system}.default;
   steipeteTools = inputs.nix-openclaw.inputs.nix-steipete-tools;
   unitName = "nix-openclaw";
   stateDir = "/data/state-store/openclaw";
-
-  # The nix-openclaw build strips openclaw.plugin.json manifests from extensions.
-  # Fetch the real manifests from the openclaw source and inject them alongside
-  # symlinked JS files so relative imports still resolve to the nix store.
-  gatewayPkg = inputs.nix-openclaw.packages.${pkgs.system}.openclaw-gateway;
-  extensionsDir = "${gatewayPkg}/lib/openclaw/dist/extensions";
-  openclawSrc = pkgs.fetchFromGitHub {
-    owner = "openclaw";
-    repo = "openclaw";
-    rev = "303f690dd9c4d626dca76dace925a94190758f8f";
-    hash = "sha256-oM61vInL7To6saPPGIiitljrPKGyk8If9uaLtOCGrd4=";
-  };
-  patchedExtensions = pkgs.runCommand "openclaw-patched-extensions" {} ''
-    mkdir -p $out
-    for ext in ${extensionsDir}/*/; do
-      name=$(basename "$ext")
-      mkdir -p "$out/$name"
-      # Symlink JS files back to nix store so relative imports work
-      for f in "$ext"/*; do
-        ln -s "$f" "$out/$name/$(basename "$f")"
-      done
-      # Use the real manifest from the openclaw source tree
-      manifest="${openclawSrc}/extensions/$name/openclaw.plugin.json"
-      if [ -f "$manifest" ]; then
-        cp "$manifest" "$out/$name/openclaw.plugin.json"
-      fi
-    done
-  '';
 
   # Collect all skill directories into a single nix store path
   skillsDir = pkgs.linkFarm "openclaw-skills" [
@@ -112,7 +99,7 @@ in
   services.openclaw-gateway = {
     enable = true;
     unitName = unitName;
-    package = openclawPkg;
+    package = gatewayPkg;
     stateDir = stateDir;
     workingDirectory = stateDir;
     restart = "on-failure";
@@ -168,7 +155,6 @@ in
       RuntimeDirectory = "openclaw";
       RuntimeDirectoryMode = "0750";
       ReadWritePaths = [ stateDir ];
-      BindReadOnlyPaths = [ "${patchedExtensions}:${extensionsDir}" ];
       Slice = "openclaw.slice";
 
       MemoryMax = "2G";

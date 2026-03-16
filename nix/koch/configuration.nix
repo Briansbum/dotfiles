@@ -1,11 +1,15 @@
 # System configuration for koch (NAS)
 #
-# Services: Immich, Grocy, Tailscale, NFS, SMART, btrfs scrub, B2 backups, Grafana Alloy
+# Services: Immich, Grocy, Tailscale, NFS, SMART, btrfs scrub, B2 backups, Grafana Alloy, OpenClaw
 # No GUI — headless server managed via SSH and Tailscale
 
 { config, pkgs, inputs, lib, ... }:
 
 {
+  imports = [
+    ./openclaw.nix
+  ];
+
   nix.settings = {
     experimental-features = [ "nix-command" "flakes" ];
   };
@@ -21,29 +25,6 @@
   sops.defaultSopsFile = ./secrets.yaml;
   sops.age.keyFile = "/var/lib/sops-nix/keys.txt";
 
-  # nix-openclaw secret values - each secret is stored in secrets.yaml as key-value pairs
-  # openclaw_gateway_token: ENC[AES256_GCM,data:YOUR_ENCRYPTED_TOKEN,iv:RANDOM_IV,tag:TAG,type:str]
-  # openclaw_telegram_token: ENC[AES256_GCM,data:YOUR_ENCRYPTED_TELEGRAM_TOKEN,iv:RANDOM_IV,tag:TAG,type:str]
-  # openclaw_openrouter_key: ENC[AES256_GCM,data:YOUR_ENCRYPTED_OPENROUTER_KEY,iv:RANDOM_IV,tag:TAG,type:str]
-  sops.secrets."openclaw_gateway_token" = {
-    owner = "openclaw";
-    group = "openclaw";
-    mode = "0400";
-    restartUnits = [ "nix-openclaw.service" ];
-  };
-  sops.secrets."openclaw_telegram_token" = {
-    owner = "openclaw";
-    group = "openclaw";
-    mode = "0400";
-    restartUnits = [ "nix-openclaw.service" ];
-  };
-  sops.secrets."openclaw_openrouter_key" = {
-    owner = "openclaw";
-    group = "openclaw";
-    mode = "0400";
-    restartUnits = [ "nix-openclaw.service" ];
-  };
-
   # ---------------------------------------------------------------------------
   # Users
   # ---------------------------------------------------------------------------
@@ -56,14 +37,6 @@
       "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBIfEsNDo0qIws3jPsuD9YNlqS+a4/T9Zl5p8TmjGv7UVnYaiDBNU/MSedshMGo9OsRW9Eu7NFVz7b+w3dmj+XNY= alex@AlexF.local"
     ];
   };
-
-  users.users.openclaw = {
-    isSystemUser = true;
-    group = "openclaw";
-    home = "/var/lib/openclaw";
-    createHome = true;
-  };
-  users.groups.openclaw = {};
 
   # ---------------------------------------------------------------------------
   # Shell — bash redirects to fish (same pattern as mandelbrot)
@@ -408,126 +381,6 @@
     4317  # OTLP gRPC (Alloy receiver for local services)
     4318  # OTLP HTTP (Alloy receiver for local services)
   ];
-
-  # ---------------------------------------------------------------------------
-  # nix-openclaw - AI Assistant with external comms only and strong isolation
-  # ---------------------------------------------------------------------------
-
-  programs.openclaw = {
-    # Eventually I should drive the documents through here
-    # documents = ./documents;
-    config = {
-      gateway = {
-        mode = "local";
-      };
-
-      channels.telegram = {
-        tokenFile = "/run/agenix/telegram-bot-token";
-        allowFrom = [
-          560918177
-    #-1001234567890   # couples group (no @mention required)
-    #-1002345678901   # noisy group (require @mention)
-        ];
-    #    groups = {
-    #      "*" = { requireMention = true; };
-    #      "-1001234567890" = { requireMention = false; }; # couples group
-    #      "-1002345678901" = { requireMention = true; };  # noisy group
-    #    };
-      };
-    };
-
-    instances.default = {
-      enable = true;
-      package = pkgs.openclaw; 
-      stateDir = "~/.openclaw";
-      workspaceDir = "~/.openclaw/workspace";
-
-      plugins = [
-        { source = "github:openclaw/nix-steipete-tools"; }
-        { source = "github:joshp123/xuezh"; }
-      ];
-    };
-  };
-  
-  # Create a systemd user service with strong isolation for nix-openclaw
-  systemd.services.nix-openclaw = {
-    description = "OpenClaw AI Assistant (isolated)";
-    after = [ "network-online.target" ];
-    wants = [ "network-online.target" ];
-    wantedBy = [ "multi-user.target" ];
-    
-    environment = {
-      # This variable will be overridden by the EnvironmentFile below
-      # but we include it here as a fallback and for documentation
-      OPENCLAW_GATEWAY_TOKEN = "placeholder_replaced_by_secret";
-      # Don't expose any ports - external comms only
-      OPENCLAW_NO_SERVER = "1";
-    };
-    
-    serviceConfig = {
-      # Run as dedicated user with minimal privileges
-      DynamicUser = false;
-      User = "openclaw";
-      Group = "openclaw";
-      ProtectSystem = "strict";
-      ProtectHome = true;
-      PrivateTmp = true;
-      NoNewPrivileges = true;
-      MemoryDenyWriteExecute = false;
-      PrivateDevices = true;
-      ProtectKernelTunables = true;
-      ProtectControlGroups = true;
-      RestrictAddressFamilies = "AF_INET AF_INET6 AF_UNIX AF_NETLINK";
-      RestrictNamespaces = true;
-      RestrictRealtime = true;
-      ProtectKernelModules = true;
-      ProtectKernelLogs = true;
-      ProtectClock = true;
-      ProtectProc = "invisible";
-      ProcSubset = "pid";
-      CapabilityBoundingSet = "";
-      RuntimeDirectory = "openclaw";
-      RuntimeDirectoryMode = "0750";
-      StateDirectory = "openclaw";
-      StateDirectoryMode = "0750";
-      WorkingDirectory = "/var/lib/openclaw";
-      Slice = "openclaw.slice";
-      
-      # Resource limits
-      MemoryMax = "2G";
-      CPUQuota = "200%";
-      
-      # Service execution
-      Type = "simple";
-      ExecStart = "${inputs.nix-openclaw.packages.${pkgs.system}.openclaw}/bin/openclaw gateway";
-      Restart = "on-failure";
-      RestartSec = "10s";
-      
-      # Secrets setup - creates a file with environment variables from the secrets
-      # Format of the environment file will be:
-      # OPENCLAW_GATEWAY_TOKEN=your_token_value
-      # OPENAI_API_KEY=your_openrouter_key (OpenRouter uses the OpenAI API format)
-      # OPENAI_API_BASE=https://openrouter.ai/api/v1
-      # OPENCLAW_TELEGRAM_BOT_TOKEN=your_telegram_token
-      ExecStartPre = pkgs.writeShellScript "prepare-openclaw-env" ''
-        mkdir -p /run/openclaw
-        echo "OPENCLAW_GATEWAY_TOKEN=$(cat ${config.sops.secrets.openclaw_gateway_token.path})" > /run/openclaw/env
-        echo "OPENAI_API_KEY=$(cat ${config.sops.secrets.openclaw_openrouter_key.path})" >> /run/openclaw/env
-        echo "OPENAI_API_BASE=https://openrouter.ai/api/v1" >> /run/openclaw/env
-        echo "OPENCLAW_TELEGRAM_BOT_TOKEN=$(cat ${config.sops.secrets.openclaw_telegram_token.path})" >> /run/openclaw/env
-        chmod 400 /run/openclaw/env
-      '';
-      EnvironmentFile = "-/run/openclaw/env";
-    };
-  };
-
-  systemd.slices.openclaw = {
-    description = "OpenClaw isolated slice";
-    sliceConfig = {
-      MemoryMax = "32G";
-      CPUQuota = "200%";
-    };
-  };
 
   # ---------------------------------------------------------------------------
   # System packages

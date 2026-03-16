@@ -40,6 +40,7 @@ let
 
     # Copy config to writable location so gateway can persist runtime changes
     ${pkgs.coreutils}/bin/mkdir -p "${configDir}"
+    ${pkgs.coreutils}/bin/chown openclaw:openclaw "${configDir}"
     ${pkgs.coreutils}/bin/cp -f /etc/openclaw/openclaw.json "${configDir}/openclaw.json"
     ${pkgs.coreutils}/bin/chown openclaw:openclaw "${configDir}/openclaw.json"
     ${pkgs.coreutils}/bin/chmod 0640 "${configDir}/openclaw.json"

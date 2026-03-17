@@ -26,7 +26,10 @@ let
       dm_policy = "allowlist";
       allow_from = [ 560918177 ];
     };
-    agents.defaults.model = "anthropic/claude-sonnet-4";
+    agents.defaults = {
+      provider = "openai-codex";
+      model = "gpt-5.3-codex";
+    };
     tools.mcp_servers.grocy = {
       transport = "stdio";
       command = "${grocyMcp}/bin/grocy-mcp";
@@ -157,7 +160,8 @@ in
       GOCLAW_BUNDLED_SKILLS_DIR = "${goclawPkg}/share/goclaw/skills";
       GOCLAW_SKILLS_DIR = "${stateDir}/skills";
       GOCLAW_AUTO_UPGRADE = "true";
-      GOCLAW_MODEL = "anthropic/claude-sonnet-4";
+      GOCLAW_PROVIDER = "openai-codex";
+      GOCLAW_MODEL = "gpt-5.3-codex";
       GOCLAW_TELEMETRY_ENABLED = "false";
       # Rod browser automation — use NixOS chromium instead of downloading
       ROD_BROWSER_BIN = "${pkgs.chromium}/bin/chromium";

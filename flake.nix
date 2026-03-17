@@ -62,7 +62,23 @@
 
     };
 
-    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, claude-code, opencode, nix-openclaw, xuezh, goclaw-src, nix-software-center, disko, sops-nix, ...}@inputs: {
+    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, claude-code, opencode, nix-openclaw, xuezh, goclaw-src, nix-software-center, disko, sops-nix, ...}@inputs:
+    let
+        kochOverlay = (final: prev: {
+          goclaw = final.callPackage ./nix/pkgs/goclaw.nix {
+            inherit goclaw-src;
+          };
+          goclaw-ui = final.callPackage ./nix/pkgs/goclaw-ui.nix {
+            inherit goclaw-src;
+          };
+          grocy-mcp = final.callPackage ./nix/pkgs/grocy-mcp.nix {};
+        });
+
+        mkKochPkgs = system: import nixpkgs {
+          inherit system;
+          overlays = [ kochOverlay ];
+        };
+    in {
         nixosConfigurations = {
             mandelbrot = nixpkgs.lib.nixosSystem {
                 system = "x86_64-linux";
@@ -105,17 +121,7 @@
                 specialArgs = { inherit inputs; };
                 modules = [
                     {
-                      nixpkgs.overlays = [
-                        (final: prev: {
-                          goclaw = final.callPackage ./nix/pkgs/goclaw.nix {
-                            inherit goclaw-src;
-                          };
-                          goclaw-ui = final.callPackage ./nix/pkgs/goclaw-ui.nix {
-                            inherit goclaw-src;
-                          };
-                          grocy-mcp = final.callPackage ./nix/pkgs/grocy-mcp.nix {};
-                        })
-                      ];
+                      nixpkgs.overlays = [ kochOverlay ];
                     }
                     disko.nixosModules.disko
                     sops-nix.nixosModules.sops
@@ -134,6 +140,63 @@
                 ];
             };
         };
+        devShells.x86_64-linux.koch-goclaw =
+          let
+            pkgs = mkKochPkgs "x86_64-linux";
+            goclawAdmin = pkgs.writeShellScriptBin "goclaw-admin" ''
+              #!/usr/bin/env bash
+              set -euo pipefail
+
+              exec sudo -u goclaw env GOCLAW_BIN="${pkgs.goclaw}/bin/goclaw" bash -lc '
+                set -euo pipefail
+                set -a
+                source /run/goclaw/env
+                set +a
+                export GOCLAW_CONFIG=/data/state-store/goclaw/config/goclaw.json
+                export GOCLAW_HOST=127.0.0.1
+                export GOCLAW_PORT=18789
+                exec "$GOCLAW_BIN" "$@"
+              ' _ "$@"
+            '';
+            sopsKoch = pkgs.writeShellScriptBin "sops-koch" ''
+              #!/usr/bin/env bash
+              set -euo pipefail
+
+              repo_root="''${GOCLAW_DOTFILES_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
+              default_file="$repo_root/nix/koch/secrets.yaml"
+
+              export SOPS_AGE_KEY_FILE="''${SOPS_AGE_KEY_FILE:-/var/lib/sops-nix/keys.txt}"
+
+              if [ "$#" -eq 0 ]; then
+                set -- "$default_file"
+              fi
+
+              exec ${pkgs.sops}/bin/sops "$@"
+            '';
+          in
+          pkgs.mkShell {
+            packages = with pkgs; [
+              goclaw
+              jq
+              yq
+              curl
+              age
+              sops
+              goclawAdmin
+              sopsKoch
+            ];
+
+            shellHook = ''
+              export GOCLAW_CONFIG=/data/state-store/goclaw/config/goclaw.json
+              export GOCLAW_HOST=127.0.0.1
+              export GOCLAW_PORT=18789
+
+              echo "koch goclaw shell ready"
+              echo "- Run goclaw as service user: goclaw-admin pairing list"
+              echo "- Approve a code: goclaw-admin pairing approve ABCD12"
+              echo "- Edit koch secrets via sops: sops-koch"
+            '';
+          };
         darwinConfigurations = {
             "Alexs-MacBook-Pro" = nix-darwin.lib.darwinSystem {
                system = "aarch64-darwin";

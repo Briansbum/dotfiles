@@ -2,6 +2,7 @@
 
 let
   goclawPkg = pkgs.goclaw;
+  goclawUi = pkgs.goclaw-ui;
   xuezhPkg = inputs.xuezh.packages.${pkgs.system}.default;
   steipeteTools = inputs.nix-openclaw.inputs.nix-steipete-tools;
   stateDir = "/data/state-store/goclaw";
@@ -195,8 +196,37 @@ in
   };
 
   # -------------------------------------------------------------------------
-  # Traefik — expose dashboard on tailnet via HTTPS
+  # Web UI — nginx serves SPA + proxies API/WS to goclaw, Traefik fronts it
   # -------------------------------------------------------------------------
+
+  services.nginx.virtualHosts."goclaw.koch.brians.skin" = {
+    listen = [{ addr = "127.0.0.1"; port = 18780; }];
+    root = "${goclawUi}/share/goclaw-ui";
+
+    locations."/" = {
+      tryFiles = "$uri $uri/ /index.html";
+    };
+
+    locations."/assets/" = {
+      extraConfig = ''
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+      '';
+    };
+
+    locations."/ws" = {
+      proxyPass = "http://127.0.0.1:18789";
+      proxyWebsockets = true;
+    };
+
+    locations."/v1/" = {
+      proxyPass = "http://127.0.0.1:18789";
+    };
+
+    locations."/health" = {
+      proxyPass = "http://127.0.0.1:18789";
+    };
+  };
 
   services.traefik.dynamicConfigOptions.http.routers.goclaw = {
     rule = "Host(`goclaw.koch.brians.skin`)";
@@ -204,7 +234,7 @@ in
     tls.certResolver = "desec";
   };
   services.traefik.dynamicConfigOptions.http.services.goclaw.loadBalancer.servers = [
-    { url = "http://localhost:18789"; }
+    { url = "http://localhost:18780"; }
   ];
 
   systemd.slices.goclaw = {

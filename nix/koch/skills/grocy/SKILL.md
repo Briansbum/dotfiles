@@ -7,10 +7,21 @@ description: "Use this skill when the user asks about groceries, shopping lists,
 
 ## Overview
 
-Grocy is a self-hosted household management system running on this server. Use the `web_fetch` tool to interact with its REST API.
+Grocy is a self-hosted household management system running on this server. Use the `exec` tool with `curl` to interact with its REST API. Do NOT use `web_fetch` — SSRF protection blocks localhost access.
 
 **Base URL:** `http://127.0.0.1:2383`
-**Authentication:** Add header `GROCY-API-KEY: <key>` to every request. The API key is available in the environment variable `GROCY_API_KEY`.
+**Authentication:** Add header `GROCY-API-KEY` to every request. The API key is in the `GROCY_API_KEY` environment variable.
+
+**Example request pattern:**
+```bash
+curl -s -H "GROCY-API-KEY: $GROCY_API_KEY" http://127.0.0.1:2383/api/stock
+```
+
+For POST/PUT requests:
+```bash
+curl -s -X POST -H "GROCY-API-KEY: $GROCY_API_KEY" -H "Content-Type: application/json" \
+  -d '{"amount": 1}' http://127.0.0.1:2383/api/stock/products/1/consume
+```
 
 ## Quick Reference
 

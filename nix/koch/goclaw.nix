@@ -137,7 +137,7 @@ in
     wants = [ "network-online.target" ];
     requires = [ "postgresql.service" ];
 
-    path = [ goclawPkg xuezhPkg pkgs.chromium ];
+    path = [ goclawPkg xuezhPkg pkgs.chromium pkgs.curl ];
 
     environment = {
       GOCLAW_POSTGRES_DSN = "postgres://goclaw@/goclaw?host=/run/postgresql";

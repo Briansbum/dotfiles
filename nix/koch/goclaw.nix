@@ -128,7 +128,7 @@ in
     wants = [ "network-online.target" ];
     requires = [ "postgresql.service" ];
 
-    path = [ goclawPkg xuezhPkg ];
+    path = [ goclawPkg xuezhPkg pkgs.chromium ];
 
     environment = {
       GOCLAW_POSTGRES_DSN = "postgres://goclaw@/goclaw?host=/run/postgresql";
@@ -142,6 +142,8 @@ in
       GOCLAW_AUTO_UPGRADE = "true";
       GOCLAW_MODEL = "anthropic/claude-sonnet-4";
       GOCLAW_TELEMETRY_ENABLED = "false";
+      # Rod browser automation — use NixOS chromium instead of downloading
+      ROD_BROWSER_BIN = "${pkgs.chromium}/bin/chromium";
     };
 
     serviceConfig = {
@@ -163,13 +165,13 @@ in
       Restart = "on-failure";
       RestartSec = 10;
 
-      # Sandboxing — stricter than openclaw since Go has no JIT
+      # Sandboxing — Go binary has no JIT, but Chromium (browser tool) does
       DynamicUser = false;
       ProtectSystem = "strict";
       ProtectHome = true;
       PrivateTmp = true;
       NoNewPrivileges = true;
-      MemoryDenyWriteExecute = true;
+      MemoryDenyWriteExecute = false; # Chromium V8 JIT needs W+X
       PrivateDevices = true;
       ProtectKernelTunables = true;
       ProtectControlGroups = true;

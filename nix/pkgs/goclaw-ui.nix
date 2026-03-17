@@ -1,4 +1,4 @@
-{ lib, stdenv, pnpmConfigHook, fetchPnpmDeps, nodejs, goclaw-src }:
+{ lib, stdenv, pnpmConfigHook, fetchPnpmDeps, pnpm, nodejs, goclaw-src }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "goclaw-ui";
@@ -6,7 +6,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = "${goclaw-src}/ui/web";
 
-  nativeBuildInputs = [ pnpmConfigHook nodejs ];
+  nativeBuildInputs = [ pnpmConfigHook pnpm nodejs ];
 
   pnpmDeps = fetchPnpmDeps {
     inherit (finalAttrs) pname version src;

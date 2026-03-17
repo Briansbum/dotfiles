@@ -113,6 +113,7 @@
                           goclaw-ui = final.callPackage ./nix/pkgs/goclaw-ui.nix {
                             inherit goclaw-src;
                           };
+                          grocy-mcp = final.callPackage ./nix/pkgs/grocy-mcp.nix {};
                         })
                       ];
                     }

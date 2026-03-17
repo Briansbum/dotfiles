@@ -3,6 +3,7 @@
 let
   goclawPkg = pkgs.goclaw;
   goclawUi = pkgs.goclaw-ui;
+  grocyMcp = pkgs.grocy-mcp;
   xuezhPkg = inputs.xuezh.packages.${pkgs.system}.default;
   steipeteTools = inputs.nix-openclaw.inputs.nix-steipete-tools;
   stateDir = "/data/state-store/goclaw";
@@ -26,6 +27,13 @@ let
       allow_from = [ 560918177 ];
     };
     agents.defaults.model = "anthropic/claude-sonnet-4";
+    tools.mcp_servers.grocy = {
+      transport = "stdio";
+      command = "${grocyMcp}/bin/grocy-mcp";
+      env = {
+        GROCY_BASE_URL = "http://127.0.0.1:2383";
+      };
+    };
   });
 
   prepareEnv = pkgs.writeShellScript "prepare-goclaw-env" ''

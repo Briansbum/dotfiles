@@ -16,6 +16,7 @@ let
     { name = "sag";       path = "${steipeteTools}/tools/sag/skills/sag"; }
     { name = "sonoscli";  path = "${steipeteTools}/tools/sonoscli/skills/sonoscli"; }
     { name = "xuezh";     path = "${inputs.xuezh}/skills/xuezh"; }
+    { name = "grocy";     path = ./skills/grocy; }
   ];
 
   configJson = pkgs.writeText "goclaw.json" (builtins.toJSON {
@@ -36,6 +37,7 @@ let
       printf 'GOCLAW_ENCRYPTION_KEY=%s\n' "$(cat "$2")"
       printf 'GOCLAW_TELEGRAM_TOKEN=%s\n' "$(cat "$3")"
       printf 'GOCLAW_OPENROUTER_API_KEY=%s\n' "$(cat "$4")"
+      printf 'GROCY_API_KEY=%s\n' "$(cat "$5")"
     } > "$env_path"
   '';
 
@@ -88,6 +90,12 @@ in
     restartUnits = [ "goclaw.service" ];
   };
   sops.secrets."goclaw_openrouter_key" = {
+    owner = "goclaw";
+    group = "goclaw";
+    mode = "0400";
+    restartUnits = [ "goclaw.service" ];
+  };
+  sops.secrets."goclaw_grocy_api_key" = {
     owner = "goclaw";
     group = "goclaw";
     mode = "0400";
@@ -157,7 +165,7 @@ in
           ${pkgs.util-linux}/bin/runuser -u postgres -- ${config.services.postgresql.package}/bin/psql -d goclaw -c 'CREATE EXTENSION IF NOT EXISTS "pgcrypto";'
           ${pkgs.util-linux}/bin/runuser -u postgres -- ${config.services.postgresql.package}/bin/psql -d goclaw -c 'CREATE EXTENSION IF NOT EXISTS "vector";'
         ''}"
-        "${prepareEnv} ${config.sops.secrets.goclaw_gateway_token.path} ${config.sops.secrets.goclaw_encryption_key.path} ${config.sops.secrets.goclaw_telegram_token.path} ${config.sops.secrets.goclaw_openrouter_key.path}"
+        "${prepareEnv} ${config.sops.secrets.goclaw_gateway_token.path} ${config.sops.secrets.goclaw_encryption_key.path} ${config.sops.secrets.goclaw_telegram_token.path} ${config.sops.secrets.goclaw_openrouter_key.path} ${config.sops.secrets.goclaw_grocy_api_key.path}"
         "+${prepareState}"
       ];
       ExecStart = "${goclawPkg}/bin/goclaw";

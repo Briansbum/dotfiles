@@ -118,17 +118,19 @@ in
 {
   imports = [ ./default.nix ];
 
-  # Default to macOS system user naming convention
-  services.goclaw.user = lib.mkDefault "_goclaw";
-  services.goclaw.group = lib.mkDefault "_goclaw";
-
-  config = lib.mkIf cfg.enable {
+  config = lib.mkMerge [
+    {
+      # Default to macOS system user naming convention
+      services.goclaw.user = lib.mkDefault "_goclaw";
+      services.goclaw.group = lib.mkDefault "_goclaw";
+    }
+    (lib.mkIf cfg.enable {
     # -----------------------------------------------------------------------
     # Dedicated system user — no login shell, hidden, isolated from /Users/alex
     # -----------------------------------------------------------------------
 
     users.users.${cfg.user} = {
-      uid = 350;
+      uid = 309;
       gid = config.users.groups.${cfg.group}.gid;
       home = cfg.stateDir;
       shell = "/usr/bin/false";
@@ -136,7 +138,7 @@ in
       isHidden = true;
     };
     users.groups.${cfg.group} = {
-      gid = 350;
+      gid = 309;
     };
     users.knownUsers = [ cfg.user ];
     users.knownGroups = [ cfg.group ];
@@ -212,5 +214,6 @@ in
         };
       };
     };
-  };
+  })
+  ];
 }

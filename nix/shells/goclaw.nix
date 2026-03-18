@@ -6,7 +6,15 @@
 
 { nixpkgs, overlays }:
 
-{ system, hostName, stateDir, port, secretsFile, sopsKeyFile, serviceUser }:
+{ system
+, hostName
+, stateDir
+, port
+, secretsFile
+, sopsKeyFile
+, serviceUser
+, postgresDSN ? ""
+}:
 
 let
   pkgs = import nixpkgs { inherit system overlays; };
@@ -19,6 +27,9 @@ let
         set -a; source "${stateDir}/.env"; set +a
       elif [ -f "/run/goclaw/env" ]; then
         set -a; source /run/goclaw/env; set +a
+      fi
+      if [ -z "''${GOCLAW_POSTGRES_DSN:-}" ] && [ -n "${postgresDSN}" ]; then
+        export GOCLAW_POSTGRES_DSN="${postgresDSN}"
       fi
       export GOCLAW_CONFIG=${stateDir}/config/goclaw.json
       export GOCLAW_HOST=127.0.0.1
@@ -45,6 +56,9 @@ let
       elif [ -f "/run/goclaw/env" ]; then
         set -a; source /run/goclaw/env; set +a
       fi
+      if [ -z "''${GOCLAW_POSTGRES_DSN:-}" ] && [ -n "${postgresDSN}" ]; then
+        export GOCLAW_POSTGRES_DSN="${postgresDSN}"
+      fi
       export HOME=${stateDir}
       export GOCLAW_CONFIG=${stateDir}/config/goclaw.json
       export GOCLAW_HOST=127.0.0.1
@@ -65,6 +79,9 @@ pkgs.mkShell {
     export GOCLAW_CONFIG=${stateDir}/config/goclaw.json
     export GOCLAW_HOST=127.0.0.1
     export GOCLAW_PORT=${toString port}
+    if [ -z "''${GOCLAW_POSTGRES_DSN:-}" ] && [ -n "${postgresDSN}" ]; then
+      export GOCLAW_POSTGRES_DSN="${postgresDSN}"
+    fi
 
     echo "${hostName} goclaw shell ready"
     echo "- Run goclaw as service user:  goclaw-admin pairing list"

@@ -151,6 +151,7 @@
           hostName = "koch";
           stateDir = "/data/state-store/goclaw";
           port = 18789;
+          postgresDSN = "postgres://goclaw@/goclaw?host=/run/postgresql";
           secretsFile = "nix/koch/secrets.yaml";
           sopsKeyFile = "/var/lib/sops-nix/keys.txt";
           serviceUser = "goclaw";
@@ -161,6 +162,7 @@
           hostName = "mac";
           stateDir = "/var/lib/goclaw";
           port = 18790;
+          postgresDSN = "postgres://goclaw@localhost:5432/goclaw?sslmode=disable";
           secretsFile = "nix/Alexs-Macbook-Pro/secrets.yaml";
           sopsKeyFile = "/Users/alex/Library/Application Support/sops/age/keys.txt";
           serviceUser = "_goclaw";

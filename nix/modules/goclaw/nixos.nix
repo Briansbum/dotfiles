@@ -107,7 +107,9 @@ in
         PrivateTmp = true;
         NoNewPrivileges = true;
         MemoryDenyWriteExecute = false; # Chromium V8 JIT needs W+X
-        PrivateDevices = true;
+        PrivateDevices = false;
+	DevicePolicy = "closed";
+	DeviceAllow = ["char-* r" "/dev/null rw" "/dev/zero rw" "/dev/random r" "/dev/urandom r"];
         ProtectKernelTunables = true;
         ProtectControlGroups = true;
         RestrictAddressFamilies = "AF_INET AF_INET6 AF_UNIX AF_NETLINK";

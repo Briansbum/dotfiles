@@ -1,4 +1,7 @@
 # GoClaw on Alexs-MacBook-Pro — Slack channel, Anthropic provider, local-only UI.
+#
+# Runs as dedicated _goclaw system user with no access to /Users/alex.
+# State in /var/lib/goclaw, logs in /var/log/goclaw.
 
 { ... }:
 
@@ -8,8 +11,8 @@
   services.goclaw = {
     enable = true;
     port = 18790;
-    stateDir = "/Users/alex/.goclaw";
-    logsDir = "/Users/alex/Library/Logs/goclaw";
+    stateDir = "/var/lib/goclaw";
+    logsDir = "/var/log/goclaw";
     postgresDSN = "postgres://goclaw@localhost:5432/goclaw?sslmode=disable";
 
     config = {
@@ -19,7 +22,7 @@
         group_policy = "disabled";
         require_mention = true;
       };
-      agents.defaults.workspace = "/Users/alex/.goclaw/workspace";
+      agents.defaults.workspace = "/var/lib/goclaw/workspace";
       database = {};
     };
 

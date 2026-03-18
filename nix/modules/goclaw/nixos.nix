@@ -10,8 +10,6 @@ let
   cfg = config.services.goclaw;
 
   secretNames = lib.unique (lib.attrValues cfg.secretEnvironment);
-  user = "goclaw";
-  group = "goclaw";
 
   prepareEnv = pkgs.writeShellScript "goclaw-prepare-env" ''
     set -euo pipefail
@@ -35,8 +33,8 @@ in
     sops.secrets = lib.listToAttrs (map (name: {
       inherit name;
       value = {
-        owner = user;
-        inherit group;
+        owner = cfg.user;
+        group = cfg.group;
         mode = "0400";
         restartUnits = [ "goclaw.service" ];
       };
@@ -46,12 +44,12 @@ in
     # System user
     # -----------------------------------------------------------------------
 
-    users.users.${user} = {
+    users.users.${cfg.user} = {
       isSystemUser = true;
-      inherit group;
+      group = cfg.group;
       home = cfg.stateDir;
     };
-    users.groups.${group} = {};
+    users.groups.${cfg.group} = {};
 
     # -----------------------------------------------------------------------
     # PostgreSQL — database, role, peer auth
@@ -59,11 +57,11 @@ in
 
     services.postgresql.ensureDatabases = [ "goclaw" ];
     services.postgresql.ensureUsers = [{
-      name = user;
+      name = cfg.user;
       ensureDBOwnership = true;
     }];
     services.postgresql.authentication = lib.mkAfter ''
-      local goclaw ${user} peer
+      local goclaw ${cfg.user} peer
     '';
 
     # -----------------------------------------------------------------------
@@ -82,8 +80,8 @@ in
 
       serviceConfig = {
         Type = "simple";
-        User = user;
-        Group = group;
+        User = cfg.user;
+        Group = cfg.group;
         ExecStartPre = [
           # Extensions require superuser — run as postgres via + prefix
           "+${pkgs.writeShellScript "goclaw-ensure-extensions" ''
@@ -93,7 +91,7 @@ in
           "${prepareEnv}"
           "+${pkgs.writeShellScript "goclaw-prepare-state-chown" ''
             ${cfg._prepareState}
-            ${pkgs.coreutils}/bin/chown -R ${user}:${group} ${cfg.stateDir}
+            ${pkgs.coreutils}/bin/chown -R ${cfg.user}:${cfg.group} ${cfg.stateDir}
           ''}"
         ];
         ExecStart = "${cfg.package}/bin/goclaw";

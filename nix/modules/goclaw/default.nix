@@ -82,6 +82,18 @@ in
       description = "Extra skill paths for linkFarm: [{ name = \"...\"; path = \"...\"; }].";
     };
 
+    user = lib.mkOption {
+      type = lib.types.str;
+      default = "goclaw";
+      description = "User account the goclaw process runs as.";
+    };
+
+    group = lib.mkOption {
+      type = lib.types.str;
+      default = "goclaw";
+      description = "Group for the goclaw process.";
+    };
+
     webUi = {
       enable = lib.mkOption {
         type = lib.types.bool;
@@ -137,6 +149,8 @@ in
         done
       ''}
       ${pkgs.coreutils}/bin/chmod -R u+rw "${cfg.stateDir}/skills"
+      ${pkgs.coreutils}/bin/chown -R ${cfg.user}:${cfg.group} "${cfg.stateDir}"
+      ${pkgs.coreutils}/bin/chown -R ${cfg.user}:${cfg.group} "${cfg.logsDir}"
     '';
 
     services.goclaw._commonEnv = {

@@ -74,21 +74,6 @@ in
     pkgs.chromium
   ];
 
-  systemd.services.goclaw.serviceConfig.ExecStartPre = lib.mkIf webhookMode (lib.mkBefore [
-    "+${pkgs.writeShellScript "goclaw-force-telegram-webhook-mode" ''
-      set -euo pipefail
-      ${pkgs.util-linux}/bin/runuser -u postgres -- \
-        ${config.services.postgresql.package}/bin/psql -d goclaw -v ON_ERROR_STOP=1 -c \
-        \"UPDATE channel_instances\
-           SET config = jsonb_set(\
-                        jsonb_set(COALESCE(config, '{}'::jsonb), '{connection_mode}', '\\"webhook\\"'::jsonb, true),\
-                        '{webhook_path}', to_jsonb('${webhookPath}'::text), true\
-                      ),\
-               updated_at = NOW()\
-         WHERE channel_type = 'telegram' AND enabled = true;\"
-    ''}"
-  ]);
-
   # Traefik routing (koch-specific — public TLS via deSEC)
   services.traefik.dynamicConfigOptions.http.routers.goclaw = {
     rule = "Host(`goclaw.koch.brians.skin`)";

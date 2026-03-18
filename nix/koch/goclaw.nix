@@ -21,6 +21,8 @@ in
 
       channels.telegram = {
         enabled = true;
+        connection_mode = "webhook";
+        webhook_path = "/telegram-webhook-goclaw";
         dm_policy = "allowlist";
         allow_from = [ 560918177 ];
         dm_stream = true;

@@ -1,0 +1,178 @@
+diff --git a/internal/config/config_channels.go b/internal/config/config_channels.go
+index 2a88109..d8d1d7f 100644
+--- a/internal/config/config_channels.go
++++ b/internal/config/config_channels.go
+@@ -27,6 +27,10 @@ type TelegramConfig struct {
+ 	Token          string              `json:"token"`
+ 	Proxy          string              `json:"proxy,omitempty"`
+ 	APIServer      string              `json:"api_server,omitempty"` // custom Telegram Bot API server URL (e.g. "http://localhost:8081")
++	ConnectionMode string              `json:"connection_mode,omitempty"` // "polling" (default), "webhook"
++	WebhookURL     string              `json:"webhook_url,omitempty"`     // public HTTPS URL for Telegram webhook
++	WebhookPath    string              `json:"webhook_path,omitempty"`    // local HTTP path mounted on gateway mux (default "/telegram/webhook")
++	WebhookSecret  string              `json:"webhook_secret,omitempty"`  // optional secret token for Telegram webhook requests
+ 	AllowFrom      FlexibleStringSlice `json:"allow_from"`
+ 	DMPolicy       string              `json:"dm_policy,omitempty"`       // "pairing" (default), "allowlist", "open", "disabled"
+ 	GroupPolicy    string              `json:"group_policy,omitempty"`    // "open" (default), "allowlist", "disabled"
+diff --git a/internal/channels/telegram/channel.go b/internal/channels/telegram/channel.go
+index b50fdb2..ba4f09f 100644
+--- a/internal/channels/telegram/channel.go
++++ b/internal/channels/telegram/channel.go
+@@ -3,11 +3,13 @@ package telegram
+ import (
+ 	"context"
+ 	"fmt"
++	"io"
+ 	"log/slog"
+ 	"net/http"
+ 	"net/url"
++	"os"
+ 	"strings"
+ 	"sync"
+ 	"time"
+@@ -38,6 +40,7 @@ type Channel struct {
+ 	historyLimit     int
+ 	requireMention   bool
+ 	pollCancel       context.CancelFunc // cancels the long polling context
++	webhookHandler   http.Handler
+ 	pollDone         chan struct{}       // closed when polling goroutine exits
+ }
+ 
+@@ -64,7 +67,7 @@ func New(cfg config.TelegramConfig, msgBus *bus.MessageBus, pairingSvc store.Pa
+ 	}
+ 
+ 	httpClient := &http.Client{
+-		Timeout: 30 * time.Second,
++		Timeout: 8 * time.Second,
+ 	}
+ 
+ 	if cfg.Proxy != "" {
+@@ -112,8 +115,13 @@ func New(cfg config.TelegramConfig, msgBus *bus.MessageBus, pairingSvc store.Pa
+ }
+ 
+ // Start begins long polling for Telegram updates.
+ func (c *Channel) Start(ctx context.Context) error {
+-	slog.Info("starting telegram bot (polling mode)")
++	mode := strings.ToLower(strings.TrimSpace(c.config.ConnectionMode))
++	if mode == "" {
++		mode = "polling"
++	}
++
++	slog.Info("starting telegram bot", "mode", mode)
+ 
+ 	// Create a cancellable context for the polling goroutine.
+ 	// Stop() cancels this context to cleanly shut down long polling.
+@@ -121,15 +129,64 @@ func (c *Channel) Start(ctx context.Context) error {
+ 	c.pollCancel = cancel
+ 	c.pollDone = make(chan struct{})
+ 
+-	updates, err := c.bot.UpdatesViaLongPolling(pollCtx, &telego.GetUpdatesParams{
+-		Timeout: 30,
+-		AllowedUpdates: []string{
+-			"message",
+-			"edited_message",
+-			"callback_query",
+-			"my_chat_member",
+-		},
+-	})
++	allowedUpdates := []string{"message", "edited_message", "callback_query", "my_chat_member"}
++
++	var (
++		updates <-chan telego.Update
++		err    error
++	)
++
++	if mode == "webhook" {
++		webhookSecret := c.config.WebhookSecret
++		if webhookSecret == "" {
++			webhookSecret = os.Getenv("GOCLAW_TELEGRAM_WEBHOOK_SECRET")
++		}
++
++		registerHandler := func(handler telego.WebhookHandler) error {
++			c.webhookHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
++				if r.Method != http.MethodPost {
++					w.WriteHeader(http.StatusMethodNotAllowed)
++					return
++				}
++				if webhookSecret != "" && r.Header.Get("X-Telegram-Bot-Api-Secret-Token") != webhookSecret {
++					w.WriteHeader(http.StatusUnauthorized)
++					return
++				}
++				data, readErr := io.ReadAll(r.Body)
++				if readErr != nil {
++					w.WriteHeader(http.StatusBadRequest)
++					return
++				}
++				if handleErr := handler(r.Context(), data); handleErr != nil {
++					slog.Warn("telegram webhook handler error", "error", handleErr)
++					w.WriteHeader(http.StatusBadRequest)
++					return
++				}
++				w.WriteHeader(http.StatusOK)
++			})
++			return nil
++		}
++
++		webhookURL := c.config.WebhookURL
++		if webhookURL == "" {
++			webhookURL = os.Getenv("GOCLAW_TELEGRAM_WEBHOOK_URL")
++		}
++
++		if webhookURL != "" {
++			updates, err = c.bot.UpdatesViaWebhook(pollCtx, registerHandler, telego.WithWebhookSet(pollCtx, &telego.SetWebhookParams{
++				URL:            webhookURL,
++				SecretToken:    webhookSecret,
++				AllowedUpdates: allowedUpdates,
++			}))
++			slog.Info("telegram webhook configured", "url", webhookURL, "path", c.webhookPath())
++		} else {
++			updates, err = c.bot.UpdatesViaWebhook(pollCtx, registerHandler)
++			slog.Warn("telegram webhook_url is empty; expecting existing Telegram setWebhook config", "path", c.webhookPath())
++		}
++	} else {
++		updates, err = c.bot.UpdatesViaLongPolling(pollCtx, &telego.GetUpdatesParams{
++			Timeout:        5,
++			AllowedUpdates: allowedUpdates,
++		}, telego.WithLongPollingRetryTimeout(1*time.Second))
++	}
+ 	if err != nil {
+ 		cancel()
+-		return fmt.Errorf("start long polling: %w", err)
++		return fmt.Errorf("start telegram updates: %w", err)
+ 	}
+ 
+ 	c.SetRunning(true)
+@@ -213,6 +270,8 @@ func (c *Channel) Stop(_ context.Context) error {
+ 	if c.pollCancel != nil {
+ 		c.pollCancel()
+ 	}
++
++	c.webhookHandler = nil
+ 
+ 	// Wait for the polling goroutine to fully exit so that
+ 	// Telegram releases the getUpdates lock before a new instance starts.
+@@ -229,6 +288,24 @@ func (c *Channel) Stop(_ context.Context) error {
+ 	return nil
+ }
+ 
++// WebhookHandler returns the webhook handler and route for mounting on the main gateway mux.
++// Only active when telegram connection_mode is set to "webhook".
++func (c *Channel) WebhookHandler() (string, http.Handler) {
++	if strings.ToLower(strings.TrimSpace(c.config.ConnectionMode)) != "webhook" {
++		return "", nil
++	}
++	if c.webhookHandler == nil {
++		return "", nil
++	}
++	return c.webhookPath(), c.webhookHandler
++}
++
++func (c *Channel) webhookPath() string {
++	if c.config.WebhookPath != "" {
++		return "/" + strings.TrimPrefix(c.config.WebhookPath, "/")
++	}
++	return "/telegram/webhook"
++}
++
+ // parseChatID converts a string chat ID to int64.
+ func parseChatID(chatIDStr string) (int64, error) {
+ 	var id int64

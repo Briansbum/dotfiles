@@ -30,7 +30,7 @@ in
       };
       agents.defaults = {
         provider = "openai-codex";
-        model = "gpt-5-mini";
+        model = "gpt-5.1-codex-mini";
       };
       tools.mcp_servers.grocy = {
         transport = "stdio";
@@ -41,7 +41,7 @@ in
 
     environment = {
       GOCLAW_PROVIDER = "openai-codex";
-      GOCLAW_MODEL = "gpt-5-mini";
+      GOCLAW_MODEL = "gpt-5.1-codex-mini";
       GOCLAW_LANE_MAIN = "60";
       ROD_BROWSER_BIN = "${pkgs.chromium}/bin/chromium";
       GOCLAW_OWNER_IDS = "alex,560918177,c061959f-6a9a-4b9d-b6ad-744150e692c0";

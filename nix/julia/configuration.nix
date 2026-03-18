@@ -179,7 +179,7 @@
     pavucontrol
     playerctl
     brightnessctl
-    inputs.nix-software-center.packages.${pkgs.system}.nix-software-center
+    inputs.nix-software-center.packages.${pkgs.stdenv.hostPlatform.system}.nix-software-center
     lxqt.lxqt-policykit
     accountsservice
     libthai

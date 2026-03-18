@@ -64,7 +64,7 @@ in
 
   # Add xuezh + chromium to systemd PATH
   systemd.services.goclaw.path = [
-    inputs.xuezh.packages.${pkgs.system}.default
+    inputs.xuezh.packages.${pkgs.stdenv.hostPlatform.system}.default
     pkgs.chromium
   ];
 

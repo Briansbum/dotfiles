@@ -26,8 +26,9 @@ in {
           type = types.nullOr types.port;
           default = null;
           description = ''
-            Tailscale HTTPS port. Only used when path is null.
-            Defaults to localPort if unset.
+            Tailscale HTTPS port.
+            - When path is null, defaults to localPort if unset.
+            - When path is set, defaults to 443 if unset.
           '';
         };
 
@@ -56,9 +57,12 @@ in {
 
     systemd.services = mapAttrs' (name: svc:
       let
+        httpsPort = if svc.path != null
+          then (if svc.tsPort != null then svc.tsPort else 443)
+          else svc.tsPort;
         serveCmd = if svc.path != null
-          then "--https=443 --set-path=/${removePrefix "/" svc.path} http://localhost:${toString svc.localPort}"
-          else "--https=${toString svc.tsPort} http://localhost:${toString svc.localPort}";
+          then "--bg --https=${toString httpsPort} --set-path=/${removePrefix "/" svc.path} http://localhost:${toString svc.localPort}"
+          else "--bg --https=${toString httpsPort} http://localhost:${toString svc.localPort}";
         proxyVerb = if svc.funnel then "funnel" else "serve";
         after = [ "network-online.target" "tailscaled.service" ]
           ++ optional (svc.afterService != null) "${svc.afterService}.service";

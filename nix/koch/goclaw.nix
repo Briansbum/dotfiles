@@ -8,6 +8,7 @@ let
   telegramCfg = cfg.config.channels.telegram;
   webhookMode = (telegramCfg.connection_mode or "") == "webhook";
   webhookPath = "/" + lib.removePrefix "/" (telegramCfg.webhook_path or "/telegram/webhook");
+  webhookTsPort = config.services.tailscaleServe.goclaw-telegram-webhook.tsPort or 443;
 in
 {
   imports = [ ../modules/goclaw/nixos.nix ];
@@ -121,7 +122,11 @@ in
           exit 1
         fi
 
-        expected_url="https://$dns_name${webhookPath}"
+        expected_base="https://$dns_name"
+        if [ "${toString webhookTsPort}" != "443" ]; then
+          expected_base="$expected_base:${toString webhookTsPort}"
+        fi
+        expected_url="$expected_base${webhookPath}"
 
         tg_get_webhook_url() {
           ${pkgs.curl}/bin/curl -sS --max-time 20 "https://api.telegram.org/bot$token/getWebhookInfo" | ${pkgs.jq}/bin/jq -r '.result.url // empty'

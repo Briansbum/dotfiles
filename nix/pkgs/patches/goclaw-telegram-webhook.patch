@@ -42,7 +42,7 @@
  	}
  
  	if cfg.Proxy != "" {
-@@ -109,28 +112,90 @@
+@@ -109,28 +112,94 @@
  	}, nil
  }
  
@@ -129,6 +129,10 @@
 +				SecretToken:    webhookSecret,
 +				AllowedUpdates: allowedUpdates,
 +			}))
++			if err != nil {
++				slog.Warn("telegram setWebhook failed; continuing with existing webhook", "error", err)
++				updates, err = c.bot.UpdatesViaWebhook(pollCtx, registerHandler)
++			}
 +			slog.Info("telegram webhook configured", "url", webhookURL, "path", c.webhookPath())
 +		} else {
 +			updates, err = c.bot.UpdatesViaWebhook(pollCtx, registerHandler)
@@ -147,7 +151,7 @@
  	}
  
  	c.SetRunning(true)
-@@ -245,6 +310,8 @@
+@@ -245,6 +314,8 @@
  		c.pollCancel()
  	}
  
@@ -156,7 +160,7 @@
  	// Wait for the polling goroutine to fully exit so that
  	// Telegram releases the getUpdates lock before a new instance starts.
  	if c.pollDone != nil {
-@@ -259,6 +326,35 @@
+@@ -259,6 +330,35 @@
  	return nil
  }
  

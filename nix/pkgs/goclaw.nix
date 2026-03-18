@@ -11,10 +11,12 @@ buildGoModule.override { go = go_1_26; } {
   env.CGO_ENABLED = 0;
 
   postPatch = ''
-    # Avoid long-poll request deadlines: GetUpdates uses timeout=30s upstream,
-    # so keep HTTP client timeout comfortably above that.
+    # Polling reliability fix:
+    # - Shorten Telegram long-poll window to avoid idle middlebox/NAT drops.
+    # - Keep HTTP timeout above poll timeout, but short enough for quick recovery.
     substituteInPlace internal/channels/telegram/channel.go \
-      --replace-fail 'Timeout: 30 * time.Second,' 'Timeout: 75 * time.Second,'
+      --replace-fail 'Timeout: 30 * time.Second,' 'Timeout: 25 * time.Second,' \
+      --replace-fail 'Timeout: 30,' 'Timeout: 10,'
   '';
 
   ldflags = [

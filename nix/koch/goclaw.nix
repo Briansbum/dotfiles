@@ -43,6 +43,9 @@ in
       GOCLAW_PROVIDER = "openai-codex";
       GOCLAW_MODEL = "gpt-5.1-codex-mini";
       GOCLAW_LANE_MAIN = "60";
+      GOCLAW_TELEGRAM_CONNECTION_MODE = "webhook";
+      GOCLAW_TELEGRAM_WEBHOOK_PATH = "/telegram-webhook-goclaw";
+      GOCLAW_TELEGRAM_WEBHOOK_URL = "https://koch.tuxedo-burbot.ts.net:8443/telegram-webhook-goclaw";
       ROD_BROWSER_BIN = "${pkgs.chromium}/bin/chromium";
       GOCLAW_OWNER_IDS = "alex,560918177,c061959f-6a9a-4b9d-b6ad-744150e692c0";
     };

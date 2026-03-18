@@ -42,7 +42,7 @@
  	}
  
  	if cfg.Proxy != "" {
-@@ -109,28 +112,84 @@
+@@ -109,28 +112,90 @@
  	}, nil
  }
  
@@ -51,6 +51,12 @@
  func (c *Channel) Start(ctx context.Context) error {
 -	slog.Info("starting telegram bot (polling mode)")
 +	mode := strings.ToLower(strings.TrimSpace(c.config.ConnectionMode))
++	if envMode := strings.ToLower(strings.TrimSpace(os.Getenv("GOCLAW_TELEGRAM_CONNECTION_MODE"))); envMode != "" {
++		mode = envMode
++	}
++	if mode == "" && strings.TrimSpace(os.Getenv("GOCLAW_TELEGRAM_WEBHOOK_URL")) != "" {
++		mode = "webhook"
++	}
 +	if mode == "" {
 +		mode = "polling"
 +	}
@@ -141,7 +147,7 @@
  	}
  
  	c.SetRunning(true)
-@@ -245,6 +304,8 @@
+@@ -245,6 +310,8 @@
  		c.pollCancel()
  	}
  
@@ -150,14 +156,21 @@
  	// Wait for the polling goroutine to fully exit so that
  	// Telegram releases the getUpdates lock before a new instance starts.
  	if c.pollDone != nil {
-@@ -259,6 +320,25 @@
+@@ -259,6 +326,35 @@
  	return nil
  }
  
 +// WebhookHandler returns the webhook handler and route for mounting on the main gateway mux.
 +// Only active when telegram connection_mode is set to "webhook".
 +func (c *Channel) WebhookHandler() (string, http.Handler) {
-+	if strings.ToLower(strings.TrimSpace(c.config.ConnectionMode)) != "webhook" {
++	mode := strings.ToLower(strings.TrimSpace(c.config.ConnectionMode))
++	if envMode := strings.ToLower(strings.TrimSpace(os.Getenv("GOCLAW_TELEGRAM_CONNECTION_MODE"))); envMode != "" {
++		mode = envMode
++	}
++	if mode == "" && strings.TrimSpace(os.Getenv("GOCLAW_TELEGRAM_WEBHOOK_URL")) != "" {
++		mode = "webhook"
++	}
++	if mode != "webhook" {
 +		return "", nil
 +	}
 +	if c.webhookHandler == nil {
@@ -169,6 +182,9 @@
 +func (c *Channel) webhookPath() string {
 +	if c.config.WebhookPath != "" {
 +		return "/" + strings.TrimPrefix(c.config.WebhookPath, "/")
++	}
++	if envPath := strings.TrimSpace(os.Getenv("GOCLAW_TELEGRAM_WEBHOOK_PATH")); envPath != "" {
++		return "/" + strings.TrimPrefix(envPath, "/")
 +	}
 +	return "/telegram/webhook"
 +}

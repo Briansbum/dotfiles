@@ -18,7 +18,7 @@ import (
 type Param struct {
 	Name     string `json:"name"`
 	Type     string `json:"type"`
-	In       string `json:"in"`       // "path", "body", or "query"
+	In       string `json:"in"` // "path", "body", or "query"
 	Required bool   `json:"required"`
 	Desc     string `json:"description"`
 }
@@ -350,8 +350,13 @@ func mcpToolDefinitions() []map[string]any {
 			"name":        "grocy_list_tools",
 			"description": "List all available Grocy API operations. Returns name and short description for each.",
 			"inputSchema": map[string]any{
-				"type":       "object",
-				"properties": map[string]any{},
+				"type": "object",
+				"properties": map[string]any{
+					"name_prefix": map[string]any{
+						"type":        "string",
+						"description": "Optional tool name prefix filter",
+					},
+				},
 			},
 		},
 		{
@@ -455,7 +460,7 @@ func doDescribeTool(raw json.RawMessage) callToolResult {
 func doUseTool(raw json.RawMessage) callToolResult {
 	var args struct {
 		Arguments struct {
-			Name   string                 `json:"name"`
+			Name   string         `json:"name"`
 			Params map[string]any `json:"params"`
 		} `json:"arguments"`
 	}

@@ -3,7 +3,6 @@
 { config, pkgs, inputs, lib, ... }:
 
 let
-  grocyMcp = pkgs.grocy-mcp;
   steipeteTools = inputs.nix-openclaw.inputs.nix-steipete-tools;
   cfg = config.services.goclaw;
 in
@@ -32,11 +31,6 @@ in
         provider = "openai-codex";
         model = "gpt-5.1-codex-mini";
       };
-      tools.mcp_servers.grocy = {
-        transport = "stdio";
-        command = "${grocyMcp}/bin/grocy-mcp";
-        env.GROCY_BASE_URL = "http://127.0.0.1:2383";
-      };
     };
 
     environment = {
@@ -52,7 +46,6 @@ in
       GOCLAW_ENCRYPTION_KEY = "goclaw_encryption_key";
       GOCLAW_TELEGRAM_TOKEN = "goclaw_telegram_token";
       GOCLAW_OPENROUTER_API_KEY = "goclaw_openrouter_key";
-      GROCY_API_KEY = "goclaw_grocy_api_key";
     };
 
     extraSkillPaths = [
@@ -63,7 +56,6 @@ in
       { name = "sag";       path = "${steipeteTools}/tools/sag/skills/sag"; }
       { name = "sonoscli";  path = "${steipeteTools}/tools/sonoscli/skills/sonoscli"; }
       { name = "xuezh";     path = "${inputs.xuezh}/skills/xuezh"; }
-      { name = "grocy";     path = ./skills/grocy; }
     ];
 
     webUi.enable = true;

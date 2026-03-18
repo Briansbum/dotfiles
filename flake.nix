@@ -65,6 +65,7 @@
     outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, claude-code, opencode, nix-openclaw, xuezh, goclaw-src, nix-software-center, disko, sops-nix, ...}@inputs:
     let
         kochOverlay = (final: prev: {
+          claude-code = inputs.claude-code.packages.${final.system}.default;
           goclaw = final.callPackage ./nix/pkgs/goclaw.nix {
             inherit goclaw-src;
           };
@@ -173,10 +174,27 @@
 
               exec ${pkgs.sops}/bin/sops "$@"
             '';
+            claudeGoclaw = pkgs.writeShellScriptBin "claude-goclaw" ''
+              #!/usr/bin/env bash
+              set -euo pipefail
+
+              exec sudo -u goclaw env CLAUDE_BIN="${pkgs."claude-code"}/bin/claude" bash -lc '
+                set -euo pipefail
+                set -a
+                source /run/goclaw/env
+                set +a
+                export HOME=/data/state-store/goclaw
+                export GOCLAW_CONFIG=/data/state-store/goclaw/config/goclaw.json
+                export GOCLAW_HOST=127.0.0.1
+                export GOCLAW_PORT=18789
+                exec "$CLAUDE_BIN" "$@"
+              ' _ "$@"
+            '';
           in
           pkgs.mkShell {
             packages = with pkgs; [
               goclaw
+              pkgs."claude-code"
               jq
               yq
               curl
@@ -184,6 +202,7 @@
               sops
               goclawAdmin
               sopsKoch
+              claudeGoclaw
             ];
 
             shellHook = ''
@@ -194,6 +213,7 @@
               echo "koch goclaw shell ready"
               echo "- Run goclaw as service user: goclaw-admin pairing list"
               echo "- Approve a code: goclaw-admin pairing approve ABCD12"
+              echo "- Run Claude as goclaw user: claude-goclaw"
               echo "- Edit koch secrets via sops: sops-koch"
             '';
           };

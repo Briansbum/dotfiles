@@ -75,6 +75,10 @@ let
     done
     ${pkgs.coreutils}/bin/chmod -R u+rw "$target"
     ${pkgs.coreutils}/bin/chown -R goclaw:goclaw "$target"
+
+    # Ensure Claude CLI work dir exists for the goclaw user
+    ${pkgs.coreutils}/bin/mkdir -p "${stateDir}/workspace"
+    ${pkgs.coreutils}/bin/chown goclaw:goclaw "${stateDir}/workspace"
   '';
 in
 {
@@ -148,7 +152,7 @@ in
     wants = [ "network-online.target" ];
     requires = [ "postgresql.service" ];
 
-    path = [ goclawPkg xuezhPkg pkgs.chromium pkgs.curl ];
+    path = [ goclawPkg xuezhPkg pkgs.chromium pkgs.curl pkgs."claude-code" ];
 
     environment = {
       GOCLAW_POSTGRES_DSN = "postgres://goclaw@/goclaw?host=/run/postgresql";
@@ -162,6 +166,8 @@ in
       GOCLAW_AUTO_UPGRADE = "true";
       GOCLAW_PROVIDER = "openai-codex";
       GOCLAW_MODEL = "gpt-5.3-codex";
+      GOCLAW_CLAUDE_CLI_PATH = "${pkgs."claude-code"}/bin/claude";
+      GOCLAW_CLAUDE_CLI_WORK_DIR = "${stateDir}/workspace";
       GOCLAW_TELEMETRY_ENABLED = "false";
       # Rod browser automation — use NixOS chromium instead of downloading
       ROD_BROWSER_BIN = "${pkgs.chromium}/bin/chromium";

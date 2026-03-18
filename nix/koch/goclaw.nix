@@ -18,10 +18,15 @@ in
     postgresDSN = "postgres://goclaw@/goclaw?host=/run/postgresql";
 
     config = {
+      gateway.inbound_debounce_ms = 150;
+
       channels.telegram = {
         enabled = true;
         dm_policy = "allowlist";
         allow_from = [ 560918177 ];
+        dm_stream = true;
+        group_stream = true;
+        reasoning_stream = false;
       };
       agents.defaults = {
         provider = "openai-codex";
@@ -37,6 +42,7 @@ in
     environment = {
       GOCLAW_PROVIDER = "openai-codex";
       GOCLAW_MODEL = "gpt-5.3-codex";
+      GOCLAW_LANE_MAIN = "60";
       ROD_BROWSER_BIN = "${pkgs.chromium}/bin/chromium";
       GOCLAW_OWNER_IDS = "alex,560918177,c061959f-6a9a-4b9d-b6ad-744150e692c0";
     };

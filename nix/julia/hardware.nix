@@ -12,6 +12,7 @@
   boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];
+  boot.supportedFilesystems = [ "nfs" ];
 
   fileSystems."/" =
     { device = "/dev/disk/by-uuid/851c22a2-4127-4a0d-983d-f6da6525b82b";
@@ -22,6 +23,18 @@
     { device = "/dev/disk/by-uuid/82B4-7C01";
       fsType = "vfat";
       options = [ "fmask=0077" "dmask=0077" ];
+    };
+
+  fileSystems."/mnt/photos" =
+    { device = "192.168.1.229:/data/photos";
+      fsType = "nfs";
+      options = [ "nofail" "x-systemd.automount" "noauto" ];
+    };
+
+  fileSystems."/mnt/state-store" =
+    { device = "192.168.1.229:/data/state-store";
+      fsType = "nfs";
+      options = [ "nofail" "x-systemd.automount" "noauto" ];
     };
 
   swapDevices = [ ];

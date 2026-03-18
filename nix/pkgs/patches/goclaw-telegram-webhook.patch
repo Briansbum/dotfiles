@@ -1,8 +1,6 @@
-diff --git a/internal/config/config_channels.go b/internal/config/config_channels.go
-index 2a88109..d8d1d7f 100644
 --- a/internal/config/config_channels.go
 +++ b/internal/config/config_channels.go
-@@ -27,6 +27,10 @@ type TelegramConfig struct {
+@@ -28,6 +28,10 @@
  	Token          string              `json:"token"`
  	Proxy          string              `json:"proxy,omitempty"`
  	APIServer      string              `json:"api_server,omitempty"` // custom Telegram Bot API server URL (e.g. "http://localhost:8081")
@@ -13,11 +11,9 @@ index 2a88109..d8d1d7f 100644
  	AllowFrom      FlexibleStringSlice `json:"allow_from"`
  	DMPolicy       string              `json:"dm_policy,omitempty"`       // "pairing" (default), "allowlist", "open", "disabled"
  	GroupPolicy    string              `json:"group_policy,omitempty"`    // "open" (default), "allowlist", "disabled"
-diff --git a/internal/channels/telegram/channel.go b/internal/channels/telegram/channel.go
-index b50fdb2..ba4f09f 100644
 --- a/internal/channels/telegram/channel.go
 +++ b/internal/channels/telegram/channel.go
-@@ -3,11 +3,13 @@ package telegram
+@@ -3,9 +3,11 @@
  import (
  	"context"
  	"fmt"
@@ -29,7 +25,7 @@ index b50fdb2..ba4f09f 100644
  	"strings"
  	"sync"
  	"time"
-@@ -38,6 +40,7 @@ type Channel struct {
+@@ -38,6 +40,7 @@
  	historyLimit     int
  	requireMention   bool
  	pollCancel       context.CancelFunc // cancels the long polling context
@@ -37,7 +33,7 @@ index b50fdb2..ba4f09f 100644
  	pollDone         chan struct{}       // closed when polling goroutine exits
  }
  
-@@ -64,7 +67,7 @@ func New(cfg config.TelegramConfig, msgBus *bus.MessageBus, pairingSvc store.Pa
+@@ -63,7 +66,7 @@
  	}
  
  	httpClient := &http.Client{
@@ -46,10 +42,12 @@ index b50fdb2..ba4f09f 100644
  	}
  
  	if cfg.Proxy != "" {
-@@ -112,8 +115,13 @@ func New(cfg config.TelegramConfig, msgBus *bus.MessageBus, pairingSvc store.Pa
+@@ -109,28 +112,84 @@
+ 	}, nil
  }
  
- // Start begins long polling for Telegram updates.
+-// Start begins long polling for Telegram updates.
++// Start begins long polling or webhook-based update handling for Telegram.
  func (c *Channel) Start(ctx context.Context) error {
 -	slog.Info("starting telegram bot (polling mode)")
 +	mode := strings.ToLower(strings.TrimSpace(c.config.ConnectionMode))
@@ -59,9 +57,11 @@ index b50fdb2..ba4f09f 100644
 +
 +	slog.Info("starting telegram bot", "mode", mode)
  
- 	// Create a cancellable context for the polling goroutine.
- 	// Stop() cancels this context to cleanly shut down long polling.
-@@ -121,15 +129,64 @@ func (c *Channel) Start(ctx context.Context) error {
+-	// Create a cancellable context for the polling goroutine.
+-	// Stop() cancels this context to cleanly shut down long polling.
++	// Create a cancellable context for the polling/webhook goroutine.
++	// Stop() cancels this context to cleanly shut down updates.
+ 	pollCtx, cancel := context.WithCancel(ctx)
  	c.pollCancel = cancel
  	c.pollDone = make(chan struct{})
  
@@ -141,16 +141,16 @@ index b50fdb2..ba4f09f 100644
  	}
  
  	c.SetRunning(true)
-@@ -213,6 +270,8 @@ func (c *Channel) Stop(_ context.Context) error {
- 	if c.pollCancel != nil {
+@@ -245,6 +304,8 @@
  		c.pollCancel()
  	}
-+
-+	c.webhookHandler = nil
  
++	c.webhookHandler = nil
++
  	// Wait for the polling goroutine to fully exit so that
  	// Telegram releases the getUpdates lock before a new instance starts.
-@@ -229,6 +288,24 @@ func (c *Channel) Stop(_ context.Context) error {
+ 	if c.pollDone != nil {
+@@ -259,6 +320,25 @@
  	return nil
  }
  

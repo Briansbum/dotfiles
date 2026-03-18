@@ -70,8 +70,6 @@ in {
 
         serviceConfig = {
           ExecStart = "${config.services.tailscale.package}/bin/tailscale ${proxyVerb} ${serveCmd}";
-          Restart = "always";
-          RestartSec = 3;
           Type = "oneshot";
           RemainAfterExit = true;
         };

@@ -122,7 +122,28 @@ in
         fi
 
         expected_url="https://$dns_name${webhookPath}"
-        actual_url="$(${pkgs.curl}/bin/curl -fsS --max-time 20 "https://api.telegram.org/bot$token/getWebhookInfo" | ${pkgs.jq}/bin/jq -r '.result.url // empty')"
+
+        tg_get_webhook_url() {
+          ${pkgs.curl}/bin/curl -sS --max-time 20 "https://api.telegram.org/bot$token/getWebhookInfo" | ${pkgs.jq}/bin/jq -r '.result.url // empty'
+        }
+
+        tg_set_webhook() {
+          local secret="$1"
+          if [ -n "$secret" ]; then
+            ${pkgs.curl}/bin/curl -sS --max-time 20 \
+              --data-urlencode "url=$expected_url" \
+              --data-urlencode "secret_token=$secret" \
+              --data-urlencode 'allowed_updates=["message","edited_message","callback_query","my_chat_member"]' \
+              "https://api.telegram.org/bot$token/setWebhook"
+          else
+            ${pkgs.curl}/bin/curl -sS --max-time 20 \
+              --data-urlencode "url=$expected_url" \
+              --data-urlencode 'allowed_updates=["message","edited_message","callback_query","my_chat_member"]' \
+              "https://api.telegram.org/bot$token/setWebhook"
+          fi
+        }
+
+        actual_url="$(tg_get_webhook_url)"
 
         if [ "$actual_url" != "$expected_url" ]; then
           webhook_secret="$(${pkgs.gawk}/bin/awk -F= '$1=="GOCLAW_TELEGRAM_WEBHOOK_SECRET"{print substr($0, index($0, "=")+1)}' "$env_file")"
@@ -131,20 +152,16 @@ in
           echo "expected: $expected_url"
           echo "actual:   $actual_url"
 
-          if [ -n "$webhook_secret" ]; then
-            ${pkgs.curl}/bin/curl -fsS --max-time 20 \
-              --data-urlencode "url=$expected_url" \
-              --data-urlencode "secret_token=$webhook_secret" \
-              --data-urlencode 'allowed_updates=["message","edited_message","callback_query","my_chat_member"]' \
-              "https://api.telegram.org/bot$token/setWebhook" >/dev/null
-          else
-            ${pkgs.curl}/bin/curl -fsS --max-time 20 \
-              --data-urlencode "url=$expected_url" \
-              --data-urlencode 'allowed_updates=["message","edited_message","callback_query","my_chat_member"]' \
-              "https://api.telegram.org/bot$token/setWebhook" >/dev/null
+          set_resp="$(tg_set_webhook "$webhook_secret")"
+          set_ok="$(printf '%s' "$set_resp" | ${pkgs.jq}/bin/jq -r '.ok // false' 2>/dev/null || printf 'false')"
+          if [ "$set_ok" != "true" ]; then
+            set_desc="$(printf '%s' "$set_resp" | ${pkgs.jq}/bin/jq -r '.description // "unknown error"' 2>/dev/null || printf 'unknown error')"
+            echo "Telegram setWebhook returned non-ok: $set_desc" >&2
+            # Don't fail startup on transient Telegram/public DNS/Funnel propagation issues.
+            exit 0
           fi
 
-          actual_url="$(${pkgs.curl}/bin/curl -fsS --max-time 20 "https://api.telegram.org/bot$token/getWebhookInfo" | ${pkgs.jq}/bin/jq -r '.result.url // empty')"
+          actual_url="$(tg_get_webhook_url)"
         fi
 
         if [ "$actual_url" != "$expected_url" ]; then

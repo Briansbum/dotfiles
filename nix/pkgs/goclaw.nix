@@ -10,6 +10,13 @@ buildGoModule.override { go = go_1_26; } {
 
   env.CGO_ENABLED = 0;
 
+  postPatch = ''
+    # Avoid long-poll request deadlines: GetUpdates uses timeout=30s upstream,
+    # so keep HTTP client timeout comfortably above that.
+    substituteInPlace internal/channels/telegram/channel.go \
+      --replace-fail 'Timeout: 30 * time.Second,' 'Timeout: 75 * time.Second,'
+  '';
+
   ldflags = [
     "-s" "-w"
     "-X github.com/nextlevelbuilder/goclaw/cmd.Version=1.32.0"

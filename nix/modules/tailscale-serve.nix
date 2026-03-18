@@ -36,6 +36,12 @@ in {
           default = null;
           description = "Systemd service to wait for before starting the proxy.";
         };
+
+        funnel = mkOption {
+          type = types.bool;
+          default = false;
+          description = "Use `tailscale funnel` instead of `tailscale serve`.";
+        };
       };
     });
     default = {};
@@ -53,6 +59,7 @@ in {
         serveCmd = if svc.path != null
           then "--https=443 --set-path=/${removePrefix "/" svc.path} http://localhost:${toString svc.localPort}"
           else "--https=${toString svc.tsPort} http://localhost:${toString svc.localPort}";
+        proxyVerb = if svc.funnel then "funnel" else "serve";
         after = [ "network-online.target" "tailscaled.service" ]
           ++ optional (svc.afterService != null) "${svc.afterService}.service";
       in nameValuePair "${name}-ts" {
@@ -62,7 +69,7 @@ in {
         description = "tailscale proxy for ${name}";
 
         serviceConfig = {
-          ExecStart = "${config.services.tailscale.package}/bin/tailscale serve ${serveCmd}";
+          ExecStart = "${config.services.tailscale.package}/bin/tailscale ${proxyVerb} ${serveCmd}";
           Restart = "always";
           RestartSec = 3;
           Type = "oneshot";

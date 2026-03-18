@@ -74,6 +74,14 @@
     enable = true;
     permitCertUid = "traefik";
   };
+  services.tailscaleServe = {
+    goclaw-telegram-webhook = {
+      localPort = 18789;
+      path = "telegram-webhook-goclaw";
+      afterService = "goclaw";
+      funnel = true;
+    };
+  };
   services.resolved.enable = true;
   services.avahi.enable = true;
 

@@ -76,6 +76,34 @@ in
       };
     };
 
+    sandbox = {
+      enable = lib.mkEnableOption "sandbox for agent code execution";
+
+      mode = lib.mkOption {
+        type = lib.types.enum [ "off" "non-main" "all" ];
+        default = "off";
+        description = "Sandbox mode: off, non-main (sandbox all except main agent), or all.";
+      };
+
+      image = lib.mkOption {
+        type = lib.types.str;
+        default = "goclaw-sandbox:bookworm-slim";
+        description = "OCI image for sandbox containers.";
+      };
+
+      memoryMB = lib.mkOption {
+        type = lib.types.int;
+        default = 512;
+        description = "Memory limit per sandbox container in MB.";
+      };
+
+      cpus = lib.mkOption {
+        type = lib.types.float;
+        default = 1.0;
+        description = "CPU limit per sandbox container.";
+      };
+    };
+
     extraSkillPaths = lib.mkOption {
       type = lib.types.listOf lib.types.attrs;
       default = [];
@@ -166,7 +194,13 @@ in
       GOCLAW_POSTGRES_DSN = cfg.postgresDSN;
       GOCLAW_CLAUDE_CLI_PATH = "${pkgs.claude-code}/bin/claude";
       GOCLAW_CLAUDE_CLI_WORK_DIR = "${cfg.stateDir}/workspace";
-    } // cfg.environment;
+    } // (lib.optionalAttrs cfg.sandbox.enable {
+      GOCLAW_SANDBOX_MODE = cfg.sandbox.mode;
+      GOCLAW_SANDBOX_IMAGE = cfg.sandbox.image;
+      GOCLAW_SANDBOX_MEMORY_MB = toString cfg.sandbox.memoryMB;
+      GOCLAW_SANDBOX_CPUS = lib.strings.floatToString cfg.sandbox.cpus;
+      GOCLAW_SANDBOX_NETWORK = "false";
+    }) // cfg.environment;
 
     services.goclaw._nginxConf =
       if cfg.webUi.enable then

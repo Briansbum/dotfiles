@@ -22,6 +22,7 @@ buildGoModule.override { go = go_1_26; } {
     mkdir -p $out/share/goclaw
     cp -r $src/migrations $out/share/goclaw/migrations
     cp -r $src/skills $out/share/goclaw/skills
+    cp $src/Dockerfile.sandbox $out/share/goclaw/Dockerfile.sandbox
   '';
 
   meta = with lib; {

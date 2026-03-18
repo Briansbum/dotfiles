@@ -102,6 +102,28 @@ in
         default = 1.0;
         description = "CPU limit per sandbox container.";
       };
+
+      scope = lib.mkOption {
+        type = lib.types.enum [ "session" "agent" "shared" ];
+        default = "shared";
+        description = ''
+          Container reuse scope. "shared" keeps one long-lived container
+          across all agents so persistent state (Claude auth, installed
+          tools) survives between invocations.
+        '';
+      };
+
+      workspaceAccess = lib.mkOption {
+        type = lib.types.enum [ "none" "ro" "rw" ];
+        default = "rw";
+        description = "Workspace mount mode inside the sandbox.";
+      };
+
+      env = lib.mkOption {
+        type = lib.types.attrsOf lib.types.str;
+        default = {};
+        description = "Extra environment variables injected into sandbox containers.";
+      };
     };
 
     extraSkillPaths = lib.mkOption {
@@ -147,7 +169,9 @@ in
   config = lib.mkIf cfg.enable {
     services.goclaw._configJson = pkgs.writeText "goclaw-config.json" (builtins.toJSON ({
       gateway = { host = "127.0.0.1"; port = cfg.port; };
-    } // cfg.config));
+    } // (lib.optionalAttrs (cfg.sandbox.enable && cfg.sandbox.env != {}) {
+      sandbox.env = cfg.sandbox.env;
+    }) // cfg.config));
 
     services.goclaw._skillsDir =
       if cfg.extraSkillPaths != []
@@ -199,6 +223,8 @@ in
       GOCLAW_SANDBOX_IMAGE = cfg.sandbox.image;
       GOCLAW_SANDBOX_MEMORY_MB = toString cfg.sandbox.memoryMB;
       GOCLAW_SANDBOX_CPUS = lib.strings.floatToString cfg.sandbox.cpus;
+      GOCLAW_SANDBOX_SCOPE = cfg.sandbox.scope;
+      GOCLAW_SANDBOX_WORKSPACE_ACCESS = cfg.sandbox.workspaceAccess;
       GOCLAW_SANDBOX_NETWORK = "false";
     }) // cfg.environment;
 

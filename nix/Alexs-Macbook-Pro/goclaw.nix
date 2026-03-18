@@ -35,12 +35,20 @@
       GOCLAW_ANTHROPIC_API_KEY = "goclaw_anthropic_api_key";
     };
 
-    # Apple Containers sandbox — each agent task gets its own lightweight VM
+    # Apple Containers sandbox — agent code runs in lightweight VMs
     sandbox = {
       enable = true;
       mode = "non-main";
       memoryMB = 512;
       cpus = 1.0;
+      scope = "shared"; # one long-lived container — auth state persists
+      workspaceAccess = "rw";
+      env = {
+        # Store Claude auth inside the workspace mount so it survives
+        # container recreation (workspace is a host volume at stateDir/workspace)
+        CLAUDE_CONFIG_DIR = "/workspace/.claude";
+        HOME = "/workspace";
+      };
     };
 
     webUi.enable = true;

@@ -3,6 +3,10 @@
 # Process isolation: dedicated _goclaw user with no login shell, own home directory,
 # and no access to /Users/alex. Runs as system-level LaunchDaemons (not user agents)
 # so it starts at boot independent of any login session.
+#
+# Sandbox: when sandbox.enable = true, agent code execution runs inside Apple
+# Containers (macOS 26+). A docker→container CLI shim translates goclaw's Docker
+# calls to Apple Container equivalents — each sandbox gets its own lightweight VM.
 
 { config, pkgs, lib, ... }:
 
@@ -14,14 +18,13 @@ let
   # Homebrew PostgreSQL 17 paths (Apple Silicon)
   pgBin = "/opt/homebrew/opt/postgresql@17/bin";
 
-  # The PG role name matches the option default — override pgRole in host config
-  # if cfg.user differs from the PG role you want.
   pgRole = "goclaw";
   pgDatabase = "goclaw";
 
-  # Idempotent database bootstrap — runs as alex (Homebrew PG superuser) to create
-  # the dedicated role + database + extensions. The goclaw process then connects
-  # as its own role via TCP trust auth.
+  # docker→container shim: translates goclaw's Docker sandbox calls to Apple Container CLI
+  dockerShim = pkgs.writeShellScriptBin "docker" (builtins.readFile ./docker-to-container-shim.sh);
+
+  # Idempotent database bootstrap — runs as alex (Homebrew PG superuser).
   pgInitScript = pkgs.writeShellScript "goclaw-pg-init" ''
     set -euo pipefail
     PSQL="${pgBin}/psql"
@@ -48,9 +51,31 @@ let
       echo "goclaw-pg-init: pgvector not available (brew install pgvector)"
   '';
 
-  # Wrapper: DB init (as alex via sudo) → state prep (as root) → drop to goclaw → exec.
-  # LaunchDaemons run as root by default; the wrapper does privileged setup then
-  # exec's goclaw as the dedicated user.
+  # Build the sandbox container image from goclaw's bundled Dockerfile
+  sandboxImageSetup = pkgs.writeShellScript "goclaw-sandbox-image-setup" ''
+    set -euo pipefail
+    CONTAINER_CLI="/usr/local/bin/container"
+
+    # Ensure Apple Container system is running
+    if ! "$CONTAINER_CLI" system status >/dev/null 2>&1; then
+      echo "goclaw-sandbox: starting Apple Container system..."
+      "$CONTAINER_CLI" system start
+      sleep 2
+    fi
+
+    # Build sandbox image if it doesn't exist
+    if ! "$CONTAINER_CLI" image inspect "${cfg.sandbox.image}" >/dev/null 2>&1; then
+      echo "goclaw-sandbox: building sandbox image ${cfg.sandbox.image}..."
+      "$CONTAINER_CLI" build \
+        -t "${cfg.sandbox.image}" \
+        -f ${cfg.package}/share/goclaw/Dockerfile.sandbox \
+        ${cfg.package}/share/goclaw
+    else
+      echo "goclaw-sandbox: image ${cfg.sandbox.image} already exists"
+    fi
+  '';
+
+  # Wrapper: DB init → state prep → sandbox setup → secrets → exec goclaw.
   goclawWrapper = pkgs.writeShellScript "goclaw-wrapper" ''
     set -euo pipefail
 
@@ -59,6 +84,11 @@ let
 
     # Prepare state directories (runs as root, chown handled by _prepareState)
     ${cfg._prepareState}
+
+    ${lib.optionalString cfg.sandbox.enable ''
+    # Build sandbox image and ensure Apple Container system is running
+    ${sandboxImageSetup}
+    ''}
 
     # Build environment for the goclaw process
     ENV_FILE="${cfg.stateDir}/.env"
@@ -79,7 +109,7 @@ let
       ${cfg.package}/bin/goclaw
   '';
 
-  # Nginx wrapper — also needs to run as the goclaw user
+  # Nginx wrapper
   nginxWrapper = pkgs.writeShellScript "goclaw-nginx-wrapper" ''
     set -euo pipefail
     exec /usr/bin/sudo -u ${cfg.user} ${pkgs.nginx}/bin/nginx -c ${cfg._nginxConf}
@@ -134,6 +164,11 @@ in
 
       echo "Preparing goclaw state directories..."
       ${cfg._prepareState}
+
+      ${lib.optionalString cfg.sandbox.enable ''
+      echo "Setting up goclaw sandbox image..."
+      ${sandboxImageSetup}
+      ''}
     '';
 
     # -----------------------------------------------------------------------
@@ -151,7 +186,10 @@ in
         StandardErrorPath = "${cfg.logsDir}/goclaw.err.log";
         SoftResourceLimits = { NumberOfFiles = 4096; };
         EnvironmentVariables = {
-          PATH = lib.makeBinPath [ pkgs.coreutils pkgs.bash pkgs.curl ] + ":${pgBin}:/usr/bin";
+          # docker shim first in PATH so goclaw's sandbox finds it as "docker"
+          PATH = lib.makeBinPath (
+            [ dockerShim pkgs.coreutils pkgs.bash pkgs.curl ]
+          ) + ":${pgBin}:/usr/local/bin:/usr/bin";
         };
       };
     };

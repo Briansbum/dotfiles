@@ -2,6 +2,7 @@
 #
 # Runs as dedicated _goclaw system user with no access to /Users/alex.
 # State in /var/lib/goclaw, logs in /var/log/goclaw.
+# Agent code execution sandboxed via Apple Containers (macOS 26+).
 
 { ... }:
 
@@ -32,6 +33,14 @@
       GOCLAW_SLACK_BOT_TOKEN = "goclaw_slack_bot_token";
       GOCLAW_SLACK_APP_TOKEN = "goclaw_slack_app_token";
       GOCLAW_ANTHROPIC_API_KEY = "goclaw_anthropic_api_key";
+    };
+
+    # Apple Containers sandbox — each agent task gets its own lightweight VM
+    sandbox = {
+      enable = true;
+      mode = "non-main";
+      memoryMB = 512;
+      cpus = 1.0;
     };
 
     webUi.enable = true;

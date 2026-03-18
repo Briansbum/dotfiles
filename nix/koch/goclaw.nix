@@ -1,43 +1,17 @@
+# GoClaw on NixOS — platform-specific plumbing for systemd + NixOS PostgreSQL.
+#
+# Shared options and config generation live in ../modules/goclaw.nix.
+# This file provides: NixOS PostgreSQL, systemd service with sandboxing,
+# sops secret ownership, nginx + Traefik web dashboard, skills from flake inputs.
+
 { config, pkgs, inputs, lib, ... }:
 
 let
-  goclawPkg = pkgs.goclaw;
-  goclawUi = pkgs.goclaw-ui;
+  cfg = config.services.goclaw;
+  goclawPkg = cfg.package;
   grocyMcp = pkgs.grocy-mcp;
   xuezhPkg = inputs.xuezh.packages.${pkgs.system}.default;
   steipeteTools = inputs.nix-openclaw.inputs.nix-steipete-tools;
-  stateDir = "/data/state-store/goclaw";
-
-  # Collect all skill directories into a single nix store path
-  skillsDir = pkgs.linkFarm "goclaw-skills" [
-    { name = "summarize"; path = "${steipeteTools}/tools/summarize/skills/summarize"; }
-    { name = "gog";       path = "${steipeteTools}/tools/gogcli/skills/gog"; }
-    { name = "goplaces";  path = "${steipeteTools}/tools/goplaces/skills/goplaces"; }
-    { name = "camsnap";   path = "${steipeteTools}/tools/camsnap/skills/camsnap"; }
-    { name = "sag";       path = "${steipeteTools}/tools/sag/skills/sag"; }
-    { name = "sonoscli";  path = "${steipeteTools}/tools/sonoscli/skills/sonoscli"; }
-    { name = "xuezh";     path = "${inputs.xuezh}/skills/xuezh"; }
-    { name = "grocy";     path = ./skills/grocy; }
-  ];
-
-  configJson = pkgs.writeText "goclaw.json" (builtins.toJSON {
-    channels.telegram = {
-      enabled = true;
-      dm_policy = "allowlist";
-      allow_from = [ 560918177 ];
-    };
-    agents.defaults = {
-      provider = "openai-codex";
-      model = "gpt-5.3-codex";
-    };
-    tools.mcp_servers.grocy = {
-      transport = "stdio";
-      command = "${grocyMcp}/bin/grocy-mcp";
-      env = {
-        GROCY_BASE_URL = "http://127.0.0.1:2383";
-      };
-    };
-  });
 
   prepareEnv = pkgs.writeShellScript "prepare-goclaw-env" ''
     set -euo pipefail
@@ -51,86 +25,108 @@ let
       printf 'GROCY_API_KEY=%s\n' "$(cat "$5")"
     } > "$env_path"
   '';
-
-  prepareState = pkgs.writeShellScript "prepare-goclaw-state" ''
-    set -euo pipefail
-
-    # Ensure state directory exists
-    ${pkgs.coreutils}/bin/mkdir -p "${stateDir}"
-    ${pkgs.coreutils}/bin/chown goclaw:goclaw "${stateDir}"
-
-    # Copy config to writable location
-    ${pkgs.coreutils}/bin/mkdir -p "${stateDir}/config"
-    ${pkgs.coreutils}/bin/cp -f ${configJson} "${stateDir}/config/goclaw.json"
-    ${pkgs.coreutils}/bin/chown -R goclaw:goclaw "${stateDir}/config"
-    ${pkgs.coreutils}/bin/chmod 0640 "${stateDir}/config/goclaw.json"
-
-    # Copy skills from nix store into writable directory
-    target="${stateDir}/skills"
-    ${pkgs.coreutils}/bin/mkdir -p "$target"
-    for skill in ${skillsDir}/*; do
-      name=$(${pkgs.coreutils}/bin/basename "$skill")
-      ${pkgs.coreutils}/bin/rm -rf "$target/$name"
-      ${pkgs.coreutils}/bin/cp -rL "$skill" "$target/$name"
-    done
-    ${pkgs.coreutils}/bin/chmod -R u+rw "$target"
-    ${pkgs.coreutils}/bin/chown -R goclaw:goclaw "$target"
-
-    # Ensure Claude CLI work dir exists for the goclaw user
-    ${pkgs.coreutils}/bin/mkdir -p "${stateDir}/workspace"
-    ${pkgs.coreutils}/bin/chown goclaw:goclaw "${stateDir}/workspace"
-  '';
 in
 {
-  # -------------------------------------------------------------------------
-  # Secrets
-  # -------------------------------------------------------------------------
+  imports = [ ../modules/goclaw.nix ];
 
-  sops.secrets."goclaw_gateway_token" = {
-    owner = "goclaw";
-    group = "goclaw";
-    mode = "0400";
+  # ---------------------------------------------------------------------------
+  # GoClaw options — Telegram channel, OpenRouter provider, NixOS paths
+  # ---------------------------------------------------------------------------
+
+  services.goclaw = {
+    enable = true;
+    port = 18789;
+    uiPort = 18780;
+    stateDir = "/data/state-store/goclaw";
+    logsDir = "/var/log/goclaw";
+    postgresDSN = "postgres://goclaw@/goclaw?host=/run/postgresql";
+
+    config = {
+      channels.telegram = {
+        enabled = true;
+        dm_policy = "allowlist";
+        allow_from = [ 560918177 ];
+      };
+      agents.defaults = {
+        provider = "openai-codex";
+        model = "gpt-5.3-codex";
+      };
+      tools.mcp_servers.grocy = {
+        transport = "stdio";
+        command = "${grocyMcp}/bin/grocy-mcp";
+        env = {
+          GROCY_BASE_URL = "http://127.0.0.1:2383";
+        };
+      };
+    };
+
+    environment = {
+      GOCLAW_PROVIDER = "openai-codex";
+      GOCLAW_MODEL = "gpt-5.3-codex";
+      ROD_BROWSER_BIN = "${pkgs.chromium}/bin/chromium";
+    };
+
+    secrets = [
+      "goclaw_gateway_token"
+      "goclaw_encryption_key"
+      "goclaw_telegram_token"
+      "goclaw_openrouter_key"
+      "goclaw_grocy_api_key"
+    ];
+
+    extraSkillPaths = [
+      { name = "summarize"; path = "${steipeteTools}/tools/summarize/skills/summarize"; }
+      { name = "gog";       path = "${steipeteTools}/tools/gogcli/skills/gog"; }
+      { name = "goplaces";  path = "${steipeteTools}/tools/goplaces/skills/goplaces"; }
+      { name = "camsnap";   path = "${steipeteTools}/tools/camsnap/skills/camsnap"; }
+      { name = "sag";       path = "${steipeteTools}/tools/sag/skills/sag"; }
+      { name = "sonoscli";  path = "${steipeteTools}/tools/sonoscli/skills/sonoscli"; }
+      { name = "xuezh";     path = "${inputs.xuezh}/skills/xuezh"; }
+      { name = "grocy";     path = ./skills/grocy; }
+    ];
+
+    webUi.enable = true;
+  };
+
+  # ---------------------------------------------------------------------------
+  # sops secret ownership — NixOS-specific (owner/group/restartUnits)
+  # ---------------------------------------------------------------------------
+
+  sops.secrets."goclaw_gateway_token" = lib.mkForce {
+    owner = "goclaw"; group = "goclaw"; mode = "0400";
     restartUnits = [ "goclaw.service" ];
   };
-  sops.secrets."goclaw_encryption_key" = {
-    owner = "goclaw";
-    group = "goclaw";
-    mode = "0400";
+  sops.secrets."goclaw_encryption_key" = lib.mkForce {
+    owner = "goclaw"; group = "goclaw"; mode = "0400";
     restartUnits = [ "goclaw.service" ];
   };
-  sops.secrets."goclaw_telegram_token" = {
-    owner = "goclaw";
-    group = "goclaw";
-    mode = "0400";
+  sops.secrets."goclaw_telegram_token" = lib.mkForce {
+    owner = "goclaw"; group = "goclaw"; mode = "0400";
     restartUnits = [ "goclaw.service" ];
   };
-  sops.secrets."goclaw_openrouter_key" = {
-    owner = "goclaw";
-    group = "goclaw";
-    mode = "0400";
+  sops.secrets."goclaw_openrouter_key" = lib.mkForce {
+    owner = "goclaw"; group = "goclaw"; mode = "0400";
     restartUnits = [ "goclaw.service" ];
   };
-  sops.secrets."goclaw_grocy_api_key" = {
-    owner = "goclaw";
-    group = "goclaw";
-    mode = "0400";
+  sops.secrets."goclaw_grocy_api_key" = lib.mkForce {
+    owner = "goclaw"; group = "goclaw"; mode = "0400";
     restartUnits = [ "goclaw.service" ];
   };
 
-  # -------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------
   # System user
-  # -------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------
 
   users.users.goclaw = {
     isSystemUser = true;
     group = "goclaw";
-    home = stateDir;
+    home = cfg.stateDir;
   };
   users.groups.goclaw = {};
 
-  # -------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------
   # PostgreSQL database + role
-  # -------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------
 
   services.postgresql.ensureDatabases = [ "goclaw" ];
   services.postgresql.ensureUsers = [{
@@ -141,9 +137,9 @@ in
     local goclaw goclaw peer
   '';
 
-  # -------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------
   # Systemd service
-  # -------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------
 
   systemd.services.goclaw = {
     description = "GoClaw AI gateway";
@@ -154,24 +150,7 @@ in
 
     path = [ goclawPkg xuezhPkg pkgs.chromium pkgs.curl pkgs."claude-code" ];
 
-    environment = {
-      GOCLAW_POSTGRES_DSN = "postgres://goclaw@/goclaw?host=/run/postgresql";
-      GOCLAW_HOST = "127.0.0.1";
-      GOCLAW_PORT = "18789";
-      GOCLAW_DATA_DIR = stateDir;
-      GOCLAW_CONFIG = "${stateDir}/config/goclaw.json";
-      GOCLAW_MIGRATIONS_DIR = "${goclawPkg}/share/goclaw/migrations";
-      GOCLAW_BUNDLED_SKILLS_DIR = "${goclawPkg}/share/goclaw/skills";
-      GOCLAW_SKILLS_DIR = "${stateDir}/skills";
-      GOCLAW_AUTO_UPGRADE = "true";
-      GOCLAW_PROVIDER = "openai-codex";
-      GOCLAW_MODEL = "gpt-5.3-codex";
-      GOCLAW_CLAUDE_CLI_PATH = "${pkgs."claude-code"}/bin/claude";
-      GOCLAW_CLAUDE_CLI_WORK_DIR = "${stateDir}/workspace";
-      GOCLAW_TELEMETRY_ENABLED = "false";
-      # Rod browser automation — use NixOS chromium instead of downloading
-      ROD_BROWSER_BIN = "${pkgs.chromium}/bin/chromium";
-    };
+    environment = cfg._commonEnv;
 
     serviceConfig = {
       Type = "simple";
@@ -184,11 +163,14 @@ in
           ${pkgs.util-linux}/bin/runuser -u postgres -- ${config.services.postgresql.package}/bin/psql -d goclaw -c 'CREATE EXTENSION IF NOT EXISTS "vector";'
         ''}"
         "${prepareEnv} ${config.sops.secrets.goclaw_gateway_token.path} ${config.sops.secrets.goclaw_encryption_key.path} ${config.sops.secrets.goclaw_telegram_token.path} ${config.sops.secrets.goclaw_openrouter_key.path} ${config.sops.secrets.goclaw_grocy_api_key.path}"
-        "+${prepareState}"
+        "+${pkgs.writeShellScript "goclaw-prepare-state-chown" ''
+          ${cfg._prepareState}
+          ${pkgs.coreutils}/bin/chown -R goclaw:goclaw ${cfg.stateDir}
+        ''}"
       ];
       ExecStart = "${goclawPkg}/bin/goclaw";
       EnvironmentFile = [ "-/run/goclaw/env" ];
-      WorkingDirectory = stateDir;
+      WorkingDirectory = cfg.stateDir;
       Restart = "on-failure";
       RestartSec = 10;
 
@@ -213,7 +195,7 @@ in
       CapabilityBoundingSet = "";
       RuntimeDirectory = "goclaw";
       RuntimeDirectoryMode = "0750";
-      ReadWritePaths = [ stateDir ];
+      ReadWritePaths = [ cfg.stateDir ];
       Slice = "goclaw.slice";
 
       MemoryMax = "1G";
@@ -221,13 +203,13 @@ in
     };
   };
 
-  # -------------------------------------------------------------------------
-  # Web UI — nginx serves SPA + proxies API/WS to goclaw, Traefik fronts it
-  # -------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------
+  # Web UI — nginx serves SPA + proxies API/WS, Traefik fronts with TLS
+  # ---------------------------------------------------------------------------
 
   services.nginx.virtualHosts."goclaw.koch.brians.skin" = {
-    listen = [{ addr = "127.0.0.1"; port = 18780; }];
-    root = "${goclawUi}/share/goclaw-ui";
+    listen = [{ addr = "127.0.0.1"; port = cfg.uiPort; }];
+    root = "${cfg.uiPackage}/share/goclaw-ui";
 
     locations."/" = {
       tryFiles = "$uri $uri/ /index.html";
@@ -241,16 +223,16 @@ in
     };
 
     locations."/ws" = {
-      proxyPass = "http://127.0.0.1:18789";
+      proxyPass = "http://127.0.0.1:${toString cfg.port}";
       proxyWebsockets = true;
     };
 
     locations."/v1/" = {
-      proxyPass = "http://127.0.0.1:18789";
+      proxyPass = "http://127.0.0.1:${toString cfg.port}";
     };
 
     locations."/health" = {
-      proxyPass = "http://127.0.0.1:18789";
+      proxyPass = "http://127.0.0.1:${toString cfg.port}";
     };
   };
 
@@ -260,7 +242,7 @@ in
     tls.certResolver = "desec";
   };
   services.traefik.dynamicConfigOptions.http.services.goclaw.loadBalancer.servers = [
-    { url = "http://localhost:18780"; }
+    { url = "http://localhost:${toString cfg.uiPort}"; }
   ];
 
   systemd.slices.goclaw = {

@@ -229,9 +229,11 @@
                     {
                         nixpkgs.overlays = [
                           claude-code.overlays.default
-                          # GoClaw package from source
                           (final: prev: {
                             goclaw = final.callPackage ./nix/pkgs/goclaw.nix {
+                              inherit goclaw-src;
+                            };
+                            goclaw-ui = final.callPackage ./nix/pkgs/goclaw-ui.nix {
                               inherit goclaw-src;
                             };
                           })

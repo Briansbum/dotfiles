@@ -38,6 +38,7 @@ in
       GOCLAW_PROVIDER = "openai-codex";
       GOCLAW_MODEL = "gpt-5.3-codex";
       ROD_BROWSER_BIN = "${pkgs.chromium}/bin/chromium";
+      GOCLAW_OWNER_IDS = "560918177,c061959f-6a9a-4b9d-b6ad-744150e692c0";
     };
 
     secretEnvironment = {

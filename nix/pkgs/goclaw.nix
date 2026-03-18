@@ -13,10 +13,13 @@ buildGoModule.override { go = go_1_26; } {
   postPatch = ''
     # Polling reliability fix:
     # - Shorten Telegram long-poll window to avoid idle middlebox/NAT drops.
-    # - Keep HTTP timeout above poll timeout, but short enough for quick recovery.
+    # - Keep HTTP timeout only slightly above poll timeout for fast failover.
+    # - Reduce telego retry backoff from 8s to 1s.
     substituteInPlace internal/channels/telegram/channel.go \
-      --replace-fail 'Timeout: 30 * time.Second,' 'Timeout: 25 * time.Second,' \
-      --replace-fail 'Timeout: 30,' 'Timeout: 10,'
+      --replace-fail 'Timeout: 30 * time.Second,' 'Timeout: 8 * time.Second,' \
+      --replace-fail 'Timeout: 30,' 'Timeout: 5,'
+
+    perl -0pi -e 's/updates, err := c\.bot\.UpdatesViaLongPolling\(pollCtx, &telego\.GetUpdatesParams\{(.*?)\},\n\t\)/updates, err := c.bot.UpdatesViaLongPolling(pollCtx, \&telego.GetUpdatesParams{$1},\n\t\ttelego.WithLongPollingRetryTimeout(1 * time.Second),\n\t)/s' internal/channels/telegram/channel.go
   '';
 
   ldflags = [

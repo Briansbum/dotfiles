@@ -1,4 +1,4 @@
-{ lib, buildGoModule, go_1_26, goclaw-src }:
+{ lib, buildGoModule, go_1_26, goclaw-src, perl }:
 
 buildGoModule.override { go = go_1_26; } {
   pname = "goclaw";
@@ -9,6 +9,8 @@ buildGoModule.override { go = go_1_26; } {
   vendorHash = "sha256-cN14NXtIXowqJjtkS1yiFDhMFEdTsSe40RYI/RZy3I8=";
 
   env.CGO_ENABLED = 0;
+
+  nativeBuildInputs = [ perl ];
 
   postPatch = ''
     # Polling reliability fix:

@@ -38,7 +38,7 @@
  
  	httpClient := &http.Client{
 -		Timeout: 30 * time.Second,
-+		Timeout: 8 * time.Second,
++		Timeout: 20 * time.Second,
  	}
  
  	if cfg.Proxy != "" {

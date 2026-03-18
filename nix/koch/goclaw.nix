@@ -45,7 +45,6 @@ in
       GOCLAW_LANE_MAIN = "60";
       GOCLAW_TELEGRAM_CONNECTION_MODE = "webhook";
       GOCLAW_TELEGRAM_WEBHOOK_PATH = "/telegram-webhook-goclaw";
-      GOCLAW_TELEGRAM_WEBHOOK_URL = "https://koch.tuxedo-burbot.ts.net:8443/telegram-webhook-goclaw";
       ROD_BROWSER_BIN = "${pkgs.chromium}/bin/chromium";
       GOCLAW_OWNER_IDS = "alex,560918177,c061959f-6a9a-4b9d-b6ad-744150e692c0";
     };
@@ -151,35 +150,37 @@ in
           fi
         }
 
-        actual_url="$(tg_get_webhook_url)"
+        webhook_secret="$(${pkgs.gawk}/bin/awk -F= '$1=="GOCLAW_TELEGRAM_WEBHOOK_SECRET"{print substr($0, index($0, "=")+1)}' "$env_file")"
 
-        if [ "$actual_url" != "$expected_url" ]; then
-          webhook_secret="$(${pkgs.gawk}/bin/awk -F= '$1=="GOCLAW_TELEGRAM_WEBHOOK_SECRET"{print substr($0, index($0, "=")+1)}' "$env_file")"
+        max_attempts=12
+        attempt=1
+        while [ "$attempt" -le "$max_attempts" ]; do
+          actual_url="$(tg_get_webhook_url || true)"
+          if [ "$actual_url" = "$expected_url" ]; then
+            echo "Telegram webhook OK: $actual_url"
+            exit 0
+          fi
 
-          echo "Telegram webhook mismatch; upserting to Funnel URL"
+          echo "Telegram webhook mismatch; upserting to Funnel URL (attempt $attempt/$max_attempts)"
           echo "expected: $expected_url"
           echo "actual:   $actual_url"
 
-          set_resp="$(tg_set_webhook "$webhook_secret")"
+          set_resp="$(tg_set_webhook "$webhook_secret" || true)"
           set_ok="$(printf '%s' "$set_resp" | ${pkgs.jq}/bin/jq -r '.ok // false' 2>/dev/null || printf 'false')"
           if [ "$set_ok" != "true" ]; then
             set_desc="$(printf '%s' "$set_resp" | ${pkgs.jq}/bin/jq -r '.description // "unknown error"' 2>/dev/null || printf 'unknown error')"
             echo "Telegram setWebhook returned non-ok: $set_desc" >&2
-            # Don't fail startup on transient Telegram/public DNS/Funnel propagation issues.
-            exit 0
           fi
 
-          actual_url="$(tg_get_webhook_url)"
-        fi
+          sleep 5
+          attempt=$((attempt + 1))
+        done
 
-        if [ "$actual_url" != "$expected_url" ]; then
-          echo "Telegram webhook upsert failed" >&2
-          echo "expected: $expected_url" >&2
-          echo "actual:   $actual_url" >&2
-          exit 1
-        fi
-
-        echo "Telegram webhook OK: $actual_url"
+        actual_url="$(tg_get_webhook_url || true)"
+        echo "Telegram webhook upsert failed after retries" >&2
+        echo "expected: $expected_url" >&2
+        echo "actual:   $actual_url" >&2
+        exit 1
       '';
     };
   };

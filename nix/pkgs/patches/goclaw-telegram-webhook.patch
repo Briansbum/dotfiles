@@ -194,7 +194,7 @@
  			params.MessageThreadID = sendThreadID
  		}
 -		msg, err := ds.bot.SendMessage(ctx, params)
-+		var msg telego.Message
++		var msg *telego.Message
 +		err := retrySend(ctx, "streamSendMessage", nil, func() error {
 +			m, e := ds.bot.SendMessage(ctx, params)
 +			if e == nil {

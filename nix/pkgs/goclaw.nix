@@ -10,12 +10,6 @@ buildGoModule.override { go = go_1_26; } {
 
   env.CGO_ENABLED = 0;
 
-  patches = [
-    ./patches/goclaw-telegram-webhook.patch
-    ./patches/goclaw-telegram-send-retry.patch
-    ./patches/goclaw-browser-bin.patch
-  ];
-
   ldflags = [
     "-s" "-w"
     "-X github.com/nextlevelbuilder/goclaw/cmd.Version=1.32.0"

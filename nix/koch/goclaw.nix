@@ -1,14 +1,10 @@
 # GoClaw on koch — Telegram channel, OpenRouter provider, Traefik-fronted UI.
 
-{ config, pkgs, inputs, lib, ... }:
+{ config, pkgs, inputs, ... }:
 
 let
   steipeteTools = inputs.nix-openclaw.inputs.nix-steipete-tools;
   cfg = config.services.goclaw;
-  telegramCfg = cfg.config.channels.telegram;
-  webhookMode = (telegramCfg.connection_mode or "") == "webhook";
-  webhookPath = "/" + lib.removePrefix "/" (telegramCfg.webhook_path or "/telegram/webhook");
-  webhookTsPort = config.services.tailscaleServe.goclaw-telegram-webhook.tsPort or 443;
 in
 {
   imports = [ ../modules/goclaw/nixos.nix ];
@@ -25,8 +21,6 @@ in
 
       channels.telegram = {
         enabled = true;
-        connection_mode = "webhook";
-        webhook_path = "/telegram-webhook-goclaw";
         dm_policy = "allowlist";
         allow_from = [ 560918177 ];
         dm_stream = true;
@@ -43,10 +37,6 @@ in
       GOCLAW_PROVIDER = "openai-codex";
       GOCLAW_MODEL = "gpt-5.1-codex-mini";
       GOCLAW_LANE_MAIN = "60";
-      GOCLAW_TELEGRAM_CONNECTION_MODE = "webhook";
-      GOCLAW_TELEGRAM_WEBHOOK_PATH = "/telegram-webhook-goclaw";
-      GOCLAW_BROWSER_BIN = "${pkgs.chromium}/bin/chromium";
-      GOCLAW_BROWSER_NO_SANDBOX = "1";
       GOCLAW_OWNER_IDS = "alex,560918177,c061959f-6a9a-4b9d-b6ad-744150e692c0";
     };
 
@@ -86,103 +76,4 @@ in
   services.traefik.dynamicConfigOptions.http.services.goclaw.loadBalancer.servers = [
     { url = "http://localhost:${toString cfg.uiPort}"; }
   ];
-
-  systemd.services.goclaw-telegram-webhook-assert = lib.mkIf webhookMode {
-    description = "Assert Telegram webhook points to Tailscale Funnel";
-    wantedBy = [ "goclaw.service" ];
-    partOf = [ "goclaw.service" ];
-    after = [
-      "goclaw.service"
-      "tailscaled.service"
-      "goclaw-telegram-webhook-ts.service"
-    ];
-    wants = [
-      "tailscaled.service"
-      "goclaw-telegram-webhook-ts.service"
-    ];
-
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      ExecStart = pkgs.writeShellScript "goclaw-telegram-webhook-assert" ''
-        set -euo pipefail
-
-        env_file=/run/goclaw/env
-        if [ ! -f "$env_file" ]; then
-          echo "goclaw env file missing: $env_file" >&2
-          exit 1
-        fi
-
-        token="$(${pkgs.gawk}/bin/awk -F= '$1=="GOCLAW_TELEGRAM_TOKEN"{print substr($0, index($0, "=")+1)}' "$env_file")"
-        if [ -z "$token" ]; then
-          echo "GOCLAW_TELEGRAM_TOKEN is missing in $env_file" >&2
-          exit 1
-        fi
-
-        dns_name="$(${config.services.tailscale.package}/bin/tailscale status --json | ${pkgs.jq}/bin/jq -r '.Self.DNSName // empty' | ${pkgs.gnused}/bin/sed 's/\.$//')"
-        if [ -z "$dns_name" ]; then
-          echo "tailscale DNS name is empty" >&2
-          exit 1
-        fi
-
-        expected_base="https://$dns_name"
-        if [ "${toString webhookTsPort}" != "443" ]; then
-          expected_base="$expected_base:${toString webhookTsPort}"
-        fi
-        expected_url="$expected_base${webhookPath}"
-
-        tg_get_webhook_url() {
-          ${pkgs.curl}/bin/curl -sS --max-time 20 "https://api.telegram.org/bot$token/getWebhookInfo" | ${pkgs.jq}/bin/jq -r '.result.url // empty'
-        }
-
-        tg_set_webhook() {
-          local secret="$1"
-          if [ -n "$secret" ]; then
-            ${pkgs.curl}/bin/curl -sS --max-time 20 \
-              --data-urlencode "url=$expected_url" \
-              --data-urlencode "secret_token=$secret" \
-              --data-urlencode 'allowed_updates=["message","edited_message","callback_query","my_chat_member"]' \
-              "https://api.telegram.org/bot$token/setWebhook"
-          else
-            ${pkgs.curl}/bin/curl -sS --max-time 20 \
-              --data-urlencode "url=$expected_url" \
-              --data-urlencode 'allowed_updates=["message","edited_message","callback_query","my_chat_member"]' \
-              "https://api.telegram.org/bot$token/setWebhook"
-          fi
-        }
-
-        webhook_secret="$(${pkgs.gawk}/bin/awk -F= '$1=="GOCLAW_TELEGRAM_WEBHOOK_SECRET"{print substr($0, index($0, "=")+1)}' "$env_file")"
-
-        max_attempts=12
-        attempt=1
-        while [ "$attempt" -le "$max_attempts" ]; do
-          actual_url="$(tg_get_webhook_url || true)"
-          if [ "$actual_url" = "$expected_url" ]; then
-            echo "Telegram webhook OK: $actual_url"
-            exit 0
-          fi
-
-          echo "Telegram webhook mismatch; upserting to Funnel URL (attempt $attempt/$max_attempts)"
-          echo "expected: $expected_url"
-          echo "actual:   $actual_url"
-
-          set_resp="$(tg_set_webhook "$webhook_secret" || true)"
-          set_ok="$(printf '%s' "$set_resp" | ${pkgs.jq}/bin/jq -r '.ok // false' 2>/dev/null || printf 'false')"
-          if [ "$set_ok" != "true" ]; then
-            set_desc="$(printf '%s' "$set_resp" | ${pkgs.jq}/bin/jq -r '.description // "unknown error"' 2>/dev/null || printf 'unknown error')"
-            echo "Telegram setWebhook returned non-ok: $set_desc" >&2
-          fi
-
-          sleep 5
-          attempt=$((attempt + 1))
-        done
-
-        actual_url="$(tg_get_webhook_url || true)"
-        echo "Telegram webhook upsert failed after retries" >&2
-        echo "expected: $expected_url" >&2
-        echo "actual:   $actual_url" >&2
-        exit 1
-      '';
-    };
-  };
 }

@@ -12,6 +12,8 @@ buildGoModule.override { go = go_1_26; } {
 
   patches = [
     ./patches/goclaw-telegram-webhook.patch
+    ./patches/goclaw-telegram-send-retry.patch
+    ./patches/goclaw-browser-bin.patch
   ];
 
   ldflags = [

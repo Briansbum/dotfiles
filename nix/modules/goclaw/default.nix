@@ -181,7 +181,7 @@ in
     services.goclaw._prepareState = pkgs.writeShellScript "goclaw-prepare-state" ''
       set -euo pipefail
 
-      ${pkgs.coreutils}/bin/mkdir -p "${cfg.stateDir}/config" "${cfg.stateDir}/workspace" "${cfg.stateDir}/skills" "${cfg.logsDir}"
+      ${pkgs.coreutils}/bin/mkdir -p "${cfg.stateDir}/config" "${cfg.stateDir}/workspace/skills" "${cfg.logsDir}"
 
       # Copy config to writable location (goclaw writes runtime state into it)
       ${pkgs.coreutils}/bin/cp -f ${cfg._configJson} "${cfg.stateDir}/config/goclaw.json"
@@ -190,17 +190,17 @@ in
       # Copy bundled skills from nix store into writable directory
       for skill in ${cfg.package}/share/goclaw/skills/*; do
         name=$(${pkgs.coreutils}/bin/basename "$skill")
-        ${pkgs.coreutils}/bin/rm -rf "${cfg.stateDir}/skills/$name"
-        ${pkgs.coreutils}/bin/cp -rL "$skill" "${cfg.stateDir}/skills/$name"
+        ${pkgs.coreutils}/bin/rm -rf "${cfg.stateDir}/workspace/skills/$name"
+        ${pkgs.coreutils}/bin/cp -rL "$skill" "${cfg.stateDir}/workspace/skills/$name"
       done
       ${lib.optionalString (cfg._skillsDir != null) ''
         for skill in ${cfg._skillsDir}/*; do
           name=$(${pkgs.coreutils}/bin/basename "$skill")
-          ${pkgs.coreutils}/bin/rm -rf "${cfg.stateDir}/skills/$name"
-          ${pkgs.coreutils}/bin/cp -rL "$skill" "${cfg.stateDir}/skills/$name"
+          ${pkgs.coreutils}/bin/rm -rf "${cfg.stateDir}/workspace/skills/$name"
+          ${pkgs.coreutils}/bin/cp -rL "$skill" "${cfg.stateDir}/workspace/skills/$name"
         done
       ''}
-      ${pkgs.coreutils}/bin/chmod -R u+rw "${cfg.stateDir}/skills"
+      ${pkgs.coreutils}/bin/chmod -R u+rw "${cfg.stateDir}/workspace/skills"
       ${pkgs.coreutils}/bin/chown -R ${cfg.user}:${cfg.group} "${cfg.stateDir}"
       ${pkgs.coreutils}/bin/chown -R ${cfg.user}:${cfg.group} "${cfg.logsDir}"
     '';
@@ -210,9 +210,10 @@ in
       GOCLAW_PORT = toString cfg.port;
       GOCLAW_DATA_DIR = cfg.stateDir;
       GOCLAW_CONFIG = "${cfg.stateDir}/config/goclaw.json";
+      GOCLAW_WORKSPACE = "${cfg.stateDir}/workspace";
       GOCLAW_MIGRATIONS_DIR = "${cfg.package}/share/goclaw/migrations";
       GOCLAW_BUNDLED_SKILLS_DIR = "${cfg.package}/share/goclaw/skills";
-      GOCLAW_SKILLS_DIR = "${cfg.stateDir}/skills";
+      GOCLAW_SKILLS_DIR = "${cfg.stateDir}/workspace/skills";
       GOCLAW_AUTO_UPGRADE = "true";
       GOCLAW_TELEMETRY_ENABLED = "false";
       GOCLAW_POSTGRES_DSN = cfg.postgresDSN;

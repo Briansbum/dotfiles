@@ -45,7 +45,8 @@ in
       GOCLAW_LANE_MAIN = "60";
       GOCLAW_TELEGRAM_CONNECTION_MODE = "webhook";
       GOCLAW_TELEGRAM_WEBHOOK_PATH = "/telegram-webhook-goclaw";
-      ROD_BROWSER_BIN = "${pkgs.chromium}/bin/chromium";
+      GOCLAW_BROWSER_BIN = "${pkgs.chromium}/bin/chromium";
+      GOCLAW_BROWSER_NO_SANDBOX = "1";
       GOCLAW_OWNER_IDS = "alex,560918177,c061959f-6a9a-4b9d-b6ad-744150e692c0";
     };
 

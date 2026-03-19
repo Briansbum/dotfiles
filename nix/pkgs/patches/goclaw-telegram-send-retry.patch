@@ -1,0 +1,154 @@
+--- a/internal/channels/telegram/send.go
++++ b/internal/channels/telegram/send.go
+@@ -327,7 +327,10 @@
+ 			slog.Warn("HTML parse failed, falling back to plain text", "error", err)
+ 			tgMsg.ParseMode = ""
+ 			tgMsg.Text = stripHTML(htmlContent)
+-			_, err = c.bot.SendMessage(ctx, tgMsg)
++			err = retrySend(ctx, "sendMessagePlain", nil, func() error {
++				_, e := c.bot.SendMessage(ctx, tgMsg)
++				return e
++			})
+ 
+ 			// If plain text is STILL too long, split it.
+ 			if err != nil && messageTooLongRe.MatchString(err.Error()) {
+@@ -340,7 +343,10 @@
+ 					if i > 0 {
+ 						msg.ReplyParameters = nil
+ 					}
+ 					msg.MessageThreadID = tgMsg.MessageThreadID
+-					_, err = c.bot.SendMessage(ctx, msg)
++					err = retrySend(ctx, "sendMessagePlainChunk", nil, func() error {
++						_, e := c.bot.SendMessage(ctx, msg)
++						return e
++					})
+ 					if err != nil {
+ 						return err
+ 					}
+@@ -353,7 +359,10 @@
+ 		if err != nil && tgMsg.MessageThreadID != 0 && threadNotFoundRe.MatchString(err.Error()) {
+ 			slog.Warn("thread not found, retrying without message_thread_id", "thread_id", tgMsg.MessageThreadID)
+ 			tgMsg.MessageThreadID = 0
+-			_, err = c.bot.SendMessage(ctx, tgMsg)
++			err = retrySend(ctx, "sendMessageNoThread", nil, func() error {
++				_, e := c.bot.SendMessage(ctx, tgMsg)
++				return e
++			})
+ 		}
+ 	}
+ 	return err
+@@ -391,14 +400,20 @@
+ 		slog.Warn("sendPhoto: HTML parse failed, retrying with plain text caption", "error", err)
+ 		file.Seek(0, 0)
+ 		params.ParseMode = ""
+ 		params.Caption = stripHTML(params.Caption)
+-		_, err = c.bot.SendPhoto(ctx, params)
++		err = retrySend(ctx, "sendPhotoPlain", func() { file.Seek(0, 0) }, func() error {
++			_, e := c.bot.SendPhoto(ctx, params)
++			return e
++		})
+ 	}
+ 	if err != nil && params.MessageThreadID != 0 && threadNotFoundRe.MatchString(err.Error()) {
+ 		slog.Warn("sendPhoto: thread not found, retrying without thread", "thread_id", params.MessageThreadID)
+ 		file.Seek(0, 0)
+ 		params.MessageThreadID = 0
+-		_, err = c.bot.SendPhoto(ctx, params)
++		err = retrySend(ctx, "sendPhotoNoThread", func() { file.Seek(0, 0) }, func() error {
++			_, e := c.bot.SendPhoto(ctx, params)
++			return e
++		})
+ 	}
+ 	return err
+ }
+@@ -434,14 +449,20 @@
+ 		slog.Warn("sendVideo: HTML parse failed, retrying with plain text caption", "error", err)
+ 		file.Seek(0, 0)
+ 		params.ParseMode = ""
+ 		params.Caption = stripHTML(params.Caption)
+-		_, err = c.bot.SendVideo(ctx, params)
++		err = retrySend(ctx, "sendVideoPlain", func() { file.Seek(0, 0) }, func() error {
++			_, e := c.bot.SendVideo(ctx, params)
++			return e
++		})
+ 	}
+ 	if err != nil && params.MessageThreadID != 0 && threadNotFoundRe.MatchString(err.Error()) {
+ 		slog.Warn("sendVideo: thread not found, retrying without thread", "thread_id", params.MessageThreadID)
+ 		file.Seek(0, 0)
+ 		params.MessageThreadID = 0
+-		_, err = c.bot.SendVideo(ctx, params)
++		err = retrySend(ctx, "sendVideoNoThread", func() { file.Seek(0, 0) }, func() error {
++			_, e := c.bot.SendVideo(ctx, params)
++			return e
++		})
+ 	}
+ 	return err
+ }
+@@ -477,14 +498,20 @@
+ 		slog.Warn("sendAudio: HTML parse failed, retrying with plain text caption", "error", err)
+ 		file.Seek(0, 0)
+ 		params.ParseMode = ""
+ 		params.Caption = stripHTML(params.Caption)
+-		_, err = c.bot.SendAudio(ctx, params)
++		err = retrySend(ctx, "sendAudioPlain", func() { file.Seek(0, 0) }, func() error {
++			_, e := c.bot.SendAudio(ctx, params)
++			return e
++		})
+ 	}
+ 	if err != nil && params.MessageThreadID != 0 && threadNotFoundRe.MatchString(err.Error()) {
+ 		slog.Warn("sendAudio: thread not found, retrying without thread", "thread_id", params.MessageThreadID)
+ 		file.Seek(0, 0)
+ 		params.MessageThreadID = 0
+-		_, err = c.bot.SendAudio(ctx, params)
++		err = retrySend(ctx, "sendAudioNoThread", func() { file.Seek(0, 0) }, func() error {
++			_, e := c.bot.SendAudio(ctx, params)
++			return e
++		})
+ 	}
+ 	return err
+ }
+@@ -520,14 +547,20 @@
+ 		slog.Warn("sendDocument: HTML parse failed, retrying with plain text caption", "error", err)
+ 		file.Seek(0, 0)
+ 		params.ParseMode = ""
+ 		params.Caption = stripHTML(params.Caption)
+-		_, err = c.bot.SendDocument(ctx, params)
++		err = retrySend(ctx, "sendDocumentPlain", func() { file.Seek(0, 0) }, func() error {
++			_, e := c.bot.SendDocument(ctx, params)
++			return e
++		})
+ 	}
+ 	if err != nil && params.MessageThreadID != 0 && threadNotFoundRe.MatchString(err.Error()) {
+ 		slog.Warn("sendDocument: thread not found, retrying without thread", "thread_id", params.MessageThreadID)
+ 		file.Seek(0, 0)
+ 		params.MessageThreadID = 0
+-		_, err = c.bot.SendDocument(ctx, params)
++		err = retrySend(ctx, "sendDocumentNoThread", func() { file.Seek(0, 0) }, func() error {
++			_, e := c.bot.SendDocument(ctx, params)
++			return e
++		})
+ 	}
+ 	return err
+ }
+@@ -536,7 +569,10 @@
+ 	editMsg := tu.EditMessageText(tu.ID(chatID), messageID, htmlText)
+ 	editMsg.ParseMode = telego.ModeHTML
+ 
+-	_, err := c.bot.EditMessageText(ctx, editMsg)
++	err := retrySend(ctx, "editMessageText", nil, func() error {
++		_, e := c.bot.EditMessageText(ctx, editMsg)
++		return e
++	})
+ 	if err != nil {
+ 		// Ignore "message is not modified" errors (idempotent edit)
+ 		if messageNotModifiedRe.MatchString(err.Error()) {
+@@ -549,8 +585,8 @@
+ 
+ // deleteMessage deletes a message from the chat.
+ func (c *Channel) deleteMessage(ctx context.Context, chatID int64, messageID int) error {
+-	return c.bot.DeleteMessage(ctx, &telego.DeleteMessageParams{
+-		ChatID:    tu.ID(chatID),
+-		MessageID: messageID,
++	return retrySend(ctx, "deleteMessage", nil, func() error {
++		return c.bot.DeleteMessage(ctx, &telego.DeleteMessageParams{ChatID: tu.ID(chatID), MessageID: messageID})
+ 	})
+ }

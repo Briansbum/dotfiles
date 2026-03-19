@@ -33,15 +33,6 @@
  	pollDone         chan struct{}       // closed when polling goroutine exits
  }
  
-@@ -63,7 +66,7 @@
- 	}
- 
- 	httpClient := &http.Client{
--		Timeout: 30 * time.Second,
-+		Timeout: 20 * time.Second,
- 	}
- 
- 	if cfg.Proxy != "" {
 @@ -109,28 +112,94 @@
  	}, nil
  }
@@ -196,3 +187,45 @@
  // parseChatID converts a string chat ID to int64.
  func parseChatID(chatIDStr string) (int64, error) {
  	var id int64
+--- a/internal/channels/telegram/stream.go
++++ b/internal/channels/telegram/stream.go
+@@ -199,12 +199,25 @@
+ 		if sendThreadID := resolveThreadIDForSend(ds.messageThreadID); sendThreadID > 0 {
+ 			params.MessageThreadID = sendThreadID
+ 		}
+-		msg, err := ds.bot.SendMessage(ctx, params)
++		var msg telego.Message
++		err := retrySend(ctx, "streamSendMessage", nil, func() error {
++			m, e := ds.bot.SendMessage(ctx, params)
++			if e == nil {
++				msg = m
++			}
++			return e
++		})
+ 		// TS ref: withTelegramThreadFallback — retry without thread ID when topic is deleted.
+ 		if err != nil && params.MessageThreadID != 0 && threadNotFoundRe.MatchString(err.Error()) {
+ 			slog.Warn("stream: thread not found, retrying without message_thread_id", "thread_id", params.MessageThreadID)
+ 			params.MessageThreadID = 0
+-			msg, err = ds.bot.SendMessage(ctx, params)
++			err = retrySend(ctx, "streamSendMessageNoThread", nil, func() error {
++				m, e := ds.bot.SendMessage(ctx, params)
++				if e == nil {
++					msg = m
++				}
++				return e
++			})
+ 		}
+ 		if err != nil {
+ 			slog.Debug("stream: failed to send initial message", "error", err)
+@@ -215,7 +228,10 @@
+ 		// Edit existing message
+ 		editMsg := tu.EditMessageText(tu.ID(ds.chatID), ds.messageID, htmlText)
+ 		editMsg.ParseMode = telego.ModeHTML
+-		if _, err := ds.bot.EditMessageText(ctx, editMsg); err != nil {
++		if err := retrySend(ctx, "streamEditMessageText", nil, func() error {
++			_, e := ds.bot.EditMessageText(ctx, editMsg)
++			return e
++		}); err != nil {
+ 			// Ignore "not modified" errors
+ 			if !messageNotModifiedRe.MatchString(err.Error()) {
+ 				slog.Debug("stream: failed to edit message", "error", err)

@@ -31,7 +31,7 @@ let
 
   # pkgsCross.aarch64-linux: same arch as host (aarch64) but Linux OS.
   # CGO_ENABLED=0 Go binaries cross-compile cleanly: GOOS=linux GOARCH=arm64.
-  lp = pkgs.pkgsCross.aarch64-linux;
+  lp = pkgs.pkgsCross.aarch64-multiplatform;
 
   goclawLinux      = lp.goclaw;
   claudeCodeLinux  = inputs.claude-code.packages.aarch64-linux.default;

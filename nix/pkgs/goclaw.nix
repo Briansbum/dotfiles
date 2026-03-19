@@ -10,6 +10,10 @@ buildGoModule.override { go = go_1_26; } {
 
   env.CGO_ENABLED = 0;
 
+  patches = [
+    ./patches/goclaw-telegram-polling-timeouts.patch
+  ];
+
   ldflags = [
     "-s" "-w"
     "-X github.com/nextlevelbuilder/goclaw/cmd.Version=1.32.0"

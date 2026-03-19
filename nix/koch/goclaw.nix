@@ -1,6 +1,6 @@
 # GoClaw on koch — Telegram channel, OpenRouter provider, Traefik-fronted UI.
 
-{ config, pkgs, inputs, ... }:
+{ config, pkgs, inputs, lib, ... }:
 
 let
   steipeteTools = inputs.nix-openclaw.inputs.nix-steipete-tools;
@@ -66,6 +66,7 @@ in
     inputs.xuezh.packages.${pkgs.stdenv.hostPlatform.system}.default
     pkgs.chromium
   ];
+  systemd.services.goclaw.serviceConfig.ExecStart = lib.mkForce "${cfg.package}/bin/goclaw -rod=bin=${pkgs.chromium}/bin/chromium";
   # Traefik routing (koch-specific — public TLS via deSEC)
   services.traefik.dynamicConfigOptions.http.routers.goclaw = {
     rule = "Host(`goclaw.koch.brians.skin`)";

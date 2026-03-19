@@ -1,0 +1,20 @@
+--- a/internal/channels/telegram/channel.go
++++ b/internal/channels/telegram/channel.go
+@@ -63,7 +63,7 @@
+ 	}
+ 
+ 	httpClient := &http.Client{
+-		Timeout: 30 * time.Second,
++		Timeout: 70 * time.Second,
+ 	}
+ 
+ 	if cfg.Proxy != "" {
+@@ -120,7 +120,7 @@
+ 	c.pollDone = make(chan struct{})
+ 
+ 	updates, err := c.bot.UpdatesViaLongPolling(pollCtx, &telego.GetUpdatesParams{
+-		Timeout: 30,
++		Timeout: 25,
+ 		AllowedUpdates: []string{
+ 			"message",
+ 			"edited_message",

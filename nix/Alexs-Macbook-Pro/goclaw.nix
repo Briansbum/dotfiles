@@ -14,7 +14,10 @@
     port = 18790;
     stateDir = "/var/lib/goclaw";
     logsDir = "/var/log/goclaw";
-    postgresDSN = "postgres://goclaw@localhost:5432/goclaw?sslmode=disable";
+    # Use Unix socket so the Apple Container can reach Homebrew PostgreSQL
+    # without TCP networking complexity. Homebrew PG puts its socket in /private/tmp,
+    # which is mounted into the container.
+    postgresDSN = "postgres://goclaw@/goclaw?host=/private/tmp";
 
     config = {
       channels.slack = {

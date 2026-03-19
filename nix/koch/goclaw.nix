@@ -34,16 +34,16 @@ in
     };
 
     environment = {
-      GOCLAW_PROVIDER = "openai-codex";
-      GOCLAW_MODEL = "gpt-5.1-codex-mini";
-      GOCLAW_LANE_MAIN = "60";
-      GOCLAW_OWNER_IDS = "alex,560918177,c061959f-6a9a-4b9d-b6ad-744150e692c0";
+      GOCLAW_PROVIDER   = "openai-codex";
+      GOCLAW_MODEL      = "gpt-5.1-codex-mini";
+      GOCLAW_LANE_MAIN  = "60";
+      GOCLAW_OWNER_IDS  = "alex,560918177,c061959f-6a9a-4b9d-b6ad-744150e692c0";
     };
 
     secretEnvironment = {
-      GOCLAW_GATEWAY_TOKEN = "goclaw_gateway_token";
-      GOCLAW_ENCRYPTION_KEY = "goclaw_encryption_key";
-      GOCLAW_TELEGRAM_TOKEN = "goclaw_telegram_token";
+      GOCLAW_GATEWAY_TOKEN      = "goclaw_gateway_token";
+      GOCLAW_ENCRYPTION_KEY     = "goclaw_encryption_key";
+      GOCLAW_TELEGRAM_TOKEN     = "goclaw_telegram_token";
       GOCLAW_OPENROUTER_API_KEY = "goclaw_openrouter_key";
     };
 
@@ -61,12 +61,12 @@ in
     webUi.hostName = "goclaw.koch.brians.skin";
   };
 
-  # Add xuezh + chromium to systemd PATH
-  systemd.services.goclaw.path = [
-    inputs.xuezh.packages.${pkgs.stdenv.hostPlatform.system}.default
-    pkgs.chromium
+  # Pass chromium via container CMD; /nix/store is mounted ro so the path resolves.
+  # xuezh and steipete tool binaries are also accessible via the /nix/store mount.
+  virtualisation.oci-containers.containers.goclaw.cmd = [
+    "-rod=bin=${pkgs.chromium}/bin/chromium"
   ];
-  systemd.services.goclaw.serviceConfig.ExecStart = lib.mkForce "${cfg.package}/bin/goclaw -rod=bin=${pkgs.chromium}/bin/chromium";
+
   # Traefik routing (koch-specific — public TLS via deSEC)
   services.traefik.dynamicConfigOptions.http.routers.goclaw = {
     rule = "Host(`goclaw.koch.brians.skin`)";

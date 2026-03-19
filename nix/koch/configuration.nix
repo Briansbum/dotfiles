@@ -29,6 +29,7 @@
   # ---------------------------------------------------------------------------
 
   users.users.alex = {
+    uid = 1000;
     isNormalUser = true;
     description = "Alex";
     extraGroups = [ "wheel" ];
@@ -207,6 +208,9 @@
   # Immich — photo management
   # ---------------------------------------------------------------------------
 
+  users.users.immich = { uid = 996; };
+  users.groups.immich = { gid = 997; };
+
   services.immich = {
     enable = true;
     port = 2283;
@@ -247,11 +251,19 @@
   services.nfs.server = {
     enable = true;
     exports = ''
-      /data/photos         192.168.1.0/24(rw,sync,no_subtree_check,no_root_squash)
+      /data/photos         192.168.1.0/24(rw,sync,no_subtree_check,all_squash,anonuid=1000,anongid=100)
       /data/moving-photos  192.168.1.0/24(rw,sync,no_subtree_check,no_root_squash)
-      /data/state-store    192.168.1.0/24(rw,sync,no_subtree_check,no_root_squash)
+      /data/state-store    192.168.1.0/24(rw,sync,no_subtree_check,all_squash,anonuid=1000,anongid=100)
     '';
   };
+
+  # Ensure NFS export dirs are owned by alex so the squashed uid=1000 can r/w.
+  # Immich's subtree is pinned separately so it stays under the immich service user.
+  systemd.tmpfiles.rules = [
+    "d /data/photos        0755 alex   users  -"
+    "d /data/photos/immich 0750 immich immich -"
+    "d /data/state-store   0755 alex   users  -"
+  ];
 
   # ---------------------------------------------------------------------------
   # B2 backups via rclone

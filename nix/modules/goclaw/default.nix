@@ -132,6 +132,17 @@ in
       description = "Extra skill paths for linkFarm: [{ name = \"...\"; path = \"...\"; }].";
     };
 
+    extraContainerVolumes = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [];
+      description = ''
+        Extra bind-mount strings appended to the container volumes list.
+        Format: "src:dst" or "src:dst:options".
+        Useful for mounting static binaries from the Nix store into the container,
+        e.g. "''${pkgs.xuezh}/bin/xuezh:/usr/local/bin/xuezh:ro".
+      '';
+    };
+
     user = lib.mkOption {
       type = lib.types.str;
       default = "goclaw";

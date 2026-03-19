@@ -112,7 +112,7 @@ in
 	DeviceAllow = ["char-* r" "/dev/null rw" "/dev/zero rw" "/dev/random r" "/dev/urandom r"];
         ProtectKernelTunables = true;
         ProtectControlGroups = true;
-        RestrictAddressFamilies = "AF_INET AF_INET6 AF_UNIX AF_NETLINK";
+        RestrictAddressFamilies = "AF_INET AF_UNIX AF_NETLINK";
         RestrictNamespaces = true;
         RestrictRealtime = true;
         ProtectKernelModules = true;

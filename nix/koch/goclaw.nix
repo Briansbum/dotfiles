@@ -66,7 +66,6 @@ in
     inputs.xuezh.packages.${pkgs.stdenv.hostPlatform.system}.default
     pkgs.chromium
   ];
-
   # Traefik routing (koch-specific — public TLS via deSEC)
   services.traefik.dynamicConfigOptions.http.routers.goclaw = {
     rule = "Host(`goclaw.koch.brians.skin`)";

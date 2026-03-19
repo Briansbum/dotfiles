@@ -73,7 +73,6 @@ let
 
       chmod 1777 /tmp
     '';
-    enableFakechroot = true;
 
     config = {
       Cmd      = [ "/usr/local/bin/goclaw" ];

@@ -64,7 +64,7 @@ in
   # Pass chromium via container CMD; /nix/store is mounted ro so the path resolves.
   # xuezh and steipete tool binaries are also accessible via the /nix/store mount.
   virtualisation.oci-containers.containers.goclaw.cmd = [
-    "-rod=bin=${pkgs.chromium}/bin/chromium"
+    "--rod=bin=${pkgs.chromium}/bin/chromium"
   ];
 
   # Traefik routing (koch-specific — public TLS via deSEC)

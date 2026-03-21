@@ -50,7 +50,8 @@ let
     enableFakechroot = true;
 
     config = {
-      Cmd = [ "/usr/local/bin/goclaw" ];
+      Entrypoint = [ "/usr/local/bin/goclaw" ];
+      Cmd = [ ];
       WorkingDir = cfg.stateDir;
       # /nix/store is mounted at runtime; cacert path resolves via that mount.
       Env = [

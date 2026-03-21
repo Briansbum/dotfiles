@@ -61,10 +61,10 @@ in
     webUi.hostName = "goclaw.koch.brians.skin";
   };
 
-  # Pass chromium via container CMD; /nix/store is mounted ro so the path resolves.
-  # xuezh and steipete tool binaries are also accessible via the /nix/store mount.
-  virtualisation.oci-containers.containers.goclaw.cmd = [
-    "--rod=bin=${pkgs.chromium}/bin/chromium"
+  # Expose Chromium at a standard PATH location inside the container so
+  # browser auto-detection can find it without custom CLI flags.
+  services.goclaw.extraContainerVolumes = [
+    "${pkgs.chromium}/bin/chromium:/usr/local/bin/chromium:ro"
   ];
 
   # Traefik routing (koch-specific — public TLS via deSEC)

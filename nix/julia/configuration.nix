@@ -139,10 +139,10 @@
   boot.resumeDevice = "/dev/disk/by-uuid/851c22a2-4127-4a0d-983d-f6da6525b82b";
   boot.initrd.systemd.enable = true;
 
-  systemd.sleep.extraConfig = ''
-    HibernateDelaySec=30m
-    SuspendState=mem
-  '';
+  systemd.sleep.settings.Sleep = {
+    HibernateDelaySec = "30m";
+    SuspendState = "mem";
+  };
   
   swapDevices = [
     {
@@ -175,7 +175,7 @@
     vim
     wget
     unzip
-    helvum
+    crosspipe
     pavucontrol
     playerctl
     brightnessctl

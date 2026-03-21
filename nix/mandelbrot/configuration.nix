@@ -331,7 +331,7 @@ in
     ollama-cuda
     opencode
     unzip
-    helvum
+    crosspipe
     pavucontrol
     vulkan-tools
     nvidia-vaapi-driver
@@ -409,4 +409,3 @@ in
   system.stateVersion = "24.11"; # Did you read the comment?
 
 }
-

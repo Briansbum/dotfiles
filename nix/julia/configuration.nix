@@ -12,6 +12,7 @@
   security.sudo.enable = true;
 
   users.users.alex = {
+    uid = 1000;
     isNormalUser = true;
     description = "Alex";
     extraGroups = ["wheel" "plugdev" "networkmanager" "video"];

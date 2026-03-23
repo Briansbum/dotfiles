@@ -4,11 +4,12 @@
 # but is NOT a Nix-closure image. The image is a minimal scratch-based OCI image:
 #   - goclaw static binary at /usr/local/bin/goclaw
 #   - migrations + skills copied to /usr/local/share/goclaw/
+#   - bash + coreutils + findutils + grep + sed + gawk as symlinks
 #   - NO Nix store baked in
 #
 # Heavy runtime deps (chromium, claude-code, skill binaries) come from the HOST
-# via /nix/store:ro mount. Nix-store paths in env vars work transparently because
-# the entire store is visible inside the container.
+# via /nix/store:ro mount. Shell utilities are symlinked to their Nix store
+# paths; the symlinks resolve at runtime because the store is mounted.
 #
 # PostgreSQL auth is trust on local socket — peer auth requires matching OS uid,
 # which doesn't hold for a container process.
@@ -39,8 +40,22 @@ let
       cp -r ${cfg.package}/share/goclaw/migrations /usr/local/share/goclaw/
       cp -r ${cfg.package}/share/goclaw/skills     /usr/local/share/goclaw/
 
+      # Shell + core utilities — symlinks into /nix/store, which is bind-mounted
+      # read-only at runtime.  Gives agents (and operator exec) a real shell.
+      mkdir -p /bin /usr/bin
+      ln -s ${pkgs.bash}/bin/bash /bin/bash
+      ln -s ${pkgs.bash}/bin/bash /bin/sh
+      ln -s ${pkgs.coreutils}/bin/env /usr/bin/env
+      for pkg in ${pkgs.coreutils}/bin ${pkgs.findutils}/bin \
+                 ${pkgs.gnugrep}/bin ${pkgs.gnused}/bin ${pkgs.gawk}/bin; do
+        for bin in "$pkg"/*; do
+          name=$(basename "$bin")
+          [ ! -e "/usr/local/bin/$name" ] && ln -s "$bin" "/usr/local/bin/$name"
+        done
+      done
+
       # Minimal /etc for Go's net and user-lookup packages
-      printf 'root:x:0:0:root:/:/bin/false\nnobody:x:65534:65534:nobody:/:/bin/false\n' \
+      printf 'root:x:0:0:root:/:/bin/bash\nnobody:x:65534:65534:nobody:/:/bin/false\n' \
         > /etc/passwd
       printf 'root:x:0:\nnobody:x:65534:\n' > /etc/group
       printf 'hosts: files dns\n' > /etc/nsswitch.conf

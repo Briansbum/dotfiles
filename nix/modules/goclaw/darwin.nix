@@ -3,6 +3,7 @@
 # The container is a minimal OCI image built by Nix:
 #   - goclaw Linux/aarch64 binary (cross-compiled from aarch64-darwin)
 #   - claude-code Linux/aarch64 binary
+#   - busybox (sh + core utilities in a single static binary)
 #   - NO Nix store baked in
 #
 # PostgreSQL stays on the host (Homebrew). The container reaches it via the
@@ -35,6 +36,7 @@ let
 
   goclawLinux      = lp.goclaw;
   claudeCodeLinux  = inputs.claude-code.packages.aarch64-linux.default;
+  busyboxLinux     = lp.busybox;
 
   # Minimal OCI image for Apple Container (Linux/aarch64).
   # Same philosophy as nixos.nix: static binary at standard path, no Nix store.
@@ -65,8 +67,26 @@ let
       mkdir -p /etc/ssl/certs
       cp ${lp.cacert}/etc/ssl/certs/ca-bundle.crt /etc/ssl/certs/ca-certificates.crt
 
+      # Busybox — sh + core utilities in a single static binary.
+      # On macOS we can't mount /nix/store (Darwin ≠ Linux), so utilities
+      # must be baked into the image.
+      cp ${busyboxLinux}/bin/busybox /bin/busybox
+      chmod 755 /bin/busybox
+      mkdir -p /bin /usr/bin /usr/local/bin
+      for cmd in sh ash ls cat cp mv rm mkdir rmdir ln head tail wc \
+                 sort uniq tr cut sed awk grep egrep fgrep find xargs \
+                 env echo printf test sleep date touch chmod chown \
+                 id whoami ps kill du df basename dirname pwd tee \
+                 tar gzip gunzip wget vi md5sum sha256sum od \
+                 diff patch strings stat readlink realpath mktemp \
+                 seq expr yes true false nohup; do
+        ln -s /bin/busybox "/bin/$cmd" 2>/dev/null || true
+      done
+      ln -s /bin/busybox /usr/bin/env
+      ln -s /bin/busybox /usr/local/bin/busybox
+
       # Minimal /etc for Go net/user packages
-      printf 'root:x:0:0:root:/:/bin/false\nnobody:x:65534:65534:nobody:/:/bin/false\n' \
+      printf 'root:x:0:0:root:/:/bin/sh\nnobody:x:65534:65534:nobody:/:/bin/false\n' \
         > /etc/passwd
       printf 'root:x:0:\nnobody:x:65534:\n' > /etc/group
       printf 'hosts: files dns\n' > /etc/nsswitch.conf

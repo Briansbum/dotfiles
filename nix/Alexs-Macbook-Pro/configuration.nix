@@ -154,6 +154,9 @@
     trusted-users = [ "@admin" ];
   };
 
+  # Linux builder VM — needed to build aarch64-linux derivations (e.g. goclaw container image)
+  nix.linux-builder.enable = true;
+
   # Enable nix-darwin to manage Homebrew
   homebrew = {
     enable = true;

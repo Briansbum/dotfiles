@@ -7,11 +7,56 @@
     flyctl
     kubeswitch
     obsidian
-    opencode
   ];
 
   # Shared program configurations
   programs = {
+    claude-code = {
+      enable = true;
+      enableMcpIntegration = true;
+    };
+
+    mcp = {
+      enable = true;
+      servers = {
+        grafana = {
+          type = "local";
+          command = [
+            "${config.home.homeDirectory}/go/bin/mcp-grafana"
+          ];
+          environment = {
+            GRAFANA_URL = "https://doccla.grafana.net";
+            GRAFANA_API_KEY = "{env:GRAFANA_API_KEY}";
+          };
+        };
+        nixos = {
+          type = "local";
+          command = [
+            "nix"
+            "run"
+            "github:utensils/mcp-nixos"
+            "--"
+          ];
+        };
+        "awslabs.aws-documentation-mcp-server" = {
+          type = "local";
+          command = [
+            "uvx"
+            "awslabs.aws-documentation-mcp-server@latest"
+          ];
+          environment = {
+            FASTMCP_LOG_LEVEL = "ERROR";
+            AWS_DOCUMENTATION_PARTITION = "aws";
+            MCP_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
+          };
+        };
+        atlassian = {
+          type = "remote";
+          url = "https://mcp.atlassian.com/v1/mcp";
+        };
+      };
+    };
+
     # Still need to enable more shared config
     direnv = {
       enable = true;
@@ -142,11 +187,6 @@
             truncate -s0 ~/.local/state/nvim/lsp.log 2>/dev/null
             nvim (fd -H -t f . | rg -v '.git/' | fzf)
           '';
-        };
-
-        o = {
-          description = "open opencode at the current directory";
-          body = "opencode";
         };
 
         notes = {

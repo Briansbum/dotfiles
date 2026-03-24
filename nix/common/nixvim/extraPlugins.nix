@@ -90,8 +90,8 @@
 
     -- CodeCompanion configuration
     require("codecompanion").setup({
-      name = "opencode",
-      formatted_name = "OpenCode",
+      name = "claude-code",
+      formatted_name = "Claude Code",
       type = "acp",
       roles = {
         llm = "assistant",
@@ -102,7 +102,7 @@
       },
       commands = {
         default = {
-          "opencode",
+          "claude",
           "acp",
         },
       },

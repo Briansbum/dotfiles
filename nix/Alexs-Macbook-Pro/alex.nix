@@ -40,7 +40,7 @@
     "thefuck/settings.py".source = ../../config/thefuck/settings.py;
     
     # Note: htop, wireshark configs are runtime state - not managed
-    # Note: spotifyd, spotify-tui, opencode, op configs have secrets - not managed
+    # Note: spotifyd, spotify-tui, op configs have secrets - not managed
   };
 
   # NixVim configuration
@@ -118,54 +118,6 @@
     enable = true;
     enableFishIntegration = false;  # Managed manually via fish config files
     shellWrapperName = "y";
-  };
-
-  # Claude Code
-  programs.claude-code = {
-    enable = true;
-    enableMcpIntegration = true;
-  };
-  
-  # MCP Servers
-  programs.mcp = {
-    enable = true;
-    servers = {
-      grafana = {
-        type = "local";
-        command = [
-          "/Users/alex/go/bin/mcp-grafana"
-        ];
-        environment = {
-          GRAFANA_URL = "https://doccla.grafana.net";
-          GRAFANA_API_KEY = "{env:GRAFANA_API_KEY}";
-        };
-      };
-      nixos = {
-        type = "local";
-        command = [
-          "nix"
-          "run"
-          "github:utensils/mcp-nixos"
-          "--"
-        ];
-      };
-      "awslabs.aws-documentation-mcp-server" = {
-        type = "local";
-        command = [
-          "uvx"
-          "awslabs.aws-documentation-mcp-server@latest"
-        ];
-        environment = {
-          FASTMCP_LOG_LEVEL = "ERROR";
-          AWS_DOCUMENTATION_PARTITION = "aws";
-          MCP_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
-        };
-      };
-      atlassian = {
-        type = "remote";
-        url = "https://mcp.atlassian.com/v1/mcp";
-      };
-    };
   };
 
   # Fish shell configuration - macOS-specific overrides

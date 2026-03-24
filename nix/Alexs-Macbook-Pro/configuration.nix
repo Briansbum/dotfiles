@@ -183,7 +183,6 @@
       "osx-cross/arm"
       "osx-cross/avr"
       "qmk/qmk"
-      "sst/tap"
       "turbot/tap"
       "atlassian/acli"
     ];
@@ -198,7 +197,6 @@
       "omissis/go-jsonschema/go-jsonschema"
       "ory/tap/hydra"
       "qmk/qmk/qmk"
-      "sst/tap/opencode"
       "atlassian/acli/acli"
       
       # Tools that might need specific versions or macOS integration

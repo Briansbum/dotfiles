@@ -7,7 +7,6 @@
 # Tailscale serve routes:
 #   https://mandelbrot/ollama     -> localhost:11434
 #   https://mandelbrot/open-webui -> localhost:3000
-#   https://mandelbrot/opencode   -> localhost:4096
 #   https://mandelbrot/octoprint  -> localhost:5000
 
 with pkgs; let
@@ -70,21 +69,6 @@ in
         RestartSec = 3;
       };
     };
-    opencode = {
-      wantedBy = ["multi-user.target"];
-      wants = [ "network-online.target" ];
-      after = [ "network-online.target" "tailscaled.service" ];
-
-      description = "runs opencode in web mode";
-
-      serviceConfig = {
-        ExecStart = "${pkgs.opencode}/bin/opencode serve --port 4096";
-        User = "alex";
-        Restart = "always";
-        RestartSec = 3;
-        Environment = "PATH=$PATH";
-      };
-    };
   };
 
   # OctoPrint for 3D printer management
@@ -107,7 +91,6 @@ in
   services.tailscaleServe = {
     ollama       = { localPort = 11434; path = "ollama";     afterService = "ollama";   };
     open-webui   = { localPort = 3000;  path = "open-webui"; afterService = "open-webui"; };
-    opencode     = { localPort = 4096;  path = "opencode";   afterService = "opencode"; };
     octoprint    = { localPort = 5000;  path = "octoprint";  afterService = "octoprint"; };
   };
 
@@ -330,7 +313,6 @@ in
     cron
     ollama
     ollama-cuda
-    opencode
     unzip
     crosspipe
     pavucontrol
@@ -380,7 +362,7 @@ in
 
   # Open ports in the firewall.
   networking.nftables.enable = true;
-  networking.firewall.allowedTCPPorts = [ 11434 8554 3923 4096 ];
+  networking.firewall.allowedTCPPorts = [ 11434 8554 3923 ];
   networking.firewall.allowedUDPPorts = [ 8554 16261 16262 ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;

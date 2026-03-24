@@ -661,19 +661,19 @@ require("lazy").setup({
             },
             config = function()
                 require("codecompanion").setup({
-                    name = "opencode",
-                    formatted_name = "OpenCode",
+                    name = "claude-code",
+                    formatted_name = "Claude Code",
                     type = "acp",
                     roles = {
                         llm = "assistant",
                         user = "user",
                     },
                     opts = {
-                        vision = false, -- Set to true if OpenCode supports vision
+                        vision = false,
                     },
                     commands = {
                         default = {
-                            "opencode",
+                            "claude",
                             "acp",
                         },
                     },

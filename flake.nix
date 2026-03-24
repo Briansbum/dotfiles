@@ -19,10 +19,6 @@
           inputs.nixpkgs.follows = "nixpkgs";
         };
 
-        opencode = {
-          url = "github:anomalyco/opencode";
-        };
-
         nix-software-center = {
           url = "github:snowfallorg/nix-software-center";
           inputs.nixpkgs.follows = "nixpkgs";
@@ -62,7 +58,7 @@
 
     };
 
-    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, claude-code, opencode, nix-openclaw, xuezh, goclaw-src, nix-software-center, disko, sops-nix, ...}@inputs:
+    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, claude-code, nix-openclaw, xuezh, goclaw-src, nix-software-center, disko, sops-nix, ...}@inputs:
     let
         # Shared goclaw overlay — used by koch, darwin, and devShells
         goclawOverlay = (final: prev: {
@@ -100,7 +96,6 @@
                         home-manager.extraSpecialArgs = { inherit inputs; };
                         home-manager.users.alex = ./nix/mandelbrot/alex.nix;
                         home-manager.backupFileExtension = ".before";
-                        nixpkgs.overlays = [ opencode.overlays.default ];
                     }
                 ];
             };
@@ -118,7 +113,6 @@
                         home-manager.users.alex = ./nix/julia/alex.nix;
                         home-manager.users.cass = ./nix/julia/cass.nix;
                         home-manager.backupFileExtension = ".before";
-                        nixpkgs.overlays = [ opencode.overlays.default ];
                     }
                 ];
             };

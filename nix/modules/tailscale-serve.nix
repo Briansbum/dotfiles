@@ -4,6 +4,22 @@ with lib;
 
 let
   cfg = config.services.tailscaleServe;
+
+  serveCmd = name: svc:
+    let
+      httpsPort = if svc.path != null
+        then (if svc.tsPort != null then svc.tsPort else 443)
+        else svc.tsPort;
+      args = if svc.path != null
+        then "--bg --https=${toString httpsPort} --set-path=/${removePrefix "/" svc.path} http://localhost:${toString svc.localPort}"
+        else "--bg --https=${toString httpsPort} http://localhost:${toString svc.localPort}";
+      verb = if svc.funnel then "funnel" else "serve";
+    in "${config.services.tailscale.package}/bin/tailscale ${verb} ${args}";
+
+  afterServices = unique (concatMap (svc:
+    optional (svc.afterService != null) "${svc.afterService}.service"
+  ) (attrValues cfg));
+
 in {
   options.services.tailscaleServe = mkOption {
     type = types.attrsOf (types.submodule {
@@ -55,29 +71,21 @@ in {
       message = "services.tailscaleServe.${name}: must set either 'path' or 'tsPort'.";
     }) cfg;
 
-    systemd.services = mapAttrs' (name: svc:
-      let
-        httpsPort = if svc.path != null
-          then (if svc.tsPort != null then svc.tsPort else 443)
-          else svc.tsPort;
-        serveCmd = if svc.path != null
-          then "--bg --https=${toString httpsPort} --set-path=/${removePrefix "/" svc.path} http://localhost:${toString svc.localPort}"
-          else "--bg --https=${toString httpsPort} http://localhost:${toString svc.localPort}";
-        proxyVerb = if svc.funnel then "funnel" else "serve";
-        after = [ "network-online.target" "tailscaled.service" ]
-          ++ optional (svc.afterService != null) "${svc.afterService}.service";
-      in nameValuePair "${name}-ts" {
-        wantedBy = [ "multi-user.target" ];
-        wants = [ "network-online.target" ];
-        inherit after;
-        description = "tailscale proxy for ${name}";
+    # Single service runs all serve commands sequentially — avoids races
+    # when multiple proxies try to update the Tailscale serve config in parallel.
+    systemd.services.tailscale-serve = {
+      description = "tailscale serve proxies";
+      wantedBy = [ "multi-user.target" ];
+      wants    = [ "network-online.target" ];
+      after    = [ "network-online.target" "tailscaled.service" ] ++ afterServices;
 
-        serviceConfig = {
-          ExecStart = "${config.services.tailscale.package}/bin/tailscale ${proxyVerb} ${serveCmd}";
-          Type = "oneshot";
-          RemainAfterExit = true;
-        };
-      }
-    ) cfg;
+      serviceConfig = {
+        Type            = "oneshot";
+        RemainAfterExit = true;
+        ExecStart = pkgs.writeShellScript "tailscale-serve-all" (
+          concatStringsSep "\n" (mapAttrsToList serveCmd cfg)
+        );
+      };
+    };
   };
 }

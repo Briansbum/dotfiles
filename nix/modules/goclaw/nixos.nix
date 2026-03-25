@@ -18,6 +18,10 @@ let
 
   secretNames = lib.unique (lib.attrValues cfg.secretEnvironment);
 
+  # Named bridge network shared by goclaw and chrome sidecar containers.
+  # Replaces --network=host; containers communicate via Docker DNS (container name).
+  networkName = "goclaw";
+
   # Self-contained OCI image: all runtime closures baked into image layers.
   # No /nix/store bind-mount needed — contents embeds the full dependency graph.
   goclawImage = pkgs.dockerTools.buildLayeredImage {
@@ -72,7 +76,7 @@ let
   # local launcher (which requires --no-sandbox for non-root) is never used.
   containerEnv = cfg._commonEnv
     // lib.optionalAttrs cfg.browser.sidecar.enable {
-      GOCLAW_BROWSER_REMOTE_URL = "ws://localhost:${toString cfg.browser.sidecar.port}";
+      GOCLAW_BROWSER_REMOTE_URL = "ws://chrome:${toString cfg.browser.sidecar.port}";
     };
 
   # Writes secrets to /run/goclaw/env. Docker reads this from HOST before start.
@@ -171,10 +175,39 @@ in
       };
     };
 
-    # Container must start after prepare (creates the env file Docker needs)
+    # Bridge network — must exist before either container starts.
+    systemd.services.goclaw-network = {
+      description = "Create goclaw Docker bridge network";
+      wantedBy    = [ "multi-user.target" ];
+      after       = [ "docker.service" "docker.socket" ];
+      requires    = [ "docker.service" ];
+      before      = [
+        "${config.virtualisation.oci-containers.backend}-goclaw.service"
+        "${config.virtualisation.oci-containers.backend}-chrome.service"
+      ];
+      serviceConfig = {
+        Type            = "oneshot";
+        RemainAfterExit = true;
+        ExecStart = pkgs.writeShellScript "goclaw-network-create" ''
+          set -euo pipefail
+          ${pkgs.docker}/bin/docker network inspect ${networkName} >/dev/null 2>&1 || \
+            ${pkgs.docker}/bin/docker network create --driver bridge ${networkName}
+        '';
+        ExecStop = pkgs.writeShellScript "goclaw-network-rm" ''
+          ${pkgs.docker}/bin/docker network rm ${networkName} 2>/dev/null || true
+        '';
+      };
+    };
+
+    # Container must start after prepare (creates the env file Docker needs) and after network.
     systemd.services."${config.virtualisation.oci-containers.backend}-goclaw" = {
-      after    = [ "goclaw-prepare.service" ];
-      requires = [ "goclaw-prepare.service" ];
+      after    = [ "goclaw-prepare.service" "goclaw-network.service" ];
+      requires = [ "goclaw-prepare.service" "goclaw-network.service" ];
+    };
+
+    systemd.services."${config.virtualisation.oci-containers.backend}-chrome" = lib.mkIf cfg.browser.sidecar.enable {
+      after    = [ "goclaw-network.service" ];
+      requires = [ "goclaw-network.service" ];
     };
 
     # -----------------------------------------------------------------------
@@ -196,8 +229,9 @@ in
       ] ++ cfg.extraContainerVolumes;
 
       extraOptions = [
-        "--network=host"    # goclaw listens on host loopback; nginx proxies to it
-        "--shm-size=256m"   # Chromium uses /dev/shm for V8 JIT
+        "--network=${networkName}"
+        "--publish=127.0.0.1:${toString cfg.port}:${toString cfg.port}"
+        "--shm-size=256m"
       ];
 
       workdir = cfg.stateDir;
@@ -224,7 +258,7 @@ in
       ];
 
       extraOptions = [
-        "--network=host"
+        "--network=${networkName}"
         "--shm-size=2g"
       ];
     };

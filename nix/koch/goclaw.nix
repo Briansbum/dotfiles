@@ -11,6 +11,8 @@ in
 
   services.goclaw = {
     enable = true;
+    uid = 988;
+    gid = 988;
     port = 18789;
     stateDir = "/data/state-store/goclaw";
     logsDir = "/var/log/goclaw";

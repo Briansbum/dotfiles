@@ -143,6 +143,16 @@ in
       '';
     };
 
+    extraContainerOptions = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [];
+      description = ''
+        Extra options appended to the container run command.
+        Useful for host entries, capabilities, etc.
+        e.g. "--add-host=myhost:192.168.1.1".
+      '';
+    };
+
     user = lib.mkOption {
       type = lib.types.str;
       default = "goclaw";

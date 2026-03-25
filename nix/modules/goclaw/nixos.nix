@@ -231,8 +231,9 @@ in
       extraOptions = [
         "--network=${networkName}"
         "--publish=127.0.0.1:${toString cfg.port}:${toString cfg.port}"
+        "--add-host=host.docker.internal:host-gateway"
         "--shm-size=256m"
-      ];
+      ] ++ cfg.extraContainerOptions;
 
       workdir = cfg.stateDir;
     };

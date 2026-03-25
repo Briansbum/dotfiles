@@ -59,6 +59,10 @@ in
       { name = "xuezh";     path = "${inputs.xuezh}/skills/xuezh"; }
     ];
 
+    extraContainerOptions = [
+      "--add-host=mandelbrot:100.64.42.28"   # Tailscale IP — ollama via https://mandelbrot/ollama
+    ];
+
     webUi.enable = true;
     webUi.hostName = "goclaw.koch.brians.skin";
 

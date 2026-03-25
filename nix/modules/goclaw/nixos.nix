@@ -75,6 +75,12 @@ let
   # When the Chrome sidecar is enabled, point goclaw at it via CDP so the
   # local launcher (which requires --no-sandbox for non-root) is never used.
   containerEnv = cfg._commonEnv
+    // {
+      # Bridge networking: Docker DNAT forwards to the container's bridge IP, not
+      # 127.0.0.1, so goclaw must listen on all interfaces. The --publish flag
+      # already restricts host-side exposure to 127.0.0.1.
+      GOCLAW_HOST = "0.0.0.0";
+    }
     // lib.optionalAttrs cfg.browser.sidecar.enable {
       GOCLAW_BROWSER_REMOTE_URL = "ws://chrome:${toString cfg.browser.sidecar.port}";
     };

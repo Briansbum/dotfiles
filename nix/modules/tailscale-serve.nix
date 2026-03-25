@@ -61,7 +61,7 @@ in {
           then (if svc.tsPort != null then svc.tsPort else 443)
           else svc.tsPort;
         serveCmd = if svc.path != null
-          then "--bg --https=${toString httpsPort} --set-path=/${removePrefix "/" svc.path} http://localhost:${toString svc.localPort}/${removePrefix "/" svc.path}"
+          then "--bg --https=${toString httpsPort} --set-path=/${removePrefix "/" svc.path} http://localhost:${toString svc.localPort}"
           else "--bg --https=${toString httpsPort} http://localhost:${toString svc.localPort}";
         proxyVerb = if svc.funnel then "funnel" else "serve";
         after = [ "network-online.target" "tailscaled.service" ]

@@ -60,7 +60,7 @@ in
     ];
 
     extraContainerOptions = [
-      "--add-host=mandelbrot:100.64.42.28"   # Tailscale IP — ollama via https://mandelbrot/ollama
+      "--add-host=mandelbrot.tuxedo-burbot.ts.net:100.64.42.28"  # Tailscale IP — ollama via Tailscale Serve
     ];
 
     webUi.enable = true;

@@ -155,6 +155,42 @@ in
       description = "Group for the goclaw process.";
     };
 
+    browser = {
+      sidecar = {
+        enable = lib.mkEnableOption "headless Chrome sidecar container (recommended for non-root deployments)";
+
+        image = lib.mkOption {
+          type = lib.types.str;
+          default = "zenika/alpine-chrome:latest";
+          description = "Docker image for the headless Chrome sidecar.";
+        };
+
+        port = lib.mkOption {
+          type = lib.types.port;
+          default = 9222;
+          description = "CDP port the Chrome sidecar listens on (localhost).";
+        };
+      };
+    };
+
+    uid = lib.mkOption {
+      type = lib.types.int;
+      default = 994;
+      description = ''
+        UID for the goclaw user, pinned on both the host and inside the
+        container image so bind-mounted volume ownership is consistent.
+      '';
+    };
+
+    gid = lib.mkOption {
+      type = lib.types.int;
+      default = 994;
+      description = ''
+        GID for the goclaw group, pinned on both the host and inside the
+        container image so bind-mounted volume ownership is consistent.
+      '';
+    };
+
     webUi = {
       enable = lib.mkOption {
         type = lib.types.bool;
@@ -225,6 +261,9 @@ in
       GOCLAW_MIGRATIONS_DIR = "${cfg.package}/share/goclaw/migrations";
       GOCLAW_BUNDLED_SKILLS_DIR = "${cfg.package}/share/goclaw/skills";
       GOCLAW_SKILLS_DIR = "${cfg.stateDir}/workspace/skills";
+      # Both vars point at the same Nix store path; goclaw checks them at
+      # different priority levels in gateway_setup.go:setupSkillsSystem.
+      GOCLAW_BUILTIN_SKILLS_DIR = "${cfg.package}/share/goclaw/skills";
       GOCLAW_AUTO_UPGRADE = "true";
       GOCLAW_TELEMETRY_ENABLED = "false";
       GOCLAW_POSTGRES_DSN = cfg.postgresDSN;

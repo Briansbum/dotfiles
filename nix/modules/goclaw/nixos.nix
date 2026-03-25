@@ -1,15 +1,12 @@
 # GoClaw NixOS implementation — Docker container, NixOS PostgreSQL, nginx.
 #
-# The container image is built by Nix (loaded at service start via docker load)
-# but is NOT a Nix-closure image. The image is a minimal scratch-based OCI image:
-#   - goclaw static binary at /usr/local/bin/goclaw
-#   - migrations + skills copied to /usr/local/share/goclaw/
-#   - bash + coreutils + findutils + grep + sed + gawk as symlinks
-#   - NO Nix store baked in
+# The container image is a self-contained layered OCI image built by Nix.
+# All runtime deps (goclaw binary, chromium, claude-code, shell tools) are
+# baked into image layers via `contents` — no /nix/store bind-mount needed.
 #
-# Heavy runtime deps (chromium, claude-code, skill binaries) come from the HOST
-# via /nix/store:ro mount. Shell utilities are symlinked to their Nix store
-# paths; the symlinks resolve at runtime because the store is mounted.
+# The container runs as a pinned non-root goclaw user (uid/gid from cfg).
+# The host system user uses the same uid/gid so bind-mounted volume ownership
+# is consistent without any runtime chown.
 #
 # PostgreSQL auth is trust on local socket — peer auth requires matching OS uid,
 # which doesn't hold for a container process.
@@ -21,69 +18,62 @@ let
 
   secretNames = lib.unique (lib.attrValues cfg.secretEnvironment);
 
-  # Minimal OCI image: static goclaw binary + data at standard paths.
-  # /nix/store is mounted at runtime so all Nix-path env vars still resolve.
+  # Self-contained OCI image: all runtime closures baked into image layers.
+  # No /nix/store bind-mount needed — contents embeds the full dependency graph.
   goclawImage = pkgs.dockerTools.buildLayeredImage {
     name = "goclaw";
     tag = "latest";
 
+    contents = [
+      cfg.package          # goclaw binary, migrations, bundled skills
+      pkgs.bash
+      pkgs.coreutils
+      pkgs.findutils
+      pkgs.gnugrep
+      pkgs.gnused
+      pkgs.gawk
+      pkgs.cacert
+      pkgs.claude-code
+      # chromium is intentionally absent: use the browser.sidecar option instead.
+      # Chrome cannot sandbox itself when running as non-root without SYS_ADMIN;
+      # the sidecar runs Chrome with --no-sandbox in its own container.
+    ];
+
     fakeRootCommands = ''
-      mkdir -p /usr/local/bin \
-               /usr/local/share/goclaw \
-               /tmp /var/log /etc /data
-
-      # Static Go binary — no shared-lib deps, runs on any Linux kernel
-      cp ${cfg.package}/bin/goclaw /usr/local/bin/goclaw
-      chmod 755 /usr/local/bin/goclaw
-
-      # Migrations and bundled skills at standard paths
-      cp -r ${cfg.package}/share/goclaw/migrations /usr/local/share/goclaw/
-      cp -r ${cfg.package}/share/goclaw/skills     /usr/local/share/goclaw/
-
-      # Shell + core utilities — symlinks into /nix/store, which is bind-mounted
-      # read-only at runtime.  Gives agents (and operator exec) a real shell.
-      mkdir -p /bin /usr/bin
-      ln -s ${pkgs.bash}/bin/bash /bin/bash
-      ln -s ${pkgs.bash}/bin/bash /bin/sh
-      ln -s ${pkgs.coreutils}/bin/env /usr/bin/env
-      for pkg in ${pkgs.coreutils}/bin ${pkgs.findutils}/bin \
-                 ${pkgs.gnugrep}/bin ${pkgs.gnused}/bin ${pkgs.gawk}/bin; do
-        for bin in "$pkg"/*; do
-          name=$(basename "$bin")
-          [ ! -e "/usr/local/bin/$name" ] && ln -s "$bin" "/usr/local/bin/$name"
-        done
-      done
-
-      # Minimal /etc for Go's net and user-lookup packages
-      printf 'root:x:0:0:root:/:/bin/bash\nnobody:x:65534:65534:nobody:/:/bin/false\n' \
+      # goclaw user/group — uid/gid are pinned to match the host system user
+      # so bind-mounted stateDir ownership is consistent without runtime chown.
+      printf 'root:x:0:0:root:/root:/bin/sh\ngoclaw:x:${toString cfg.uid}:${toString cfg.gid}:goclaw:${cfg.stateDir}:/bin/bash\nnobody:x:65534:65534:nobody:/:/bin/false\n' \
         > /etc/passwd
-      printf 'root:x:0:\nnobody:x:65534:\n' > /etc/group
+      printf 'root:x:0:\ngoclaw:x:${toString cfg.gid}:\nnobody:x:65534:\n' > /etc/group
       printf 'hosts: files dns\n' > /etc/nsswitch.conf
 
+      # State and log dirs must exist in the image so Docker can set WorkingDir
+      # and create the bind-mount targets before the volumes are attached.
+      mkdir -p ${cfg.stateDir} ${cfg.logsDir} /tmp /run
       chmod 1777 /tmp
     '';
     enableFakechroot = true;
 
     config = {
-      Entrypoint = [ "/usr/local/bin/goclaw" ];
+      Entrypoint = [ "${cfg.package}/bin/goclaw" ];
       Cmd = [ ];
       WorkingDir = cfg.stateDir;
-      # /nix/store is mounted at runtime; cacert path resolves via that mount.
+      User = "${toString cfg.uid}:${toString cfg.gid}";
       Env = [
         "SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
         "NIX_SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
+        "HOME=${cfg.stateDir}"
       ];
     };
   };
 
-  # Override _commonEnv paths that were pointing into the Nix store for the
-  # binary itself; data files are now at standard paths inside the image.
-  # All OTHER Nix-store paths (claude-code, chromium, skill binaries) stay as-is
-  # because /nix/store is mounted read-only into the container.
-  containerEnv = cfg._commonEnv // {
-    GOCLAW_MIGRATIONS_DIR    = "/usr/local/share/goclaw/migrations";
-    GOCLAW_BUNDLED_SKILLS_DIR = "/usr/local/share/goclaw/skills";
-  };
+  # All Nix store paths in _commonEnv exist inside the image via contents.
+  # When the Chrome sidecar is enabled, point goclaw at it via CDP so the
+  # local launcher (which requires --no-sandbox for non-root) is never used.
+  containerEnv = cfg._commonEnv
+    // lib.optionalAttrs cfg.browser.sidecar.enable {
+      GOCLAW_BROWSER_REMOTE_URL = "ws://localhost:${toString cfg.browser.sidecar.port}";
+    };
 
   # Writes secrets to /run/goclaw/env. Docker reads this from HOST before start.
   prepareEnv = pkgs.writeShellScript "goclaw-prepare-env" ''
@@ -119,11 +109,12 @@ in
     # -----------------------------------------------------------------------
 
     users.users.${cfg.user} = {
+      uid = cfg.uid;
       isSystemUser = true;
       group = cfg.group;
       home = cfg.stateDir;
     };
-    users.groups.${cfg.group} = {};
+    users.groups.${cfg.group} = { gid = cfg.gid; };
 
     # -----------------------------------------------------------------------
     # PostgreSQL — trust on local socket (peer won't work from container)
@@ -202,7 +193,6 @@ in
         "${cfg.stateDir}:${cfg.stateDir}:rw"
         "${cfg.logsDir}:${cfg.logsDir}:rw"
         "/run/postgresql:/run/postgresql"   # PostgreSQL Unix socket
-        "/nix/store:/nix/store:ro"          # chromium, claude-code, skill bins
       ] ++ cfg.extraContainerVolumes;
 
       extraOptions = [
@@ -211,6 +201,32 @@ in
       ];
 
       workdir = cfg.stateDir;
+    };
+
+    # -----------------------------------------------------------------------
+    # Chrome sidecar — headless Chrome reachable via CDP on localhost.
+    # goclaw connects to it via GOCLAW_BROWSER_REMOTE_URL instead of
+    # launching Chrome locally (which requires --no-sandbox for non-root).
+    # The sidecar image runs Chrome with --no-sandbox itself; Docker provides
+    # the outer isolation layer.
+    # -----------------------------------------------------------------------
+
+    virtualisation.oci-containers.containers.chrome = lib.mkIf cfg.browser.sidecar.enable {
+      image = cfg.browser.sidecar.image;
+
+      cmd = [
+        "--no-sandbox"
+        "--remote-debugging-address=0.0.0.0"
+        "--remote-debugging-port=${toString cfg.browser.sidecar.port}"
+        "--remote-allow-origins=*"
+        "--disable-gpu"
+        "--disable-dev-shm-usage"
+      ];
+
+      extraOptions = [
+        "--network=host"
+        "--shm-size=2g"
+      ];
     };
 
     # -----------------------------------------------------------------------

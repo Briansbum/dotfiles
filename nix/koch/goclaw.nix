@@ -59,13 +59,9 @@ in
 
     webUi.enable = true;
     webUi.hostName = "goclaw.koch.brians.skin";
-  };
 
-  # Expose Chromium at a standard PATH location inside the container so
-  # browser auto-detection can find it without custom CLI flags.
-  services.goclaw.extraContainerVolumes = [
-    "${pkgs.chromium}/bin/chromium:/usr/local/bin/chromium:ro"
-  ];
+    browser.sidecar.enable = true;
+  };
 
   # Traefik routing (koch-specific — public TLS via deSEC)
   services.traefik.dynamicConfigOptions.http.routers.goclaw = {

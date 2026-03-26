@@ -2,7 +2,7 @@
 
 buildGoModule.override { go = go_1_26; } {
   pname = "goclaw";
-  version = "2.23.7";
+  version = "2.24.0";
 
   src = goclaw-src;
 
@@ -12,7 +12,7 @@ buildGoModule.override { go = go_1_26; } {
 
   ldflags = [
     "-s" "-w"
-    "-X github.com/nextlevelbuilder/goclaw/cmd.Version=2.23.7"
+    "-X github.com/nextlevelbuilder/goclaw/cmd.Version=2.24.0"
   ];
 
   # Tests need a running PostgreSQL

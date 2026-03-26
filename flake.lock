@@ -137,11 +137,11 @@
     "goclaw-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1774512234,
-        "narHash": "sha256-tMh4N+xY7VwKNRgxM86p20aW4B16M+JfEMLdWjWMu8I=",
+        "lastModified": 1774523316,
+        "narHash": "sha256-TO6nqOcuD0Ijd1ycbNhpFLOSHxcs1ggAnxvx2wBPEiw=",
         "owner": "nextlevelbuilder",
         "repo": "goclaw",
-        "rev": "17a7359b1cf7af41786c7c26be5a8c28570f7690",
+        "rev": "0dab087fa3b78efc5414d52bf3997a5fea42808b",
         "type": "github"
       },
       "original": {

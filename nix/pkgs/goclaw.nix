@@ -2,7 +2,7 @@
 
 buildGoModule.override { go = go_1_26; } {
   pname = "goclaw";
-  version = "1.32.0";
+  version = "2.23.7";
 
   src = goclaw-src;
 
@@ -10,13 +10,9 @@ buildGoModule.override { go = go_1_26; } {
 
   env.CGO_ENABLED = 0;
 
-  patches = [
-    ./patches/goclaw-telegram-polling-timeouts.patch
-  ];
-
   ldflags = [
     "-s" "-w"
-    "-X github.com/nextlevelbuilder/goclaw/cmd.Version=1.32.0"
+    "-X github.com/nextlevelbuilder/goclaw/cmd.Version=2.23.7"
   ];
 
   # Tests need a running PostgreSQL

@@ -75,6 +75,13 @@
     enable = true;
     permitCertUid = "traefik";
   };
+  services.tailscaleServe = {
+    traefik = {
+      localPort = 443;
+      tsPort = 443;
+      afterService = "traefik";
+    };
+  };
   services.resolved.enable = true;
   services.avahi.enable = true;
 

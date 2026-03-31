@@ -8,6 +8,7 @@
 {
   imports = [
     ./goclaw.nix
+    ./recipe-import.nix
   ];
   nix.settings = {
     experimental-features = [ "nix-command" "flakes" ];
@@ -101,6 +102,7 @@
       A("immich.koch", "100.113.219.76"),
       A("grocy.koch", "100.113.219.76"),
       A("goclaw.koch", "100.113.219.76"),
+      A("recipes.koch", "100.113.219.76"),
     );
     '';
   in {

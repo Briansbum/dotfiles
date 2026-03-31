@@ -45,6 +45,12 @@
           flake = false;
         };
 
+        # Recipe Import source (local Next.js app)
+        recipe-import-src = {
+          url   = "path:/home/alex/recipe-import";
+          flake = false;
+        };
+
         # koch (NAS) dependencies
         disko = {
           url = "github:nix-community/disko";
@@ -58,7 +64,7 @@
 
     };
 
-    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, claude-code, nix-openclaw, xuezh, goclaw-src, nix-software-center, disko, sops-nix, ...}@inputs:
+    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, claude-code, nix-openclaw, xuezh, goclaw-src, recipe-import-src, nix-software-center, disko, sops-nix, ...}@inputs:
     let
         # Shared goclaw overlay — used by koch, darwin, and devShells
         goclawOverlay = (final: prev: {
@@ -72,7 +78,10 @@
         });
 
         kochOverlay = (final: prev: {
-          claude-code = inputs.claude-code.packages.${final.stdenv.hostPlatform.system}.default;
+          claude-code    = inputs.claude-code.packages.${final.stdenv.hostPlatform.system}.default;
+          recipe-import  = final.callPackage ./nix/pkgs/recipe-import.nix {
+            inherit recipe-import-src;
+          };
         } // (goclawOverlay final prev));
 
         mkGoclawShell = import ./nix/shells/goclaw.nix {

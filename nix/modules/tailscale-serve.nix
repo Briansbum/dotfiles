@@ -10,7 +10,9 @@ let
       httpsPort = if svc.path != null
         then (if svc.tsPort != null then svc.tsPort else 443)
         else svc.tsPort;
-      args = if svc.path != null
+      args = if svc.tcp
+        then "--bg --tcp=${toString svc.tsPort} localhost:${toString svc.localPort}"
+        else if svc.path != null
         then "--bg --https=${toString httpsPort} --set-path=/${removePrefix "/" svc.path} http://localhost:${toString svc.localPort}"
         else "--bg --https=${toString httpsPort} http://localhost:${toString svc.localPort}";
       verb = if svc.funnel then "funnel" else "serve";
@@ -58,6 +60,12 @@ in {
           type = types.bool;
           default = false;
           description = "Use `tailscale funnel` instead of `tailscale serve`.";
+        };
+
+        tcp = mkOption {
+          type = types.bool;
+          default = false;
+          description = "Use --tcp instead of --https (raw TCP passthrough, no TLS termination).";
         };
       };
     });

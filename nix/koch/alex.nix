@@ -47,6 +47,12 @@
     };
   };
 
+  programs.nixvim = {
+    enable = true;
+    defaultEditor = true;
+    imports = [ ../common/nixvim ];
+  };
+
   programs.jq.enable = true;
   programs.fd.enable = true;
   programs.fzf = {

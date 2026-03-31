@@ -79,6 +79,7 @@
     traefik = {
       localPort = 443;
       tsPort = 443;
+      tcp = true;
       afterService = "traefik";
     };
   };
@@ -228,6 +229,17 @@
     machine-learning.enable = true;
   };
 
+  # Bind-mount external photo directories into Immich's namespace
+  systemd.services.immich-server.serviceConfig = {
+    BindReadOnlyPaths = [
+      "/data/photos/google"
+      "/data/photos/Export"
+      "/data/photos/Ingest"
+      "/data/photos/sync"
+    ];
+    PrivateUsers = lib.mkForce false;
+  };
+
   # Allow Alloy to read Immich's PostgreSQL for metrics
   services.postgresql.authentication = lib.mkAfter ''
     local immich alloy peer
@@ -241,6 +253,7 @@
     enable = true;
     hostName = "grocy.koch.brians.skin";
     nginx.enableSSL = false;
+    dataDir = "/data/grocy/data";
     settings = {
       currency = "GBP";
       culture = "en_GB";
@@ -269,6 +282,9 @@
   systemd.tmpfiles.rules = [
     "d /data/photos        0755 alex   users  -"
     "d /data/photos/immich 0750 immich immich -"
+    "Z /data/photos/immich 0750 immich immich -"
+    "d /data/grocy/data    0750 grocy  nginx  -"
+    "Z /data/grocy/data    0750 grocy  nginx  -"
     "d /data/state-store   0755 alex   users  -"
   ];
 
@@ -283,7 +299,7 @@
   sops.secrets."b2_photos_application_key" = {};
 
   systemd.services.rclone-photos = {
-    description = "Bidirectional photos sync with Backblaze B2";
+    description = "Push photos to Backblaze B2";
     after = [ "network-online.target" ];
     wants = [ "network-online.target" ];
     serviceConfig = {
@@ -292,22 +308,19 @@
         ACCT=$(cat /run/secrets/b2_photos_account_id)
         KEY=$(cat /run/secrets/b2_photos_application_key)
         RCLONE="${pkgs.rclone}/bin/rclone"
-        OPTS="--config /dev/null --transfers 4 --log-level INFO --log-file /var/log/rclone-photos.log"
+        OPTS="--config /dev/null --fast-list --transfers 4 --log-level INFO --log-file /var/log/rclone-photos.log"
         REMOTE=":b2,account=$ACCT,key=$KEY:truenas-photos-pool"
 
-        # Pull missing files from B2
-        $RCLONE copy "$REMOTE" /data/photos $OPTS
-        # Push missing files to B2
         $RCLONE copy /data/photos "$REMOTE" $OPTS
       '';
     };
   };
 
   systemd.timers.rclone-photos = {
-    description = "Hourly photos sync with B2";
+    description = "Daily photos backup to B2";
     wantedBy = [ "timers.target" ];
     timerConfig = {
-      OnCalendar = "hourly";
+      OnCalendar = "daily";
       Persistent = true;
       RandomizedDelaySec = "5m";
     };

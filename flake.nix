@@ -151,29 +151,17 @@
           serviceUser = "goclaw";
         };
 
-        devShells.aarch64-darwin.mac-goclaw = mkGoclawShell {
-          system = "aarch64-darwin";
-          hostName = "mac";
-          stateDir = "/var/lib/goclaw";
-          port = 18790;
-          postgresDSN = "postgres://goclaw@localhost:5432/goclaw?sslmode=disable";
-          secretsFile = "nix/Alexs-Macbook-Pro/secrets.yaml";
-          sopsKeyFile = "/Users/alex/Library/Application Support/sops/age/keys.txt";
-          serviceUser = "_goclaw";
-        };
         darwinConfigurations = {
             "Alexs-MacBook-Pro" = nix-darwin.lib.darwinSystem {
                system = "aarch64-darwin";
                specialArgs = { inherit inputs; };
                modules = [
-                    sops-nix.darwinModules.sops
                     ./nix/Alexs-Macbook-Pro/configuration.nix
                     ./nix/Alexs-Macbook-Pro/hardware.nix
                     home-manager.darwinModules.home-manager
                     {
                         nixpkgs.overlays = [
                           claude-code.overlays.default
-                          goclawOverlay
                         ];
                         home-manager.useGlobalPkgs = true;
                         home-manager.useUserPackages = true;

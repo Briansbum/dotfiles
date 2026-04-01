@@ -1,18 +1,11 @@
 { config, pkgs, ... }:
 
 {
-  imports = [
-    ./goclaw.nix
-  ];
   # Set primary user for system defaults
   system.primaryUser = "alex";
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
-
-  # sops-nix — age-encrypted secrets for goclaw
-  sops.defaultSopsFile = ./secrets.yaml;
-  sops.age.keyFile = "/Users/alex/Library/Application Support/sops/age/keys.txt";
 
   # System-level packages available to all users
   environment.systemPackages = with pkgs; [
@@ -154,9 +147,6 @@
     trusted-users = [ "@admin" ];
   };
 
-  # Linux builder VM — needed to build aarch64-linux derivations (e.g. goclaw container image)
-  nix.linux-builder.enable = true;
-
   # Enable nix-darwin to manage Homebrew
   homebrew = {
     enable = true;
@@ -210,13 +200,6 @@
       "terraformer"  # If not available in nixpkgs
       "kubelogin"  # Azure kubelogin from tap
       
-      # GoClaw dependencies
-      {
-        name = "postgresql@17";
-        restart_service = "changed";
-      }
-      "pgvector"
-
       # Services (no nix-darwin modules yet)
       {
         name = "ollama";

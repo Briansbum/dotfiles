@@ -75,11 +75,6 @@
     '';
   };
 
-  services.ssh-agent = {
-    enable = true;
-    enableFishIntegration = true;
-  };
-
   home.sessionVariables = {
     EDITOR = "nvim";
     VISUAL = "nvim";

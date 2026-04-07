@@ -310,10 +310,18 @@
         ACCT=$(cat /run/secrets/b2_photos_account_id)
         KEY=$(cat /run/secrets/b2_photos_application_key)
         RCLONE="${pkgs.rclone}/bin/rclone"
-        OPTS="--config /dev/null --fast-list --transfers 4 --log-level INFO --log-file /var/log/rclone-photos.log"
+        # --no-traverse: skip listing the remote bucket on each run, avoiding
+        # Class C (list) API charges. Safe here because the photo archive is
+        # append-only — new files are added daily to a large existing collection.
+        OPTS="--config /dev/null --no-traverse --transfers 4 --log-level INFO --log-file /var/log/rclone-photos.log"
         REMOTE=":b2,account=$ACCT,key=$KEY:truenas-photos-pool"
 
-        $RCLONE copy /data/photos "$REMOTE" $OPTS
+        # Exclude Immich's auto-generated derivatives — regeneratable from
+        # originals and not worth the storage or transfer cost.
+        $RCLONE copy /data/photos "$REMOTE" $OPTS \
+          --exclude "immich/thumbs/**" \
+          --exclude "immich/encoded-video/**" \
+          --exclude "immich/profile/**"
       '';
     };
   };

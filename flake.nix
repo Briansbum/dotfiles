@@ -27,24 +27,6 @@
         # Provides bleeding edge claude-code updates
         claude-code.url = "github:sadjow/claude-code-nix";
 
-        # nix-openclaw — kept for steipete-tools skill binaries
-        nix-openclaw = {
-          url = "github:openclaw/nix-openclaw";
-          inputs.nixpkgs.follows = "nixpkgs";
-        };
-
-        # openclaw plugins
-        xuezh = {
-          url = "github:joshp123/xuezh";
-          inputs.nixpkgs.follows = "nixpkgs";
-        };
-
-        # GoClaw source (no flake.nix — built locally via buildGoModule)
-        goclaw-src = {
-          url = "github:nextlevelbuilder/goclaw";
-          flake = false;
-        };
-
         # Recipe Import source (local Next.js app)
         recipe-import-src = {
           url   = "path:/home/alex/recipe-import";
@@ -64,30 +46,14 @@
 
     };
 
-    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, claude-code, nix-openclaw, xuezh, goclaw-src, recipe-import-src, nix-software-center, disko, sops-nix, ...}@inputs:
+    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, claude-code, recipe-import-src, nix-software-center, disko, sops-nix, ...}@inputs:
     let
-        # Shared goclaw overlay — used by koch, darwin, and devShells
-        goclawOverlay = (final: prev: {
-          goclaw = final.callPackage ./nix/pkgs/goclaw.nix {
-            inherit goclaw-src;
-          };
-          goclaw-ui = final.callPackage ./nix/pkgs/goclaw-ui.nix {
-            inherit goclaw-src;
-          };
-          grocy-mcp = final.callPackage ./nix/pkgs/grocy-mcp.nix {};
-        });
-
         kochOverlay = (final: prev: {
           claude-code    = inputs.claude-code.packages.${final.stdenv.hostPlatform.system}.default;
           recipe-import  = final.callPackage ./nix/pkgs/recipe-import.nix {
             inherit recipe-import-src;
           };
-        } // (goclawOverlay final prev));
-
-        mkGoclawShell = import ./nix/shells/goclaw.nix {
-          inherit nixpkgs;
-          overlays = [ goclawOverlay claude-code.overlays.default ];
-        };
+        });
 
     in {
         nixosConfigurations = {
@@ -149,16 +115,6 @@
                 ];
             };
         };
-        devShells.x86_64-linux.koch-goclaw = mkGoclawShell {
-          system = "x86_64-linux";
-          hostName = "koch";
-          stateDir = "/data/state-store/goclaw";
-          port = 18789;
-          postgresDSN = "postgres://goclaw@/goclaw?host=/run/postgresql";
-          secretsFile = "nix/koch/secrets.yaml";
-          sopsKeyFile = "/var/lib/sops-nix/keys.txt";
-          serviceUser = "goclaw";
-        };
 
         darwinConfigurations = {
             "Alexs-MacBook-Pro" = nix-darwin.lib.darwinSystem {
@@ -180,6 +136,11 @@
                     }
                ];
             };
+        };
+
+        devShells.aarch64-darwin.nixadmin = import ./nix/shells/nixadmin.nix {
+          inherit nixpkgs;
+          system = "aarch64-darwin";
         };
     };
 }

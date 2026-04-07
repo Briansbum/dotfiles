@@ -385,6 +385,19 @@
         "type": "github"
       }
     },
+    "recipe-import-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1774972715,
+        "narHash": "sha256-dCS4pU/NruN4PgAfQduE4TIq35RMbf7iSqaCU2uQiXA=",
+        "path": "/home/alex/recipe-import",
+        "type": "path"
+      },
+      "original": {
+        "path": "/home/alex/recipe-import",
+        "type": "path"
+      }
+    },
     "root": {
       "inputs": {
         "claude-code": "claude-code",
@@ -397,6 +410,7 @@
         "nix-software-center": "nix-software-center",
         "nixpkgs": "nixpkgs_3",
         "nixvim": "nixvim",
+        "recipe-import-src": "recipe-import-src",
         "sops-nix": "sops-nix",
         "xuezh": "xuezh"
       }

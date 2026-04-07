@@ -357,7 +357,6 @@
     # SSH agent
     ssh-agent = {
       enable = true;
-      enableFishIntegration = true;
     };
   };
 

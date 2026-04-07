@@ -7,7 +7,7 @@ buildNpmPackage {
   src = recipe-import-src;
 
   # Run `nix build .#recipe-import` — the error message contains the correct hash.
-  npmDepsHash = lib.fakeHash;
+  npmDepsHash = "sha256-nEtDhdTSwa3KgYR8u82nE9ij+kjKcOgsyKNMwW5kTEQ=";
 
   nodejs = nodejs_22;
 

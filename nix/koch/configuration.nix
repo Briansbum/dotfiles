@@ -7,7 +7,6 @@
 
 {
   imports = [
-    ./goclaw.nix
     ./recipe-import.nix
   ];
   nix.settings = {
@@ -101,7 +100,6 @@
     D("brians.skin", REG_NONE, DnsProvider(DSP_DESEC), NO_PURGE,
       A("immich.koch", "100.113.219.76"),
       A("grocy.koch", "100.113.219.76"),
-      A("goclaw.koch", "100.113.219.76"),
       A("recipes.koch", "100.113.219.76"),
     );
     '';

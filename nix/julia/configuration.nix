@@ -60,8 +60,7 @@
   # Firmware updates (needed for fingerprint sensor firmware)
   services.fwupd.enable = true;
 
-  # Fingerprint auth at login screen and for sudo
-  security.pam.services.greetd.fprintAuth = true;
+  # Fingerprint auth for sudo
   security.pam.services.sudo.fprintAuth = true;
 
   fonts.packages = [

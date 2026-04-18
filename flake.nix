@@ -27,12 +27,6 @@
         # Provides bleeding edge claude-code updates
         claude-code.url = "github:sadjow/claude-code-nix";
 
-        # Recipe Import source (local Next.js app)
-        recipe-import-src = {
-          url   = "path:/home/alex/recipe-import";
-          flake = false;
-        };
-
         # koch (NAS) dependencies
         disko = {
           url = "github:nix-community/disko";
@@ -46,13 +40,10 @@
 
     };
 
-    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, claude-code, recipe-import-src, nix-software-center, disko, sops-nix, ...}@inputs:
+    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, claude-code, nix-software-center, disko, sops-nix, ...}@inputs:
     let
         kochOverlay = (final: prev: {
           claude-code    = inputs.claude-code.packages.${final.stdenv.hostPlatform.system}.default;
-          recipe-import  = final.callPackage ./nix/pkgs/recipe-import.nix {
-            inherit recipe-import-src;
-          };
         });
 
     in {

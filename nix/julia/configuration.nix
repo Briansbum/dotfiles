@@ -60,7 +60,9 @@
   # Firmware updates (needed for fingerprint sensor firmware)
   services.fwupd.enable = true;
 
-  # Fingerprint auth for sudo
+  # Fingerprint auth for sudo only (explicitly disabled for greetd — dms-greeter drops
+  # the PAM conversation socket before fprintd can respond, leaving auth stuck)
+  security.pam.services.greetd.fprintAuth = false;
   security.pam.services.sudo.fprintAuth = true;
 
   fonts.packages = [

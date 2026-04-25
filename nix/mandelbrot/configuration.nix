@@ -30,28 +30,29 @@ in
   security.sudo.enable = true;
 
   systemd.services = with pkgs; {
-    ollama = {
-      wantedBy = ["multi-user.target"];
-      wants = [ "network-online.target" ];
-      after = [ "network-online.target" "tailscaled.service" ];
+    # removed pending replacement
+            #ollama = {
+            #  wantedBy = ["multi-user.target"];
+            #  wants = [ "network-online.target" ];
+            #  after = [ "network-online.target" "tailscaled.service" ];
 
-      description = "runs ollama for model serving";
+            #  description = "runs ollama for model serving";
 
-      serviceConfig = {
-        ExecStart = "${pkgs.ollama-cuda}/bin/ollama serve";
-        User = "alex";
-        Restart = "always";
-        RestartSec=3;
-        Environment= [
-          "PATH=$PATH"
-          "OLLAMA_HOST=0.0.0.0:11434"
-          "__NV_PRIME_RENDER_OFFLOAD=1"
-          "__NV_PRIME_RENDER_OFFLOAD_PROVIDER=NVIDIA-GO"
-          "__GLX_VENDOR_LIBRARY_NAME=nvidia"
-          "__VK_LAYER_NV_optimus=NVIDIA_only"
-        ];
-      };
-    };
+            #  serviceConfig = {
+            #    ExecStart = "${pkgs.ollama-cuda}/bin/ollama serve";
+            #    User = "alex";
+            #    Restart = "always";
+            #    RestartSec=3;
+            #    Environment= [
+            #      "PATH=$PATH"
+            #      "OLLAMA_HOST=0.0.0.0:11434"
+            #      "__NV_PRIME_RENDER_OFFLOAD=1"
+            #      "__NV_PRIME_RENDER_OFFLOAD_PROVIDER=NVIDIA-GO"
+            #      "__GLX_VENDOR_LIBRARY_NAME=nvidia"
+            #      "__VK_LAYER_NV_optimus=NVIDIA_only"
+            #    ];
+            #  };
+            #};
     open-webui = {
       wantedBy = ["multi-user.target"];
       wants = [ "network-online.target" ];
@@ -89,7 +90,7 @@ in
 
   # Tailscale proxies — all on https://mandelbrot/<path>
   services.tailscaleServe = {
-    ollama       = { localPort = 11434; path = "ollama";     afterService = "ollama";   };
+        #ollama       = { localPort = 11434; path = "ollama";     afterService = "ollama";   };
     open-webui   = { localPort = 3000;  path = "open-webui"; afterService = "open-webui"; };
     octoprint    = { localPort = 5000;  path = "octoprint";  afterService = "octoprint"; };
   };
@@ -311,8 +312,8 @@ in
     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     wget
     cron
-    ollama
-    ollama-cuda
+        #ollama
+        #ollama-cuda
     unzip
     crosspipe
     pavucontrol

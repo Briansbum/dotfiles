@@ -98,6 +98,22 @@
         "type": "github"
       }
     },
+    "grocy-mobile-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1775677397,
+        "narHash": "sha256-rtuLcpT0f32sTyLeq9Zfzy+bqIZI8oQVQ5Iuo1jOf8I=",
+        "owner": "Briansbum",
+        "repo": "grocy-mobile",
+        "rev": "05096f8fba3d09579117c308fcdafb045c544227",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Briansbum",
+        "repo": "grocy-mobile",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -273,6 +289,7 @@
         "claude-code": "claude-code",
         "dgop": "dgop",
         "disko": "disko",
+        "grocy-mobile-src": "grocy-mobile-src",
         "home-manager": "home-manager",
         "nix-darwin": "nix-darwin",
         "nix-software-center": "nix-software-center",

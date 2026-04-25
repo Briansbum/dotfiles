@@ -33,6 +33,11 @@
           flake = false;
         };
 
+        grocy-mobile-src = {
+          url   = "github:Briansbum/grocy-mobile";
+          flake = false;
+        };
+
         # koch (NAS) dependencies
         disko = {
           url = "github:nix-community/disko";
@@ -46,12 +51,15 @@
 
     };
 
-    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, claude-code, recipe-import-src, nix-software-center, disko, sops-nix, ...}@inputs:
+    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, claude-code, recipe-import-src, grocy-mobile-src, nix-software-center, disko, sops-nix, ...}@inputs:
     let
         kochOverlay = (final: prev: {
           claude-code    = inputs.claude-code.packages.${final.stdenv.hostPlatform.system}.default;
           recipe-import  = final.callPackage ./nix/pkgs/recipe-import.nix {
             inherit recipe-import-src;
+          };
+          grocy-mobile   = final.callPackage ./nix/pkgs/grocy-mobile.nix {
+            inherit grocy-mobile-src;
           };
         });
 

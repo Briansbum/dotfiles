@@ -7,6 +7,7 @@
     flyctl
     kubeswitch
     obsidian
+    prismlauncher
   ];
 
   # Shared program configurations

@@ -32,13 +32,13 @@
     };
 
   fileSystems."/mnt/photos" =
-    { device = "192.168.1.229:/data/photos";
+    { device = "192.168.1.228:/data/photos";
       fsType = "nfs";
       options = ["nofail" "x-systemd.automount" "noauto"];
     };
 
   fileSystems."/mnt/state-store" =
-    { device = "192.168.1.229:/data/state-store";
+    { device = "192.168.1.228:/data/state-store";
       fsType = "nfs";
       options = ["nofail" "x-systemd.automount" "noauto"];
     };

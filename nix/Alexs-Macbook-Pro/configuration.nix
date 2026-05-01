@@ -81,7 +81,7 @@
     tenv  # Replaces tfenv - handles terraform/terragrunt/opentofu versions
     
     # Database & Data tools
-    mysql80
+    mysql84
     jsonnet-bundler
     
     # Monitoring & Observability

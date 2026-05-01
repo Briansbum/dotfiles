@@ -118,6 +118,12 @@
                     {
                         nixpkgs.overlays = [
                           claude-code.overlays.default
+                          # direnv's zsh test hangs on macOS 26 (waitforpid/SIGCHLD)
+                          (final: prev: {
+                            direnv = prev.direnv.overrideAttrs (old: {
+                              checkTarget = "test-go test-bash test-fish";
+                            });
+                          })
                         ];
                         home-manager.useGlobalPkgs = true;
                         home-manager.useUserPackages = true;

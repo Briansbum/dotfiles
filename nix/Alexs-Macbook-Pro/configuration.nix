@@ -13,7 +13,6 @@
     tree
     coreutils
     gnused
-    mtr
     
     # Build tools
     cmake
@@ -63,7 +62,7 @@
     
     # Kubernetes ecosystem
     kubectl
-    kubernetes-helm  # Renamed from helm on darwin
+    kubernetes-helm  
     k9s
     kind
     kubectx
@@ -71,21 +70,18 @@
     kustomize
     minikube
     operator-sdk
-    stern  # Multi pod and container log tailing
+    stern
     
     # Infrastructure as Code
     terragrunt
     terraform-docs
     tflint
-    packer
-    tenv  # Replaces tfenv - handles terraform/terragrunt/opentofu versions
+    tenv  
     
     # Database & Data tools
     mysql84
-    jsonnet-bundler
     
     # Monitoring & Observability
-    # grafana-agent  # Not available in nixpkgs for darwin
     trivy
     dive
     
@@ -97,7 +93,6 @@
     pinentry_mac
     wireguard-tools
     aws-vault
-    bitwarden-cli
     _1password-cli
     
     # Terminal & Shell
@@ -105,12 +100,8 @@
     starship
     htop
     neovim
-    irssi
-    lynx
     shellcheck
-    # thefuck  # Removed from nixpkgs, use pay-respects instead
     pay-respects
-    # Note: fish and autojump managed via home-manager in common.nix
     
     # Networking
     dnscontrol
@@ -121,18 +112,14 @@
     graphviz
     harfbuzz
     qemu
-    # qt6.full  # Removed from nixpkgs, use individual packages if needed
     
     # Other utilities
     uv
     avrdude
     yarn
-    
-    # Tools from analysis
     steampipe
     buf
-    # dblab  # Broken build on darwin
-    ory  # Ory CLI
+    ory  
   ];
 
   # User configuration
@@ -218,17 +205,11 @@
       "claude"
       "container"
       "ghostty"
-      "gimp"
       "google-chrome"
       "gpg-suite"
-      "jordanbaird-ice"
       "k6-studio"
-      "qmk-toolbox"
       "spotify"
       "visual-studio-code"
-      "vlc"
-      "wireshark"
-      "zed"
     ];
   };
 

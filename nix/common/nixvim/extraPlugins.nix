@@ -1,5 +1,25 @@
 # Extra plugins not in nixpkgs or needing custom configuration
 { pkgs, ... }:
+let
+  # Terragrunt LSP - source pinned to commit a82e243 from 2025-06-28
+  # To update: change rev to new commit SHA and run:
+  #   nix-prefetch-url --unpack https://github.com/gruntwork-io/terragrunt-ls/archive/<NEW_SHA>.tar.gz
+  #   nix hash convert --to base64 <hash_output>
+  # vendorHash: set to pkgs.lib.fakeHash, rebuild, copy "got:" hash from error.
+  terragrunt-ls-src = pkgs.fetchFromGitHub {
+    owner = "gruntwork-io";
+    repo = "terragrunt-ls";
+    rev = "a82e24338bae87e5a3d1e8cf81179ce8a848ae3e";
+    sha256 = "sha256-Ni9TccTLbixtczJvKDUJqgGwFCj9TRNX0zp6421BaYY=";
+  };
+
+  terragrunt-ls-bin = pkgs.buildGoModule {
+    pname = "terragrunt-ls";
+    version = "a82e243";
+    src = terragrunt-ls-src;
+    vendorHash = "sha256-U9IEV0RQbqqLIw+DUeCT1pbHubJ0nEC/ySZmFZAHBb0=";
+  };
+in
 {
   extraPlugins = with pkgs.vimPlugins; [
     # CodeCompanion and dependencies
@@ -11,19 +31,9 @@
     vim-dispatch-neovim
     vim-jack-in
 
-    # Terragrunt LSP - build from GitHub
-    # Pinned to commit a82e243 from 2025-06-28
-    # To update: change rev to new commit SHA and run:
-    #   nix-prefetch-url --unpack https://github.com/gruntwork-io/terragrunt-ls/archive/<NEW_SHA>.tar.gz
-    #   nix hash convert --to base64 <hash_output>
     (pkgs.vimUtils.buildVimPlugin {
       name = "terragrunt-ls";
-      src = pkgs.fetchFromGitHub {
-        owner = "gruntwork-io";
-        repo = "terragrunt-ls";
-        rev = "a82e24338bae87e5a3d1e8cf81179ce8a848ae3e";
-        sha256 = "sha256-Ni9TccTLbixtczJvKDUJqgGwFCj9TRNX0zp6421BaYY=";
-      };
+      src = terragrunt-ls-src;
     })
 
     # 99 - ThePrimeagen's AI agent plugin
@@ -121,6 +131,7 @@
     -- Terragrunt LSP configuration
     local terragrunt_ls = require 'terragrunt-ls'
     terragrunt_ls.setup {
+      cmd = { '${terragrunt-ls-bin}/bin/terragrunt-ls' },
       cmd_env = {
         TG_LS_LOG = vim.fn.expand '/tmp/terragrunt-ls.log',
       },

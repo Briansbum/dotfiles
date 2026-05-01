@@ -121,7 +121,11 @@
                           # direnv's zsh test hangs on macOS 26 (waitforpid/SIGCHLD)
                           (final: prev: {
                             direnv = prev.direnv.overrideAttrs (old: {
-                              checkTarget = "test-go test-bash test-fish";
+                              checkPhase = ''
+                                runHook preCheck
+                                make test-go test-bash test-fish
+                                runHook postCheck
+                              '';
                             });
                           })
                         ];

@@ -72,6 +72,7 @@
     gamescope
     pinta
     uv
+    spotify-player
   ];
 
   # Config file locations for programs that cannot manage themselves

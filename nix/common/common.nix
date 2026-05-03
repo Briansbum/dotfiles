@@ -361,6 +361,10 @@
     };
   };
 
+  xdg.configFile = {
+    "xdg-terminals.list".text = "com.mitchellh.ghostty.desktop\n";
+  };
+
   home.sessionVariables = {
     EDITOR = "nvim";
     VISUAL = "nvim";

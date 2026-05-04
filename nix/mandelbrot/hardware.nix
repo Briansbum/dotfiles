@@ -34,13 +34,13 @@
   fileSystems."/mnt/photos" =
     { device = "192.168.1.228:/data/photos";
       fsType = "nfs";
-      options = ["nofail" "x-systemd.automount" "noauto"];
+      options = ["nofail" "x-systemd.automount" "noauto" "softerr" "timeo=30" "retrans=3"];
     };
 
   fileSystems."/mnt/state-store" =
     { device = "192.168.1.228:/data/state-store";
       fsType = "nfs";
-      options = ["nofail" "x-systemd.automount" "noauto"];
+      options = ["nofail" "x-systemd.automount" "noauto" "softerr" "timeo=30" "retrans=3"];
     };
 
   swapDevices =

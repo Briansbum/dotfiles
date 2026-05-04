@@ -14,11 +14,6 @@
         # The docs say that using .follows here can cause instability in
         # nixvim and so it is not used.
 
-        dgop = {
-          url = "github:AvengeMedia/dgop";
-          inputs.nixpkgs.follows = "nixpkgs";
-        };
-
         nix-software-center = {
           url = "github:snowfallorg/nix-software-center";
           inputs.nixpkgs.follows = "nixpkgs";

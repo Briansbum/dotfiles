@@ -32,24 +32,17 @@
     python3
     bash
     helm
-    jsoncpp
     yq
     tflint
     telegram-desktop
-    tree-sitter
     udiskie
     vlc
-    libraw
     ueberzugpp
     yt-dlp
     gnupg
-    pinentry-curses
-    pinentry-rofi
     (ffmpeg.override {
     withXcb = true;
     })
-    lua
-    luarocks
     ripgrep
     wf-recorder
     slurp

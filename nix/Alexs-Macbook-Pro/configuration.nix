@@ -78,9 +78,6 @@
     tflint
     tenv  
     
-    # Database & Data tools
-    mysql84
-    
     # Monitoring & Observability
     trivy
     dive
@@ -187,16 +184,6 @@
       "terraformer"  # If not available in nixpkgs
       "kubelogin"  # Azure kubelogin from tap
       
-      # Services (no nix-darwin modules yet)
-      {
-        name = "ollama";
-        restart_service = "changed";
-      }
-      {
-        name = "spotifyd";
-        restart_service = "changed";
-      }
-      "spotify-tui"
     ];
 
     # GUI Applications (Casks)

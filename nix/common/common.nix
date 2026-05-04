@@ -340,24 +340,11 @@
         };
 
         # ============ System & Utilities ============
-        mist = {
-          description = "alias mist=ollama run mistral";
-          body = "ollama run mistral $argv";
-        };
-
         stern = {
           description = "alias stern for multi-pod log tailing";
           body = "command stern $argv";
         };
       };
-    };
-  };
-
-  # Services
-  services = {
-    # SSH agent
-    ssh-agent = {
-      enable = true;
     };
   };
 

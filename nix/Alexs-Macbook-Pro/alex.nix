@@ -37,7 +37,6 @@
     "zed/settings.json".source = ../../config/zed/settings.json;
     "gh/config.yml".source = ../../config/gh/config.yml;
     "gopass/config".source = ../../config/gopass/config;
-    "thefuck/settings.py".source = ../../config/thefuck/settings.py;
     
     # Note: htop, wireshark configs are runtime state - not managed
     # Note: spotifyd, spotify-tui, op configs have secrets - not managed
@@ -71,38 +70,8 @@
   };
 
   programs.ghostty = {
-    enable = false;  # Ghostty on macOS is installed via Homebrew cask
-    enableFishIntegration = false;
+    enable = false;  # installed via Homebrew cask; config at ../../config/ghostty/macos-config
     installVimSyntax = true;
-    # Settings managed via home-manager module (alternative to config file)
-    settings = {
-      background-opacity = 0.7;
-      background-blur = true;
-      background = "#1e100d";
-      foreground = "#f9dcd7";
-      cursor-color = "#ffb4a5";
-      selection-background = "#8f1200";
-      selection-foreground = "#f9dcd7";
-
-      palette = [
-        "1=#1e100d"
-        "2=#e14984"
-        "3=#9bd66e"
-        "4=#dbaa7b"
-        "5=#c76754"
-        "6=#bf9289"
-        "7=#ffb4a5"
-        "8=#abb2bf"
-        "9=#5c6370"
-        "10=#e05f94"
-        "11=#ade086"
-        "12=#e8bf97"
-        "13=#ffc1b0"
-        "14=#bd5c5b"
-        "15=#a16d57"
-        "16=#ffffff"
-      ];
-    };
   };
 
   programs.jq.enable = true;

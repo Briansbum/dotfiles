@@ -43,25 +43,18 @@
     python3
     bash
     helm
-    jsoncpp
     yq
     tflint
     telegram-desktop
-    tree-sitter
     udiskie
     vlc
     vlc-bittorrent
-    libraw
     ueberzugpp
     yt-dlp
     gnupg
-    pinentry-curses
-    pinentry-rofi
     (ffmpeg.override {
     withXcb = true;
     })
-    lua
-    luarocks
     ripgrep
     heroic
     wf-recorder
@@ -72,7 +65,6 @@
     gamescope
     pinta
     uv
-    spotify-player
   ];
 
   # Config file locations for programs that cannot manage themselves

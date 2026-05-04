@@ -5,8 +5,6 @@
 { config, pkgs, inputs, lib, ... }:
 
 # Tailscale serve routes:
-#   https://mandelbrot/ollama     -> localhost:11434
-#   https://mandelbrot/open-webui -> localhost:3000
 #   https://mandelbrot/octoprint  -> localhost:5000
 
 with pkgs; let
@@ -25,52 +23,7 @@ in
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.grub.useOSProber = true;
-
   security.sudo.enable = true;
-
-  systemd.services = with pkgs; {
-    # removed pending replacement
-            #ollama = {
-            #  wantedBy = ["multi-user.target"];
-            #  wants = [ "network-online.target" ];
-            #  after = [ "network-online.target" "tailscaled.service" ];
-
-            #  description = "runs ollama for model serving";
-
-            #  serviceConfig = {
-            #    ExecStart = "${pkgs.ollama-cuda}/bin/ollama serve";
-            #    User = "alex";
-            #    Restart = "always";
-            #    RestartSec=3;
-            #    Environment= [
-            #      "PATH=$PATH"
-            #      "OLLAMA_HOST=0.0.0.0:11434"
-            #      "__NV_PRIME_RENDER_OFFLOAD=1"
-            #      "__NV_PRIME_RENDER_OFFLOAD_PROVIDER=NVIDIA-GO"
-            #      "__GLX_VENDOR_LIBRARY_NAME=nvidia"
-            #      "__VK_LAYER_NV_optimus=NVIDIA_only"
-            #    ];
-            #  };
-            #};
-    open-webui = {
-      wantedBy = ["multi-user.target"];
-      wants = [ "network-online.target" ];
-      after = [ "network-online.target" "tailscaled.service" "docker.service" ];
-      requires = [ "docker.service" ];
-
-      description = "runs open-webui for gptness";
-
-      serviceConfig = {
-        ExecStartPre = "-/run/current-system/sw/bin/docker rm -f open-webui";
-        ExecStart = "/run/current-system/sw/bin/docker run --rm -p 3000:8080 --add-host=host.docker.internal:host-gateway -v open-webui:/app/backend/data --name open-webui ghcr.io/open-webui/open-webui:main";
-        ExecStop = "/run/current-system/sw/bin/docker stop open-webui";
-        User = "root";
-        Restart = "always";
-        RestartSec = 3;
-      };
-    };
-  };
 
   # OctoPrint for 3D printer management
   services.octoprint = {
@@ -90,9 +43,7 @@ in
 
   # Tailscale proxies — all on https://mandelbrot/<path>
   services.tailscaleServe = {
-        #ollama       = { localPort = 11434; path = "ollama";     afterService = "ollama";   };
-    open-webui   = { localPort = 3000;  path = "open-webui"; afterService = "open-webui"; };
-    octoprint    = { localPort = 5000;  path = "octoprint";  afterService = "octoprint"; };
+    octoprint = { localPort = 5000; path = "octoprint"; afterService = "octoprint"; };
   };
 
   users.users.alex = {
@@ -251,7 +202,6 @@ in
     };
     extraPortals = [
       pkgs.xdg-desktop-portal-gtk
-      pkgs.xdg-desktop-portal-gnome
     ];
   };
 
@@ -309,11 +259,8 @@ in
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-    vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+    vim
     wget
-    cron
-        #ollama
-        #ollama-cuda
     unzip
     crosspipe
     pavucontrol
@@ -363,7 +310,7 @@ in
 
   # Open ports in the firewall.
   networking.nftables.enable = true;
-  networking.firewall.allowedTCPPorts = [ 11434 8554 3923 ];
+  networking.firewall.allowedTCPPorts = [ 8554 3923 ];
   networking.firewall.allowedUDPPorts = [ 8554 16261 16262 ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;

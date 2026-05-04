@@ -1,7 +1,10 @@
 # NixVim Configuration Entry Point
 { lib, ... }:
 {
-  nixpkgs.config.allowUnfreePredicate = pkg: lib.getName pkg == "vim-be-good";
+  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
+    "vim-be-good"
+    "vim-jack-in"
+  ];
 
   imports = [
     ./options.nix

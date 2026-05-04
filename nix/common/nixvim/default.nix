@@ -9,8 +9,6 @@
     ./extraPlugins.nix
   ];
 
-  nixpkgs.config.allowUnfree = true;
-
   # Enable providers
   withNodeJs = true;
   withPython3 = true;

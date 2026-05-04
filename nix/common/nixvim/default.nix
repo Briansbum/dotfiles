@@ -1,6 +1,8 @@
 # NixVim Configuration Entry Point
-{ ... }:
+{ lib, ... }:
 {
+  nixpkgs.config.allowUnfreePredicate = pkg: lib.getName pkg == "vim-be-good";
+
   imports = [
     ./options.nix
     ./keymaps.nix

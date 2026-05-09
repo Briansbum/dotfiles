@@ -16,6 +16,7 @@
   # BIOS boot — disko handles GRUB device registration via the EF02 partitions
   # in disk-config.nix. No need to set boot.loader.grub.devices here.
   boot.loader.grub.enable = true;
+  boot.loader.grub.configurationLimit = 10;
 
   boot.initrd.availableKernelModules = [ "ahci" "mpt3sas" "sd_mod" "usb_storage" "xhci_pci" ];
   boot.initrd.kernelModules = [ ];

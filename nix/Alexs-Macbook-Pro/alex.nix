@@ -111,11 +111,6 @@
         fish_add_path /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin
       end
       
-      # Legacy GCloud SDK location
-      if test -f '/Users/alex/Downloads/google-cloud-sdk/path.fish.inc'
-        source '/Users/alex/Downloads/google-cloud-sdk/path.fish.inc'
-      end
-      
       # Rancher Desktop
       fish_add_path --prepend "/Users/alex/.rd/bin"
       

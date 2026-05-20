@@ -37,23 +37,6 @@ in
       src = terragrunt-ls-src;
     })
 
-    # 99 - ThePrimeagen's AI agent plugin
-    # Pinned to commit 4d22914 from 2026-05-02
-    # New since 9d77c03: visual context bounds fixes (#171), test coverage.
-    # To update: change rev to new commit SHA and run:
-    #   nix-prefetch-url --unpack https://github.com/ThePrimeagen/99/archive/<NEW_SHA>.tar.gz
-    #   nix hash convert --to sri --hash-algo sha256 <hash_output>
-    (pkgs.vimUtils.buildVimPlugin {
-      name = "99-nvim";
-      doCheck = false;
-      src = pkgs.fetchFromGitHub {
-        owner = "ThePrimeagen";
-        repo = "99";
-        rev = "4d22914";
-        sha256 = "sha256-LQb5jqzTNWVyFNKlICjhnk25fTAmyC38s8/mrOKp//M=";
-      };
-    })
-
     # CodeCompanion Copilot Enterprise extension
     # Pinned to commit 2e5edc4 from 2025-09-01
     # To update: change rev to new commit SHA and run:
@@ -72,34 +55,6 @@ in
   ];
 
   extraConfigLua = ''
-    -- 99 configuration (ThePrimeagen AI agent)
-    local _99 = require("99")
-    _99.setup({
-      provider = _99.Providers.ClaudeCodeProvider,
-      model = "claude-opus-4-6",
-      tmp_dir = vim.fn.stdpath("data") .. "/99",
-    })
-    vim.fn.mkdir(vim.fn.stdpath("data") .. "/99", "p")
-    -- Core
-    vim.keymap.set("v", "<leader>9v", _99.visual, { desc = "99: Send selection to AI" })
-    vim.keymap.set("n", "<leader>9s", _99.search, { desc = "99: AI search" })
-    vim.keymap.set("n", "<leader>9x", _99.stop_all_requests, { desc = "99: Stop all requests" })
-    vim.keymap.set("n", "<leader>9c", _99.clear_previous_requests, { desc = "99: Clear request history" })
-    vim.keymap.set("n", "<leader>9m", _99.clear_all_marks, { desc = "99: Clear all marks" })
-
-    -- Logs
-    vim.keymap.set("n", "<leader>9l", _99.view_logs, { desc = "99: View logs" })
-    vim.keymap.set("n", "<leader>9[", _99.prev_request_logs, { desc = "99: Previous request logs" })
-    vim.keymap.set("n", "<leader>9]", _99.next_request_logs, { desc = "99: Next request logs" })
-    vim.keymap.set("n", "<leader>9i", _99.info, { desc = "99: Info" })
-
-    -- Worker (iterative dev workflow)
-    local worker = _99.Extensions.Worker
-    vim.keymap.set("n", "<leader>9ws", worker.set_work, { desc = "99: Set work item" })
-    vim.keymap.set("n", "<leader>9wu", worker.updated_work, { desc = "99: Update work item" })
-    vim.keymap.set("n", "<leader>9ww", worker.work, { desc = "99: Run work search" })
-    vim.keymap.set("n", "<leader>9wr", worker.last_search_results, { desc = "99: Last work results (qfix)" })
-
     -- CodeCompanion configuration
     require("codecompanion").setup({
       name = "claude-code",

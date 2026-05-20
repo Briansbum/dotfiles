@@ -1,23 +1,24 @@
 # Extra plugins not in nixpkgs or needing custom configuration
 { pkgs, ... }:
 let
-  # Terragrunt LSP - source pinned to commit a82e243 from 2025-06-28
+  # Terragrunt LSP - source pinned to commit db8c2af from 2026-05-05
+  # New since a82e243: rename, references, go-to-definition for locals (#141).
   # To update: change rev to new commit SHA and run:
   #   nix-prefetch-url --unpack https://github.com/gruntwork-io/terragrunt-ls/archive/<NEW_SHA>.tar.gz
-  #   nix hash convert --to base64 <hash_output>
+  #   nix hash convert --to sri --hash-algo sha256 <hash_output>
   # vendorHash: set to pkgs.lib.fakeHash, rebuild, copy "got:" hash from error.
   terragrunt-ls-src = pkgs.fetchFromGitHub {
     owner = "gruntwork-io";
     repo = "terragrunt-ls";
-    rev = "a82e24338bae87e5a3d1e8cf81179ce8a848ae3e";
-    sha256 = "sha256-Ni9TccTLbixtczJvKDUJqgGwFCj9TRNX0zp6421BaYY=";
+    rev = "db8c2af";
+    sha256 = "sha256-POdvFZH6a6tcUrGez8lmi+BOAdkLpvjENTT/50cwmVQ=";
   };
 
   terragrunt-ls-bin = pkgs.buildGoModule {
     pname = "terragrunt-ls";
-    version = "a82e243";
+    version = "db8c2af";
     src = terragrunt-ls-src;
-    vendorHash = "sha256-U9IEV0RQbqqLIw+DUeCT1pbHubJ0nEC/ySZmFZAHBb0=";
+    vendorHash = "sha256-wqQPMVP2822N55m5A0/EiCzgVPITJkfrKlHwQWvSte0=";
   };
 in
 {
@@ -37,7 +38,8 @@ in
     })
 
     # 99 - ThePrimeagen's AI agent plugin
-    # Pinned to commit 9d77c03 from 2026-02-23
+    # Pinned to commit 4d22914 from 2026-05-02
+    # New since 9d77c03: visual context bounds fixes (#171), test coverage.
     # To update: change rev to new commit SHA and run:
     #   nix-prefetch-url --unpack https://github.com/ThePrimeagen/99/archive/<NEW_SHA>.tar.gz
     #   nix hash convert --to sri --hash-algo sha256 <hash_output>
@@ -47,8 +49,8 @@ in
       src = pkgs.fetchFromGitHub {
         owner = "ThePrimeagen";
         repo = "99";
-        rev = "9d77c036d1170fb7cb346aa1f1a802cde8dd3bb6";
-        sha256 = "sha256-jPNptf5snX9AyDBbXZchfSQ/yQlgYanTBeAxpkusbTA=";
+        rev = "4d22914";
+        sha256 = "sha256-LQb5jqzTNWVyFNKlICjhnk25fTAmyC38s8/mrOKp//M=";
       };
     })
 
@@ -128,22 +130,26 @@ in
       },
     })
 
-    -- Terragrunt LSP configuration
-    local terragrunt_ls = require 'terragrunt-ls'
-    terragrunt_ls.setup {
-      cmd = { '${terragrunt-ls-bin}/bin/terragrunt-ls' },
-      cmd_env = {
-        TG_LS_LOG = vim.fn.expand '/tmp/terragrunt-ls.log',
-      },
-    }
-    if terragrunt_ls.client then
-      vim.api.nvim_create_autocmd('FileType', {
-        pattern = 'hcl',
-        callback = function()
-          vim.lsp.buf_attach_client(0, terragrunt_ls.client)
-        end,
-      })
-    end
+    -- Terragrunt LSP: lazy-init on first hcl buffer.
+    -- Avoids calling vim.lsp.start_client at startup (deprecation warning in
+    -- nvim 0.11+ — upstream plugin uses it; we cannot suppress without patching).
+    vim.api.nvim_create_autocmd('FileType', {
+      pattern = 'hcl',
+      callback = function(args)
+        local tg = require 'terragrunt-ls'
+        if not tg.client then
+          tg.setup {
+            cmd = { '${terragrunt-ls-bin}/bin/terragrunt-ls' },
+            cmd_env = {
+              TG_LS_LOG = vim.fn.expand '/tmp/terragrunt-ls.log',
+            },
+          }
+        end
+        if tg.client then
+          vim.lsp.buf_attach_client(args.buf, tg.client)
+        end
+      end,
+    })
   '';
 
   # Keymaps for CodeCompanion

@@ -29,10 +29,6 @@
             vim.lsp.buf.format()
             vim.lsp.buf.code_action({ context = { only = { 'source.organizeImports' } }, apply = true })
             vim.cmd([[ silent ! go mod tidy ]])
-            vim.cmd([[ silent LspRestart ]])
-            vim.cmd([[ silent w ]])
-            vim.cmd([[ silent w ]])
-            vim.cmd([[ silent w ]])
           end
         '';
       };

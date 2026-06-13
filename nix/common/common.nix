@@ -6,7 +6,6 @@
     autojump
     flyctl
     kubeswitch
-    obsidian
     prismlauncher
   ];
 

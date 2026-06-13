@@ -27,7 +27,6 @@
   # Packages to install that don't have a module.
   home.packages = with pkgs; [
     brave
-    bitwarden-desktop
     discord
     zig
     gdb

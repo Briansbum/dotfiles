@@ -138,7 +138,7 @@
         };
       };
       entryPoints.websecure = {
-        address = ":443";
+        address = "localhost:443";
         http.tls.certResolver = "desec";
       };
       certificatesResolvers.tailscale.tailscale = {};

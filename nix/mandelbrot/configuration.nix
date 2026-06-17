@@ -205,9 +205,15 @@ in
     xdgOpenUsePortal = true;
     config = {
       common.default = ["gtk"];
+      niri = {
+        # gnome portal implements ScreenCast; gtk does not, breaking Discord screenshare on Wayland
+        "org.freedesktop.impl.portal.ScreenCast" = ["gnome"];
+        "org.freedesktop.impl.portal.Screenshot" = ["gnome"];
+      };
     };
     extraPortals = [
       pkgs.xdg-desktop-portal-gtk
+      pkgs.xdg-desktop-portal-gnome
     ];
   };
 

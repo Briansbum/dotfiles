@@ -203,6 +203,8 @@
           set -g @pane-focus-direction '-'
           set -g allow-passthrough on
           set -g extended-keys on
+          set -g default-shell $SHELL
+          set -g default-command $SHELL
         '';
       }
     ];

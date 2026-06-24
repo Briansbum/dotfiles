@@ -49,11 +49,6 @@
       enable = true;
     };
 
-    # Vim-go for Go development
-    vim-go = {
-      enable = true;
-    };
-
     # Conjure for Clojure
     conjure = {
       enable = true;
@@ -61,11 +56,6 @@
 
     # Vim-be-good
     vim-be-good = {
-      enable = true;
-    };
-
-    # Startup time
-    vim-startuptime = {
       enable = true;
     };
   };

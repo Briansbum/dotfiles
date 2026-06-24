@@ -172,7 +172,7 @@
       # macOS-specific rmterra override (uses find instead of fd)
       rmterra = {
         description = "recursively find and delete .terragrunt-cache dirs";
-        body = "find . -type d -name '.terragrunt-cache' -exec rm -rf {} +";
+        body = "find . -type d -name '.terragrunt-cache' -exec rm -rf {} +";:
       };
     };
   };
@@ -203,8 +203,8 @@
           set -g @pane-focus-direction '-'
           set -g allow-passthrough on
           set -g extended-keys on
-          set -g default-shell $SHELL
-          set -g default-command $SHELL
+          set -g default-shell ${lib.getExe config.programs.fish.package}
+          set -g default-command ${lib.getExe config.programs.fish.package}
         '';
       }
     ];

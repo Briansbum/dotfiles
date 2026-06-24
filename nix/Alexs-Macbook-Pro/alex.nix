@@ -172,7 +172,7 @@
       # macOS-specific rmterra override (uses find instead of fd)
       rmterra = {
         description = "recursively find and delete .terragrunt-cache dirs";
-        body = "find . -type d -name '.terragrunt-cache' -exec rm -rf {} +";:
+        body = "find . -type d -name '.terragrunt-cache' -exec rm -rf {} +";
       };
     };
   };

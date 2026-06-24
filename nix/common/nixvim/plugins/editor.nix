@@ -69,11 +69,6 @@
       enable = true;
     };
 
-    # CtrlP
-    ctrlp = {
-      enable = true;
-    };
-
     # Vim-be-good
     vim-be-good = {
       enable = true;

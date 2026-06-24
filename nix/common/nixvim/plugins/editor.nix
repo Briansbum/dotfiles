@@ -49,11 +49,6 @@
       enable = true;
     };
 
-    # Image clipboard
-    image-clip = {
-      enable = true;
-    };
-
     # Vim-go for Go development
     vim-go = {
       enable = true;

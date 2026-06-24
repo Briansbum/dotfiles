@@ -49,11 +49,6 @@
       enable = true;
     };
 
-    # Formatter
-    formatter = {
-      enable = true;
-    };
-
     # Image clipboard
     image-clip = {
       enable = true;

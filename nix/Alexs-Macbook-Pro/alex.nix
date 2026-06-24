@@ -106,10 +106,13 @@
       set --export BUN_INSTALL "$HOME/.bun"
       fish_add_path $BUN_INSTALL/bin
       
-      # GCloud SDK
-      if test -d /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin
-        fish_add_path /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin
+      # GCloud SDK (provides gke-gcloud-auth-plugin for kubectl GKE auth)
+      for gdir in /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin /opt/homebrew/share/google-cloud-sdk/bin
+        if test -d $gdir
+          fish_add_path $gdir
+        end
       end
+      set -gx USE_GKE_GCLOUD_AUTH_PLUGIN True
       
       # Rancher Desktop
       fish_add_path --prepend "/Users/alex/.rd/bin"
@@ -198,6 +201,8 @@
         extraConfig = ''
           set -g @pane-focus-size '80'
           set -g @pane-focus-direction '-'
+          set -g allow-passthrough on
+          set -g extended-keys on
         '';
       }
     ];

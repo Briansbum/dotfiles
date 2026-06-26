@@ -185,6 +185,7 @@
     customPaneNavigationAndResize = true;
     escapeTime = 0;
     historyLimit = 50000;
+    mouse = true;
     plugins = [
       {
         plugin = pkgs.tmuxPlugins.mkTmuxPlugin {
@@ -205,6 +206,7 @@
           set -g extended-keys on
           set -g default-shell ${lib.getExe config.programs.fish.package}
           set -g default-command ${lib.getExe config.programs.fish.package}
+          set -g focus-events on
         '';
       }
     ];

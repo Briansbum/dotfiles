@@ -101,6 +101,7 @@
       A("immich.koch", "100.113.219.76"),
       A("grocy.koch", "100.113.219.76"),
       A("recipes.koch", "100.113.219.76"),
+      A("chorcy.koch", "100.113.219.76"),
     );
     '';
   in {
@@ -154,6 +155,11 @@
     };
     dynamicConfigOptions.http = {
       routers = {
+        chorcy = {
+          rule = "Host(`chorcy.koch.brians.skin`)";
+          service = "chorcy";
+          tls.certResolver = "desec";
+        };
         grocy = {
           rule = "Host(`grocy.koch.brians.skin`)";
           service = "grocy";
@@ -168,6 +174,7 @@
       services = {
         immich.loadBalancer.servers = [{ url = "http://localhost:2283"; }];
         grocy.loadBalancer.servers = [{ url = "http://localhost:2383"; }];
+        chorcy.loadBalancer.servers = [{ url = "http://localhost:2483"; }];
       };
     };
   };
@@ -263,6 +270,13 @@
 
   # Move Grocy's nginx to 8080 so Traefik can own 80/443
   services.nginx.virtualHosts."grocy.koch.brians.skin".listen = [{ addr = "127.0.0.1"; port = 2383; }];
+
+  # ---------------------------------------------------------------------------
+  # Chorcy — chore chart PWA for Grocy (static bundle served by nginx on :2483,
+  # fronted by Traefik at chorcy.koch.brians.skin). Module from the chorcy flake.
+  # ---------------------------------------------------------------------------
+
+  services.chorcy.enable = true;
 
   # ---------------------------------------------------------------------------
   # NFS server

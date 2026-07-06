@@ -33,12 +33,26 @@
           inputs.nixpkgs.follows = "nixpkgs";
         };
 
+        recipe-import-src = {
+          url = "path:/home/alex/recipe-import";
+          flake = false;
+        };
+
+        # Chore chart PWA for Grocy — flake ships a static bundle + NixOS module
+        chorcy = {
+          url = "git+ssh://git@codeberg.org/briansbum/chorcy.git";
+          inputs.nixpkgs.follows = "nixpkgs";
+        };
+
     };
 
-    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, claude-code, nix-software-center, disko, sops-nix, ...}@inputs:
+    outputs = {self, nixpkgs, nix-darwin, home-manager, nixvim, claude-code, nix-software-center, disko, sops-nix, recipe-import-src, chorcy, ...}@inputs:
     let
         kochOverlay = (final: prev: {
           claude-code    = inputs.claude-code.packages.${final.stdenv.hostPlatform.system}.default;
+          recipe-import  = final.callPackage ./nix/pkgs/recipe-import.nix {
+            inherit recipe-import-src;
+          };
         });
 
     in {
@@ -86,6 +100,7 @@
                     }
                     disko.nixosModules.disko
                     sops-nix.nixosModules.sops
+                    chorcy.nixosModules.default
                     ./nix/modules/tailscale-serve.nix
                     ./nix/koch/configuration.nix
                     ./nix/koch/hardware.nix

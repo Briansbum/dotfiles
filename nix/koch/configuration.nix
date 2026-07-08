@@ -6,9 +6,6 @@
 { config, pkgs, inputs, lib, ... }:
 
 {
-  imports = [
-    ./recipe-import.nix
-  ];
   nix.settings = {
     experimental-features = [ "nix-command" "flakes" ];
   };
@@ -100,7 +97,6 @@
     D("brians.skin", REG_NONE, DnsProvider(DSP_DESEC), NO_PURGE,
       A("immich.koch", "100.113.219.76"),
       A("grocy.koch", "100.113.219.76"),
-      A("recipes.koch", "100.113.219.76"),
       A("chorcy.koch", "100.113.219.76"),
     );
     '';

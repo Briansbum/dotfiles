@@ -7,11 +7,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1783459739,
-        "narHash": "sha256-RH9ipFPvDliSPJZ9Ib2On06XJa6eN7yTxuvgNTIQ3dA=",
+        "lastModified": 1783525939,
+        "narHash": "sha256-tCu1HnvTESdMNq+2OTKYGzM5jlT/5juydKDkWTQSj04=",
         "ref": "refs/heads/main",
-        "rev": "c75cc250167f0ce49bac9168db111f756da4ed79",
-        "revCount": 15,
+        "rev": "12439e92a012da7dea12a11a7ad12fee18285f1a",
+        "revCount": 16,
         "type": "git",
         "url": "ssh://git@codeberg.org/briansbum/chorcy.git"
       },

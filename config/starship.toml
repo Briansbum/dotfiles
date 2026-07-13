@@ -189,6 +189,6 @@ format = "[$output]($style) "
 style = "bold purple"
 
 [env_var.ZMX_SESSION]
-format = "[$symbol$env_value]($style) "
+format = "[ $symbol$env_value ]($style)"
 description = "zmx session name"
 style = "bg:#06969A"

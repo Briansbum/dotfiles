@@ -78,6 +78,7 @@
   programs.fd.enable = true;
   programs.fzf.enable = true;
   programs.go.enable = true;
+  programs.zmx.enable = true;
 
   # Starship prompt
   programs.starship.enable = true;
@@ -204,6 +205,7 @@
           set -g @pane-focus-direction '-'
           set -g allow-passthrough on
           set -g extended-keys on
+          set -g extended-keys-format csi-u
           set -g default-shell ${lib.getExe config.programs.fish.package}
           set -g default-command ${lib.getExe config.programs.fish.package}
           set -g focus-events on

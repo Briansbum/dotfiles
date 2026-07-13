@@ -229,6 +229,8 @@
     (nerd-fonts.go-mono)
   ];
 
+  programs.zmx.enable = true;
+
   # Shell configuration
   programs.fish.enable = true;
   programs.zsh.enable = true;  # Keep zsh as fallback

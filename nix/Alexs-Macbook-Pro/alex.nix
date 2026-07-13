@@ -78,7 +78,6 @@
   programs.fd.enable = true;
   programs.fzf.enable = true;
   programs.go.enable = true;
-  programs.zmx.enable = true;
 
   # Starship prompt
   programs.starship.enable = true;

@@ -94,6 +94,7 @@
     
     # Terminal & Shell
     tmux
+    zmx
     starship
     htop
     neovim
@@ -228,8 +229,6 @@
   fonts.packages = with pkgs; [
     (nerd-fonts.go-mono)
   ];
-
-  programs.zmx.enable = true;
 
   # Shell configuration
   programs.fish.enable = true;

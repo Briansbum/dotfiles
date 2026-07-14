@@ -121,9 +121,13 @@
   ];
 
   # User configuration
+  # knownUsers is required for nix-darwin to apply `shell` to the
+  # directory-services record; uid must be pinned when listed there.
+  users.knownUsers = [ "alex" ];
   users.users.alex = {
     name = "alex";
     home = "/Users/alex";
+    uid = 501;
     shell = pkgs.fish;
   };
 

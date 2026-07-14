@@ -203,6 +203,46 @@
           '';
         };
 
+        z = {
+          description = "zmx session picker: fuzzy attach, create if no match";
+          body = ''
+            # z <name> [cmd...] attaches directly (zmx creates missing sessions)
+            if test (count $argv) -gt 0
+              zmx attach $argv
+              return
+            end
+
+            set -l out (zmx list --short 2>/dev/null | fzf \
+              --print-query \
+              --expect=ctrl-n \
+              --height=80% \
+              --reverse \
+              --prompt="zmx> " \
+              --header="enter: attach (creates if typed name has no match) | ctrl-n: create" \
+              --preview='zmx history {}' \
+              --preview-window=right:60%:follow)
+            set -l rc $status
+
+            set -l query $out[1]
+            set -l key $out[2]
+            set -l selected $out[3]
+
+            set -l session
+            if test "$key" = ctrl-n; and test -n "$query"
+              set session $query
+            else if test $rc -eq 0; and test -n "$selected"
+              set session $selected
+            else if test -n "$query"
+              # no match for typed query: create it
+              set session $query
+            else
+              return 130
+            end
+
+            zmx attach $session
+          '';
+        };
+
         # ============ Git Operations ============
         b = {
           description = "alias b with git worktree and fzf";

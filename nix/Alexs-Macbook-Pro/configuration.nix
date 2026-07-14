@@ -124,6 +124,7 @@
   users.users.alex = {
     name = "alex";
     home = "/Users/alex";
+    shell = pkgs.fish;
   };
 
   # Nix configuration
@@ -232,6 +233,7 @@
 
   # Shell configuration
   programs.fish.enable = true;
+  environment.shells = [ pkgs.fish ];
   programs.zsh.enable = true;  # Keep zsh as fallback
 
   # Install pre-commit via uv (avoids heavy swift/dotnet dependency chain in nixpkgs)

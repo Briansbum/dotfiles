@@ -233,6 +233,26 @@
     };
   };
 
+  # Colima container runtime (foreground keeps launchd attached to the VM;
+  # KeepAlive off so `colima stop` sticks)
+  launchd.user.agents.colima = {
+    serviceConfig = {
+      Label = "com.abiosoft.colima";
+      ProgramArguments = [
+        "${pkgs.colima}/bin/colima"
+        "start"
+        "--foreground"
+      ];
+      RunAtLoad = true;
+      KeepAlive = false;
+      StandardOutPath = "/tmp/colima.log";
+      StandardErrorPath = "/tmp/colima.err.log";
+      EnvironmentVariables = {
+        PATH = "${pkgs.colima}/bin:${pkgs.docker-client}/bin:/usr/bin:/bin:/usr/sbin:/sbin";
+      };
+    };
+  };
+
   # Fonts
   fonts.packages = with pkgs; [
     (nerd-fonts.go-mono)

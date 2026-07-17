@@ -33,9 +33,10 @@
           inputs.nixpkgs.follows = "nixpkgs";
         };
 
-        # Pinned pre-LLVM-21 nixpkgs: watchexec fails to link on aarch64-darwin
-        # at current nixos-unstable (cctools ld crash) and hydra hasn't cached
-        # it yet. Drop this input + its overlay once the cache catches up.
+        # Pinned pre-LLVM-21 nixpkgs: watchexec and colima (lima-full) fail to
+        # link on aarch64-darwin at current nixos-unstable (cctools ld crash)
+        # and hydra hasn't cached them yet. Drop this input + its overlay once
+        # the cache catches up.
         nixpkgs-watchexec.url = "github:NixOS/nixpkgs/f205b5574fd0cb7da5b702a2da51507b7f4fdd1b";
 
         # Chore chart PWA for Grocy — flake ships a static bundle + NixOS module
@@ -128,6 +129,7 @@
                           # See nixpkgs-watchexec input comment
                           (final: prev: {
                             watchexec = inputs.nixpkgs-watchexec.legacyPackages.${prev.stdenv.hostPlatform.system}.watchexec;
+                            colima = inputs.nixpkgs-watchexec.legacyPackages.${prev.stdenv.hostPlatform.system}.colima;
                           })
                           # direnv's zsh test hangs on macOS 26 (waitforpid/SIGCHLD)
                           (final: prev: {

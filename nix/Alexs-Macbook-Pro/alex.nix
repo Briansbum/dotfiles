@@ -128,9 +128,6 @@
       end
       set -gx USE_GKE_GCLOUD_AUTH_PLUGIN True
       
-      # Rancher Desktop
-      fish_add_path --prepend "/Users/alex/.rd/bin"
-      
       # KUBECONFIG
       set -gx KUBECONFIG "$HOME/.kube/config:$HOME/.docctor/config/kubeconfig"
       

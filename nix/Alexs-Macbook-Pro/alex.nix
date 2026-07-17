@@ -42,6 +42,20 @@
     # Note: spotifyd, spotify-tui, op configs have secrets - not managed
   };
 
+  # Colima instance template - applies to newly created instances only
+  # (vz + rosetta require Apple Silicon)
+  home.file.".colima/_templates/default.yaml" = lib.mkIf (pkgs.stdenv.hostPlatform.isDarwin && pkgs.stdenv.hostPlatform.isAarch64) {
+    text = ''
+      vmType: vz
+      rosetta: true
+      mountType: virtiofs
+      runtime: docker
+      cpu: 4
+      memory: 4
+      disk: 60
+    '';
+  };
+
   # NixVim configuration
   programs.nixvim = {
     enable = true;

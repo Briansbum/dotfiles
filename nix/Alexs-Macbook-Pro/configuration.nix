@@ -58,8 +58,11 @@
     ansible
     azure-cli
     awscli2
-    docker
-    
+    colima
+    docker-client
+    docker-compose
+    docker-buildx
+
     # Kubernetes ecosystem
     kubectl
     kubernetes-helm  

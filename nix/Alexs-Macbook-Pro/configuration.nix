@@ -76,7 +76,6 @@
     stern
     
     # Infrastructure as Code
-    terragrunt
     terraform-docs
     tflint
     tenv  

@@ -27,7 +27,7 @@
     # Development languages & runtimes
     nodejs
     python311
-    elixir
+    beam28Packages.elixir_1_19
     zig
     lua
     luarocks

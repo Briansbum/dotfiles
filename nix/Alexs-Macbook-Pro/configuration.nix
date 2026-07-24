@@ -199,7 +199,6 @@
       "claude"
       "container"
       "ghostty"
-      "google-chrome"
       "gpg-suite"
       "k6-studio"
       "spotify"

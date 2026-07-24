@@ -92,7 +92,12 @@
   programs.fd.enable = true;
   programs.fzf.enable = true;
   programs.go.enable = true;
-  programs.aerospace.enable = true;
+  programs.aerospace = {
+    enable = true;
+    launchd = {
+      enable = true;
+    };
+  };
 
   # Starship prompt
   programs.starship.enable = true;

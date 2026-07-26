@@ -31,22 +31,6 @@ in
   '';
   security.sudo.enable = true;
 
-  # OctoPrint for 3D printer management
-  services.octoprint = {
-    enable = true;
-    port = 5000;
-    extraConfig = {
-      server.baseUrl = "/octoprint";
-      serial = {
-        port = "/dev/ttyUSB0";
-        baudrate = 250000;
-      };
-    };
-  };
-
-  # Give octoprint user access to serial devices
-  users.users.octoprint.extraGroups = [ "dialout" ];
-
   # Tailscale proxies — all on https://mandelbrot/<path>
   services.tailscaleServe = {
     octoprint = { localPort = 5000; path = "octoprint"; afterService = "octoprint"; };

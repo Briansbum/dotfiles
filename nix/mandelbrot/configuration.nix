@@ -84,7 +84,6 @@ in
     enable = true;
     enableSSHSupport = true;
     enableBrowserSocket = true;
-    pinentryPackage = wayprompt;
   };
 
   nixpkgs.config.allowUnfree = true; 
@@ -266,7 +265,6 @@ in
     egl-wayland
     playerctl
     brightnessctl
-    wayprompt
     btop-cuda
   ];
 

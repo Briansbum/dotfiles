@@ -75,8 +75,6 @@
     '';
   };
 
-  programs.pi-coding-agent.enable = true;
-
   home.sessionVariables = {
     EDITOR = "nvim";
     VISUAL = "nvim";

@@ -16,6 +16,8 @@
       enableMcpIntegration = true;
     };
 
+    pi-coding-agent.enable = true;
+
     # Still need to enable more shared config
     direnv = {
       enable = true;

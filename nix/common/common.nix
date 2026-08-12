@@ -22,6 +22,7 @@
     direnv = {
       enable = true;
       nix-direnv.enable = true;
+      config.whitelist.prefix = [ "/Users/alex/devel" ];
     };
 
     # Fish shell configuration

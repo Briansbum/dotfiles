@@ -1,5 +1,12 @@
 { config, pkgs, inputs, lib, ... }:
 
+let
+  writeFishScript = name: path:
+    pkgs.writers.writeFishBin name
+      (lib.removePrefix "#!/usr/bin/env fish\n" (builtins.readFile path));
+  aerospace-save-layout = writeFishScript "aerospace-save-layout" ../../scripts/aerospace-save-layout.fish;
+  aerospace-restore-layout = writeFishScript "aerospace-restore-layout" ../../scripts/aerospace-restore-layout.fish;
+in
 {
   imports = [
     ../common/common.nix
@@ -20,9 +27,20 @@
   programs.home-manager.enable = true;
 
   # macOS-specific packages that aren't in system config
-  home.packages = with pkgs; [
-    # Add any user-specific packages here
+  home.packages = [
+    aerospace-save-layout
+    aerospace-restore-layout
   ];
+
+  launchd.agents.aerospace-restore-layout = {
+    enable = true;
+    config = {
+      ProgramArguments = [ "${aerospace-restore-layout}/bin/aerospace-restore-layout" ];
+      RunAtLoad = true;
+      StandardOutPath = "/Users/alex/.local/state/aerospace/restore.log";
+      StandardErrorPath = "/Users/alex/.local/state/aerospace/restore.err.log";
+    };
+  };
 
   # Config file locations for programs that cannot manage themselves
   xdg.configFile = {
@@ -41,6 +59,8 @@
     # Note: htop, wireshark configs are runtime state - not managed
     # Note: spotifyd, spotify-tui, op configs have secrets - not managed
   };
+
+  home.file.".local/state/aerospace/.keep".text = "";
 
   # Colima instance template - applies to newly created instances only
   # (vz + rosetta require Apple Silicon)

@@ -34,7 +34,7 @@
   services.resolved.enable = true;
   services.thermald.enable = true;
   services.power-profiles-daemon.enable = true;
-  services.fwupd.service = true;
+  services.fwupd.enable = true;
 
   services.logind.settings.Login = {
     HandleLidSwitch = "suspend-then-hibernate";

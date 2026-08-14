@@ -52,7 +52,7 @@
 
   services.mullvad-vpn = {
     enable = true;
-    package = pkgs.mullvad-vpn;
+    gui.enable = true;
   };
 
   # Fingerprint reader (Framework 13 Goodix MOC sensor)

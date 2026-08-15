@@ -135,16 +135,7 @@ in
   # Set your time zone.
   time.timeZone = "Europe/London";
 
- Select internationalisation properties.
- i18n.defaultLocale = "en_US.UTF-8";
- console = {
-   font = "Lat2-Terminus16";
-   keyMap = "us";
-   useXkbConfig = true; # use xkb.options in tty.
- };
-
-  # Enable the X11 windowing system.
-  services.xserver.enable = true;
+  i18n.defaultLocale = "en_GB.UTF-8";
 
   programs.niri.enable = true;
   programs.dms-shell = {
@@ -203,16 +194,6 @@ in
     localNetworkGameTransfers.openFirewall = true; # Open ports in the firewall for Steam Local Network Game Transfers
   };
 
-  # Configure keymap in X11
-  # services.xserver.xkb.layout = "us";
-  # services.xserver.xkb.options = "eurosign:e,caps:escape";
-
-  # Enable CUPS to print documents.
-  # services.printing.enable = true;
-
-  # Enable sound.
-  # hardware.pulseaudio.enable = true;
-  # OR
   security.rtkit.enable = true;
   security.polkit.enable = true;
   services.pipewire = {
@@ -225,22 +206,6 @@ in
 
   services.gnome.gnome-keyring.enable = true;
 
-  # Enable touchpad support (enabled default in most desktopManager).
-  # services.libinput.enable = true;
-
-  # Define a user account. Don't forget to set a password with ‘passwd’.
-  # users.users.alice = {
-  #   isNormalUser = true;
-  #   extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
-  #   packages = with pkgs; [
-  #     tree
-  #   ];
-  # };
-
-  # programs.firefox.enable = true;
-
-  # List packages installed in system profile. To search, run:
-  # $ nix search wget
   environment.systemPackages = with pkgs; [
     vim
     wget
@@ -262,38 +227,21 @@ in
     settings = {
       General = {
         # Shows battery charge of connected devices on supported
-        # Bluetooth adapters. Defaults to 'false'.
+        # Bluetooth adapters. 
         Experimental = true;
         # When enabled other devices can connect faster to us, however
         # the tradeoff is increased power consumption. Defaults to
         # 'false'.
         FastConnectable = true;
       };
-      Policy = {
-        # Enable all controllers when they are found. This includes
-        # adapters present on start as well as adapters that are plugged
-        # in later on. Defaults to 'true'.
-        AutoEnable = true;
-      };
     };
   };
 
-  # List services that you want to enable:
-
-  # Enable the OpenSSH daemon.
   services.openssh.enable = true;
 
-  # Open ports in the firewall.
   networking.nftables.enable = true;
   networking.firewall.allowedTCPPorts = [ 8554 3923 ];
   networking.firewall.allowedUDPPorts = [ 8554 16261 16262 ];
-  # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
-
-  # Copy the NixOS configuration file and link it from the resulting system
-  # (/run/current-system/configuration.nix). This is useful in case you
-  # accidentally delete configuration.nix.
-  # system.copySystemConfiguration = true;
 
   # This option defines the first version of NixOS you have installed on this particular machine,
   # and is used to maintain compatibility with application data (e.g. databases) created on older NixOS versions.

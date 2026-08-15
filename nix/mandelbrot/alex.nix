@@ -6,8 +6,6 @@
     inputs.nixvim.homeModules.nixvim
   ];
 
-  # How does this work in a multi-machine context where I might not provision
-  # the user myself?
   home.username = "alex";
   home.homeDirectory = "/home/alex";
 
@@ -52,7 +50,7 @@
     yt-dlp
     gnupg
     (ffmpeg.override {
-    withXcb = true;
+      withXcb = true;
     })
     ripgrep
     heroic

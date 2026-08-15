@@ -1,5 +1,0 @@
-require("alex.set")
-require("alex.remap")
-require("alex.packer")
-require("alex.st")
-require("alex.vimgrep")

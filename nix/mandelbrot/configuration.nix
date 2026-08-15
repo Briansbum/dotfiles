@@ -4,9 +4,6 @@
 
 { config, pkgs, inputs, lib, ... }:
 
-# Tailscale serve routes:
-#   https://mandelbrot/octoprint  -> localhost:5000
-
 with pkgs; let
   patchDesktop = pkg: appName: from: to: lib.hiPrio (
     pkgs.runCommand "$patched-desktop-entry-for-${appName}" {} ''
@@ -30,11 +27,6 @@ in
     options v4l2loopback devices=1 video_nr=1 card_label="OBS Cam" exclusive_caps=1
   '';
   security.sudo.enable = true;
-
-  # Tailscale proxies — all on https://mandelbrot/<path>
-  services.tailscaleServe = {
-    octoprint = { localPort = 5000; path = "octoprint"; afterService = "octoprint"; };
-  };
 
   users.users.alex = {
     uid = 1000;

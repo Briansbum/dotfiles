@@ -57,9 +57,6 @@ in
     autologinUser = "alex";
     autologinOnce = true;
   };
-#  environment.loginShellInit = ''
-#      [[ "$(tty)" == /dev/tty1 ]] && niri
-#  '';
 
   virtualisation.docker.enable = true;
 
@@ -134,24 +131,17 @@ in
   };
 
   networking.hostName = "mandelbrot"; # Define your hostname.
-  # Pick only one of the below networking options.
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-  # networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
 
   # Set your time zone.
   time.timeZone = "Europe/London";
 
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-
-  # Select internationalisation properties.
-  # i18n.defaultLocale = "en_US.UTF-8";
-  # console = {
-  #   font = "Lat2-Terminus16";
-  #   keyMap = "us";
-  #   useXkbConfig = true; # use xkb.options in tty.
-  # };
+ Select internationalisation properties.
+ i18n.defaultLocale = "en_US.UTF-8";
+ console = {
+   font = "Lat2-Terminus16";
+   keyMap = "us";
+   useXkbConfig = true; # use xkb.options in tty.
+ };
 
   # Enable the X11 windowing system.
   services.xserver.enable = true;

@@ -3,11 +3,20 @@
 # Services: Immich, Grocy, Tailscale, NFS, SMART, btrfs scrub, B2 backups, Grafana Alloy, GoClaw
 # No GUI — headless server managed via SSH and Tailscale
 
-{ config, pkgs, inputs, lib, ... }:
+{
+  config,
+  pkgs,
+  inputs,
+  lib,
+  ...
+}:
 
 {
   nix.settings = {
-    experimental-features = [ "nix-command" "flakes" ];
+    experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
   };
 
   security.sudo.enable = true;
@@ -81,45 +90,47 @@
   # DNSControl - a oneshot used by services that have names to run dnscontrol
   # ---------------------------------------------------------------------------
 
-  sops.secrets."dnscontrol_creds_json" = {};
+  sops.secrets."dnscontrol_creds_json" = { };
 
-  systemd.services.dnscontrol = let
-    dnsConfig = pkgs.writeText "dnsconfig.js" ''
-    var REG_NONE = NewRegistrar("none");
-    var DSP_DESEC = NewDnsProvider("desec");
-    
-    D("brians.skin", REG_NONE, DnsProvider(DSP_DESEC), NO_PURGE,
-      A("immich.koch", "100.113.219.76"),
-      A("grocy.koch", "100.113.219.76"),
-      A("chorcy.koch", "100.113.219.76"),
-    );
-    '';
-  in {
-    description = "Runs dnscontrol push";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "network-online.target" ];
-    wants = [ "network-online.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      ExecStart = pkgs.writeShellScript "dnscontrol-push" ''
-	${pkgs.dnscontrol}/bin/dnscontrol push \
-	  --creds ${config.sops.secrets.dnscontrol_creds_json.path} \
-          --config ${dnsConfig};
+  systemd.services.dnscontrol =
+    let
+      dnsConfig = pkgs.writeText "dnsconfig.js" ''
+        var REG_NONE = NewRegistrar("none");
+        var DSP_DESEC = NewDnsProvider("desec");
+
+        D("brians.skin", REG_NONE, DnsProvider(DSP_DESEC), NO_PURGE,
+          A("immich.koch", "100.113.219.76"),
+          A("grocy.koch", "100.113.219.76"),
+          A("chorcy.koch", "100.113.219.76"),
+        );
       '';
+    in
+    {
+      description = "Runs dnscontrol push";
+      wantedBy = [ "multi-user.target" ];
+      after = [ "network-online.target" ];
+      wants = [ "network-online.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+        ExecStart = pkgs.writeShellScript "dnscontrol-push" ''
+          	${pkgs.dnscontrol}/bin/dnscontrol push \
+          	  --creds ${config.sops.secrets.dnscontrol_creds_json.path} \
+                    --config ${dnsConfig};
+        '';
+      };
     };
-  };
 
   # ---------------------------------------------------------------------------
   # Traefik — reverse proxy with Tailscale TLS
   # Immich is the default service, Grocy under /grocy
   # ---------------------------------------------------------------------------
 
-  sops.secrets."desec_token" = {};
+  sops.secrets."desec_token" = { };
 
   services.traefik = {
     enable = true;
-    environmentFiles = [config.sops.secrets.desec_token.path];
+    environmentFiles = [ config.sops.secrets.desec_token.path ];
     staticConfigOptions = {
       entryPoints.web = {
         address = ":80";
@@ -132,13 +143,16 @@
         address = "localhost:443";
         http.tls.certResolver = "desec";
       };
-      certificatesResolvers.tailscale.tailscale = {};
+      certificatesResolvers.tailscale.tailscale = { };
       certificatesResolvers.desec.acme = {
         email = "freestone.alex@gmail.com";
         storage = "/var/lib/traefik/acme.json";
-	dnsChallenge = {
-	  provider = "desec";
-          resolvers = ["ns1.desec.io:53" "ns2.desec.org:53"];
+        dnsChallenge = {
+          provider = "desec";
+          resolvers = [
+            "ns1.desec.io:53"
+            "ns2.desec.org:53"
+          ];
           delayBeforeCheck = "30s";
         };
       };
@@ -162,9 +176,9 @@
         };
       };
       services = {
-        immich.loadBalancer.servers = [{ url = "http://localhost:2283"; }];
-        grocy.loadBalancer.servers = [{ url = "http://localhost:2383"; }];
-        chorcy.loadBalancer.servers = [{ url = "http://localhost:2483"; }];
+        immich.loadBalancer.servers = [ { url = "http://localhost:2283"; } ];
+        grocy.loadBalancer.servers = [ { url = "http://localhost:2383"; } ];
+        chorcy.loadBalancer.servers = [ { url = "http://localhost:2483"; } ];
       };
     };
   };
@@ -206,15 +220,22 @@
   services.btrfs.autoScrub = {
     enable = true;
     interval = "monthly";
-    fileSystems = [ "/" "/data" ];
+    fileSystems = [
+      "/"
+      "/data"
+    ];
   };
 
   # ---------------------------------------------------------------------------
   # Immich — photo management
   # ---------------------------------------------------------------------------
 
-  users.users.immich = { uid = 996; };
-  users.groups.immich = { gid = 997; };
+  users.users.immich = {
+    uid = 996;
+  };
+  users.groups.immich = {
+    gid = 997;
+  };
 
   services.immich = {
     enable = true;
@@ -259,7 +280,12 @@
   };
 
   # Move Grocy's nginx to 8080 so Traefik can own 80/443
-  services.nginx.virtualHosts."grocy.koch.brians.skin".listen = [{ addr = "127.0.0.1"; port = 2383; }];
+  services.nginx.virtualHosts."grocy.koch.brians.skin".listen = [
+    {
+      addr = "127.0.0.1";
+      port = 2383;
+    }
+  ];
 
   # ---------------------------------------------------------------------------
   # Chorcy — chore chart PWA for Grocy (static bundle served by nginx on :2483,
@@ -299,8 +325,8 @@
   # B2 credentials provided by sops-nix at /run/secrets/.
   # ---------------------------------------------------------------------------
 
-  sops.secrets."b2_photos_account_id" = {};
-  sops.secrets."b2_photos_application_key" = {};
+  sops.secrets."b2_photos_account_id" = { };
+  sops.secrets."b2_photos_application_key" = { };
 
   systemd.services.rclone-photos = {
     description = "Push photos to Backblaze B2";
@@ -351,8 +377,14 @@
 
   systemd.services.immich-db-dump = {
     description = "Dump Immich PostgreSQL database for backup";
-    after = [ "postgresql.service" "immich-db-dump-prep.service" ];
-    requires = [ "postgresql.service" "immich-db-dump-prep.service" ];
+    after = [
+      "postgresql.service"
+      "immich-db-dump-prep.service"
+    ];
+    requires = [
+      "postgresql.service"
+      "immich-db-dump-prep.service"
+    ];
     serviceConfig = {
       Type = "oneshot";
       User = "postgres";
@@ -389,7 +421,7 @@
     group = "alloy";
     extraGroups = [ "systemd-journal" ];
   };
-  users.groups.alloy = {};
+  users.groups.alloy = { };
 
   services.alloy = {
     enable = true;
@@ -417,13 +449,13 @@
 
   networking.nftables.enable = true;
   networking.firewall.allowedTCPPorts = [
-    22    # SSH
-    80    # Traefik (HTTP -> HTTPS redirect)
-    443   # Traefik (HTTPS)
-    8080  # Traefik dashboard
-    2049  # NFS
-    4317  # OTLP gRPC (Alloy receiver for local services)
-    4318  # OTLP HTTP (Alloy receiver for local services)
+    22 # SSH
+    80 # Traefik (HTTP -> HTTPS redirect)
+    443 # Traefik (HTTPS)
+    8080 # Traefik dashboard
+    2049 # NFS
+    4317 # OTLP gRPC (Alloy receiver for local services)
+    4318 # OTLP HTTP (Alloy receiver for local services)
   ];
 
   # ---------------------------------------------------------------------------

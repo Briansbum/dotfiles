@@ -1,9 +1,15 @@
-{ config, pkgs, inputs, lib, ... }:
+{
+  config,
+  pkgs,
+  inputs,
+  lib,
+  ...
+}:
 
 let
-  writeFishScript = name: path:
-    pkgs.writers.writeFishBin name
-      (lib.removePrefix "#!/usr/bin/env fish\n" (builtins.readFile path));
+  writeFishScript =
+    name: path:
+    pkgs.writers.writeFishBin name (lib.removePrefix "#!/usr/bin/env fish\n" (builtins.readFile path));
   aerospace-save-layout = writeFishScript "aerospace-save-layout" ../../scripts/aerospace-save-layout.fish;
   aerospace-restore-layout = writeFishScript "aerospace-restore-layout" ../../scripts/aerospace-restore-layout.fish;
 in
@@ -49,13 +55,13 @@ in
     "yazi".source = ../../config/yazi;
     "fish/themes/cyberdream.theme".source = ../../config/fish/themes/cyberdream.theme;
     # nvim now managed by nixvim - old config at ../../config/nvim for reference
-    
+
     # macOS-specific configs
     "ghostty/config".source = ../../config/ghostty/macos-config;
     "zed/settings.json".source = ../../config/zed/settings.json;
     "gh/config.yml".source = ../../config/gh/config.yml;
     "gopass/config".source = ../../config/gopass/config;
-    
+
     # Note: htop, wireshark configs are runtime state - not managed
     # Note: spotifyd, spotify-tui, op configs have secrets - not managed
   };
@@ -64,17 +70,19 @@ in
 
   # Colima instance template - applies to newly created instances only
   # (vz + rosetta require Apple Silicon)
-  home.file.".colima/_templates/default.yaml" = lib.mkIf (pkgs.stdenv.hostPlatform.isDarwin && pkgs.stdenv.hostPlatform.isAarch64) {
-    text = ''
-      vmType: vz
-      rosetta: true
-      mountType: virtiofs
-      runtime: docker
-      cpu: 4
-      memory: 4
-      disk: 60
-    '';
-  };
+  home.file.".colima/_templates/default.yaml" =
+    lib.mkIf (pkgs.stdenv.hostPlatform.isDarwin && pkgs.stdenv.hostPlatform.isAarch64)
+      {
+        text = ''
+          vmType: vz
+          rosetta: true
+          mountType: virtiofs
+          runtime: docker
+          cpu: 4
+          memory: 4
+          disk: 60
+        '';
+      };
 
   # NixVim configuration
   programs.nixvim = {
@@ -104,7 +112,7 @@ in
   };
 
   programs.ghostty = {
-    enable = false;  # installed via Homebrew cask; config at ../../config/ghostty/macos-config
+    enable = false; # installed via Homebrew cask; config at ../../config/ghostty/macos-config
     installVimSyntax = true;
   };
 
@@ -125,7 +133,7 @@ in
   # Yazi file manager
   programs.yazi = {
     enable = true;
-    enableFishIntegration = false;  # Managed manually via fish config files
+    enableFishIntegration = false; # Managed manually via fish config files
     shellWrapperName = "y";
   };
 
@@ -141,11 +149,11 @@ in
       # Homebrew paths
       fish_add_path -p /opt/homebrew/bin
       fish_add_path -p /opt/homebrew/opt/coreutils/libexec/gnubin
-      
+
       # Bun
       set --export BUN_INSTALL "$HOME/.bun"
       fish_add_path $BUN_INSTALL/bin
-      
+
       # GCloud SDK (provides gke-gcloud-auth-plugin for kubectl GKE auth)
       for gdir in /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin /opt/homebrew/share/google-cloud-sdk/bin
         if test -d $gdir
@@ -153,24 +161,23 @@ in
         end
       end
       set -gx USE_GKE_GCLOUD_AUTH_PLUGIN True
-      
+
       # KUBECONFIG
       set -gx KUBECONFIG "$HOME/.kube/config:$HOME/.docctor/config/kubeconfig"
-      
+
       # Terragrunt cache
       set -gx TG_PROVIDER_CACHE 1
 
       # Omnissiah shell integration (workspace nav + Claude session resume)
       omni shell-init fish | source
     '';
-    
+
     interactiveShellInit = ''
       # Autojump integration
       test -f ${pkgs.autojump}/share/autojump/autojump.fish; and source ${pkgs.autojump}/share/autojump/autojump.fish
     '';
-    
+
     functions = {
-      # Imports the key into gpg-agent permanently, not just this session
       sshagent_add_key = {
         description = "Import an SSH key into gpg-agent";
         body = "ssh-add $argv";
@@ -184,7 +191,7 @@ in
           SHELL=/bin/bash ssh $argv
         '';
       };
-      
+
       # macOS-specific rmterra override (uses find instead of fd)
       rmterra = {
         description = "recursively find and delete .terragrunt-cache dirs";

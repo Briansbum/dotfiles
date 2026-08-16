@@ -1,4 +1,9 @@
-{ config, pkgs, inputs, ... }:
+{
+  config,
+  pkgs,
+  inputs,
+  ...
+}:
 
 {
   imports = [
@@ -40,7 +45,7 @@
     yt-dlp
     gnupg
     (ffmpeg.override {
-    withXcb = true;
+      withXcb = true;
     })
     ripgrep
     wf-recorder

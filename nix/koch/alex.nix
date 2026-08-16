@@ -1,7 +1,12 @@
 # Home-manager configuration for alex on koch (NAS)
 # Minimal server profile — no GUI, no desktop services
 
-{ config, pkgs, inputs, ... }:
+{
+  config,
+  pkgs,
+  inputs,
+  ...
+}:
 
 {
   imports = [

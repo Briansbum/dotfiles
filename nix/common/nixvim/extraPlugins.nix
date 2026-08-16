@@ -110,7 +110,10 @@ in
   # Keymaps for CodeCompanion
   keymaps = [
     {
-      mode = [ "n" "v" ];
+      mode = [
+        "n"
+        "v"
+      ];
       key = "<leader>]";
       action = ":Gen<CR>";
       options = {

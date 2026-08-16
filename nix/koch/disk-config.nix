@@ -83,18 +83,26 @@
                 type = "btrfs";
                 extraArgs = [
                   "-f"
-                  "-d" "raid1"
-                  "-m" "raid1"
+                  "-d"
+                  "raid1"
+                  "-m"
+                  "raid1"
                   "/dev/disk/by-id/ata-CT250MX500SSD1_2107E4F9BAD8-part2"
                 ];
                 subvolumes = {
                   "@" = {
                     mountpoint = "/";
-                    mountOptions = [ "compress=zstd" "noatime" ];
+                    mountOptions = [
+                      "compress=zstd"
+                      "noatime"
+                    ];
                   };
                   "@nix" = {
                     mountpoint = "/nix";
-                    mountOptions = [ "compress=zstd" "noatime" ];
+                    mountOptions = [
+                      "compress=zstd"
+                      "noatime"
+                    ];
                   };
                   "@boot" = {
                     mountpoint = "/boot";
@@ -202,8 +210,10 @@
               type = "btrfs";
               extraArgs = [
                 "-f"
-                "-d" "raid1"
-                "-m" "raid1"
+                "-d"
+                "raid1"
+                "-m"
+                "raid1"
                 "/dev/disk/by-id/ata-WDC_WD40EFRX-68N32N0_WD-WCC7K4FV5XVK-part1"
                 "/dev/disk/by-id/ata-WDC_WD40EFRX-68N32N0_WD-WCC7K4FV50XT-part1"
                 "/dev/disk/by-id/ata-WDC_WD40EFRX-68N32N0_WD-WCC7K6JYSDJF-part1"
@@ -213,27 +223,45 @@
               subvolumes = {
                 "@data" = {
                   mountpoint = "/data";
-                  mountOptions = [ "compress=zstd" "noatime" ];
+                  mountOptions = [
+                    "compress=zstd"
+                    "noatime"
+                  ];
                 };
                 "@photos" = {
                   mountpoint = "/data/photos";
-                  mountOptions = [ "compress=zstd" "noatime" ];
+                  mountOptions = [
+                    "compress=zstd"
+                    "noatime"
+                  ];
                 };
                 "@alex-storage" = {
                   mountpoint = "/data/alex-storage";
-                  mountOptions = [ "compress=zstd" "noatime" ];
+                  mountOptions = [
+                    "compress=zstd"
+                    "noatime"
+                  ];
                 };
                 "@grocy" = {
                   mountpoint = "/data/grocy";
-                  mountOptions = [ "compress=zstd" "noatime" ];
+                  mountOptions = [
+                    "compress=zstd"
+                    "noatime"
+                  ];
                 };
                 "@moving-photos" = {
                   mountpoint = "/data/moving-photos";
-                  mountOptions = [ "compress=zstd" "noatime" ];
+                  mountOptions = [
+                    "compress=zstd"
+                    "noatime"
+                  ];
                 };
                 "@state-store" = {
                   mountpoint = "/data/state-store";
-                  mountOptions = [ "compress=zstd" "noatime" ];
+                  mountOptions = [
+                    "compress=zstd"
+                    "noatime"
+                  ];
                 };
               };
             };

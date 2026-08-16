@@ -15,17 +15,21 @@ let
   pkgs = import nixpkgs { inherit system; };
 
   sopsKeyFile =
-    if system == "aarch64-darwin"
-    then "/Users/alex/Library/Application Support/sops/age/keys.txt"
-    else "/var/lib/sops-nix/keys.txt";
+    if system == "aarch64-darwin" then
+      "/Users/alex/Library/Application Support/sops/age/keys.txt"
+    else
+      "/var/lib/sops-nix/keys.txt";
 
   nixDir = ../nix;
 
-  hostsWithSecrets = builtins.attrNames (builtins.filterAttrs
-    (name: type: type == "directory" && builtins.pathExists "${nixDir}/${name}/secrets.yaml")
-    (builtins.readDir nixDir));
+  hostsWithSecrets = builtins.attrNames (
+    builtins.filterAttrs (
+      name: type: type == "directory" && builtins.pathExists "${nixDir}/${name}/secrets.yaml"
+    ) (builtins.readDir nixDir)
+  );
 
-  mkSopsEdit = hostName:
+  mkSopsEdit =
+    hostName:
     pkgs.writeShellScriptBin "sops-${hostName}" ''
       set -euo pipefail
       repo_root="''${DOTFILES_ROOT:-$(git rev-parse --show-toplevel)}"
@@ -39,10 +43,16 @@ let
 
 in
 pkgs.mkShell {
-  packages = with pkgs; [
-    sops age ssh-to-age
-    jq yq
-  ] ++ sopsScripts;
+  packages =
+    with pkgs;
+    [
+      sops
+      age
+      ssh-to-age
+      jq
+      yq
+    ]
+    ++ sopsScripts;
 
   shellHook = ''
     export SOPS_AGE_KEY_FILE="${sopsKeyFile}"

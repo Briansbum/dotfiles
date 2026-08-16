@@ -37,10 +37,10 @@
       shellInit = ''
         # User-installed Go binaries
         fish_add_path -p "$HOME/go/bin"
-        
+
         # uv (Python package manager)
         fish_add_path "$HOME/.local/bin"
-        
+
         # Krew kubectl plugin manager
         fish_add_path "$HOME/.krew/bin"
       '';

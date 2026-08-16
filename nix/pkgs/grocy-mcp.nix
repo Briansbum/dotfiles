@@ -10,7 +10,10 @@ buildGoModule {
 
   env.CGO_ENABLED = 0;
 
-  ldflags = [ "-s" "-w" ];
+  ldflags = [
+    "-s"
+    "-w"
+  ];
 
   meta = with lib; {
     description = "MCP server exposing the Grocy household management API";

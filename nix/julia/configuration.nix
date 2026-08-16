@@ -1,8 +1,17 @@
-{ config, pkgs, inputs, lib, ... }:
+{
+  config,
+  pkgs,
+  inputs,
+  lib,
+  ...
+}:
 
 {
   nix.settings = {
-    experimental-features = ["nix-command" "flakes"];
+    experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
   };
 
   # Use the systemd-boot EFI boot loader.
@@ -16,13 +25,22 @@
     uid = 1000;
     isNormalUser = true;
     description = "Alex";
-    extraGroups = ["wheel" "plugdev" "networkmanager" "video"];
+    extraGroups = [
+      "wheel"
+      "plugdev"
+      "networkmanager"
+      "video"
+    ];
   };
 
   users.users.cass = {
     isNormalUser = true;
     description = "Cass";
-    extraGroups = ["wheel" "networkmanager" "video"];
+    extraGroups = [
+      "wheel"
+      "networkmanager"
+      "video"
+    ];
   };
 
   services.gvfs.enable = true;
@@ -121,11 +139,11 @@
 
   services.displayManager.dms-greeter = {
     enable = true;
-    
+
     compositor = {
       name = "niri";
     };
-  
+
     configHome = "/home/alex";
   };
 
@@ -133,14 +151,17 @@
     enable = true;
     xdgOpenUsePortal = true;
     config = {
-      common.default = ["gtk"];
+      common.default = [ "gtk" ];
     };
     extraPortals = [
       pkgs.xdg-desktop-portal-gtk
     ];
   };
 
-  boot.kernelParams = ["resume_offset=2047" "mem_sleep_default=deep"];
+  boot.kernelParams = [
+    "resume_offset=2047"
+    "mem_sleep_default=deep"
+  ];
   boot.resumeDevice = "/dev/disk/by-uuid/851c22a2-4127-4a0d-983d-f6da6525b82b";
   boot.initrd.systemd.enable = true;
 
@@ -148,19 +169,19 @@
     HibernateDelaySec = "30m";
     SuspendState = "mem";
   };
-  
+
   swapDevices = [
     {
       device = "/var/lib/swapfile";
-      size = 16*1024; # 16GB in MiB
+      size = 16 * 1024; # 16GB in MiB
     }
   ];
 
   environment.sessionVariables = {
-      XDG_CURRENT_DESKTOP = "niri";
-      XDG_SESSION_TYPE = "wayland";
-      MOZ_ENABLE_WAYLAND = "1";
-      NIXOS_OZONE_WL = "1";
+    XDG_CURRENT_DESKTOP = "niri";
+    XDG_SESSION_TYPE = "wayland";
+    MOZ_ENABLE_WAYLAND = "1";
+    NIXOS_OZONE_WL = "1";
   };
   environment.variables.EDITOR = "nvim";
 

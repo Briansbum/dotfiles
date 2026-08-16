@@ -14,7 +14,10 @@
 
     # Clipboard mappings
     {
-      mode = [ "n" "v" ];
+      mode = [
+        "n"
+        "v"
+      ];
       key = "<leader>y";
       action = "\"+y";
       options = {

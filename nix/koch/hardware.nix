@@ -8,7 +8,14 @@
 # SSDs: 250GB Crucial MX500 + 240GB Intel (btrfs RAID1, root)
 # HDDs: 6x 4TB WD Red WD40EFRX (btrfs RAID1, data)
 
-{ config, lib, pkgs, modulesPath, ... }: {
+{
+  config,
+  lib,
+  pkgs,
+  modulesPath,
+  ...
+}:
+{
   imports = [
     (modulesPath + "/installer/scan/not-detected.nix")
   ];
@@ -18,7 +25,13 @@
   boot.loader.grub.enable = true;
   boot.loader.grub.configurationLimit = 10;
 
-  boot.initrd.availableKernelModules = [ "ahci" "mpt3sas" "sd_mod" "usb_storage" "xhci_pci" ];
+  boot.initrd.availableKernelModules = [
+    "ahci"
+    "mpt3sas"
+    "sd_mod"
+    "usb_storage"
+    "xhci_pci"
+  ];
   boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];

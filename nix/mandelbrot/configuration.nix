@@ -2,19 +2,32 @@
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
-{ config, pkgs, inputs, lib, ... }:
+{
+  config,
+  pkgs,
+  inputs,
+  lib,
+  ...
+}:
 
-with pkgs; let
-  patchDesktop = pkg: appName: from: to: lib.hiPrio (
-    pkgs.runCommand "$patched-desktop-entry-for-${appName}" {} ''
-      ${coreutils}/bin/mkdir -p $out/share/applications
-      ${gnused}/bin/sed 's#${from}#${to}#g' < ${pkg}/share/applications/${appName}.desktop > $out/share/applications/${appName}.desktop
-      '');
+with pkgs;
+let
+  patchDesktop =
+    pkg: appName: from: to:
+    lib.hiPrio (
+      pkgs.runCommand "$patched-desktop-entry-for-${appName}" { } ''
+        ${coreutils}/bin/mkdir -p $out/share/applications
+        ${gnused}/bin/sed 's#${from}#${to}#g' < ${pkg}/share/applications/${appName}.desktop > $out/share/applications/${appName}.desktop
+      ''
+    );
   GPUOffloadApp = pkg: desktopName: patchDesktop pkg desktopName "^Exec=" "Exec=nvidia-offload ";
 in
 {
   nix.settings = {
-    experimental-features = ["nix-command" "flakes"];
+    experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
   };
 
   # Use the systemd-boot EFI boot loader.
@@ -32,7 +45,11 @@ in
     uid = 1000;
     isNormalUser = true;
     description = "Alex";
-    extraGroups = ["wheel" "plugdev" "dialout"];
+    extraGroups = [
+      "wheel"
+      "plugdev"
+      "dialout"
+    ];
     openssh.authorizedKeys.keys = [
       "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBIfEsNDo0qIws3jPsuD9YNlqS+a4/T9Zl5p8TmjGv7UVnYaiDBNU/MSedshMGo9OsRW9Eu7NFVz7b+w3dmj+XNY= alex@AlexF.local"
     ];
@@ -74,13 +91,28 @@ in
     '';
   };
 
+  programs.gnupg.agent = {
+    enable = true;
+    enableSSHSupport = true;
+    enableBrowserSocket = true;
+    pinentryPackage = null;
+    settings.pinentry-program = lib.getExe (
+      pkgs.writeShellScriptBin "pinentry-auto" ''
+        if [ "$PINENTRY_USER_DATA" = "curses" ]; then
+          exec ${pkgs.pinentry-curses}/bin/pinentry-curses "$@"
+        fi
+        exec ${pkgs.pinentry-gnome3}/bin/pinentry-gnome3 "$@"
+      ''
+    );
+  };
+
   services.dbus.packages = [ pkgs.gcr ];
 
   environment.interactiveShellInit = ''
     if [ -n "$SSH_CONNECTION" ]; then export PINENTRY_USER_DATA=curses; fi
   '';
 
-  nixpkgs.config.allowUnfree = true; 
+  nixpkgs.config.allowUnfree = true;
 
   # Enable OpenGL
   hardware.graphics = {
@@ -88,7 +120,7 @@ in
   };
 
   # Load nvidia driver for Xorg and Wayland
-  services.xserver.videoDrivers = ["nvidia"];
+  services.xserver.videoDrivers = [ "nvidia" ];
 
   hardware.nvidia = {
 
@@ -97,7 +129,7 @@ in
 
     # Nvidia power management. Experimental, and can cause sleep/suspend to fail.
     # Enable this if you have graphical corruption issues or application crashes after waking
-    # up from sleep. This fixes it by saving the entire VRAM memory to /tmp/ instead 
+    # up from sleep. This fixes it by saving the entire VRAM memory to /tmp/ instead
     # of just the bare essentials.
     powerManagement.enable = true;
 
@@ -107,9 +139,9 @@ in
 
     # Use the NVidia open source kernel module (not to be confused with the
     # independent third-party "nouveau" open source driver).
-    # Support is limited to the Turing and later architectures. Full list of 
-    # supported GPUs is at: 
-    # https://github.com/NVIDIA/open-gpu-kernel-modules#compatible-gpus 
+    # Support is limited to the Turing and later architectures. Full list of
+    # supported GPUs is at:
+    # https://github.com/NVIDIA/open-gpu-kernel-modules#compatible-gpus
     # Only available from driver 515.43.04+
     open = true;
 
@@ -153,11 +185,11 @@ in
 
   services.displayManager.dms-greeter = {
     enable = true;
-    
+
     compositor = {
       name = "niri";
     };
-  
+
     configHome = "/home/alex";
   };
 
@@ -165,11 +197,11 @@ in
     enable = true;
     xdgOpenUsePortal = true;
     config = {
-      common.default = ["gtk"];
+      common.default = [ "gtk" ];
       niri = {
         # gnome portal implements ScreenCast; gtk does not, breaking Discord screenshare on Wayland
-        "org.freedesktop.impl.portal.ScreenCast" = ["gnome"];
-        "org.freedesktop.impl.portal.Screenshot" = ["gnome"];
+        "org.freedesktop.impl.portal.ScreenCast" = [ "gnome" ];
+        "org.freedesktop.impl.portal.Screenshot" = [ "gnome" ];
       };
     };
     extraPortals = [
@@ -179,10 +211,10 @@ in
   };
 
   environment.sessionVariables = {
-      XDG_CURRENT_DESKTOP = "niri";
-      XDG_SESSION_TYPE = "wayland";
-      MOZ_ENABLE_WAYLAND = "1";
-      NIXOS_OZONE_WL = "1";
+    XDG_CURRENT_DESKTOP = "niri";
+    XDG_SESSION_TYPE = "wayland";
+    MOZ_ENABLE_WAYLAND = "1";
+    NIXOS_OZONE_WL = "1";
   };
   environment.variables.EDITOR = "nvim";
 
@@ -228,7 +260,7 @@ in
     settings = {
       General = {
         # Shows battery charge of connected devices on supported
-        # Bluetooth adapters. 
+        # Bluetooth adapters.
         Experimental = true;
         # When enabled other devices can connect faster to us, however
         # the tradeoff is increased power consumption. Defaults to
@@ -241,8 +273,15 @@ in
   services.openssh.enable = true;
 
   networking.nftables.enable = true;
-  networking.firewall.allowedTCPPorts = [ 8554 3923 ];
-  networking.firewall.allowedUDPPorts = [ 8554 16261 16262 ];
+  networking.firewall.allowedTCPPorts = [
+    8554
+    3923
+  ];
+  networking.firewall.allowedUDPPorts = [
+    8554
+    16261
+    16262
+  ];
 
   # This option defines the first version of NixOS you have installed on this particular machine,
   # and is used to maintain compatibility with application data (e.g. databases) created on older NixOS versions.

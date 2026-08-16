@@ -14,7 +14,7 @@
       mru-spaces = false;
       minimize-to-application = true;
     };
-    
+
     finder = {
       AppleShowAllExtensions = true;
       FXEnableExtensionChangeWarning = false;

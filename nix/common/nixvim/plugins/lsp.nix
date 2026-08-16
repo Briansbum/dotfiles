@@ -9,7 +9,10 @@
       servers = {
         bashls = {
           enable = true;
-          filetypes = [ "sh" "bash" ];
+          filetypes = [
+            "sh"
+            "bash"
+          ];
         };
         dockerls = {
           enable = true;
@@ -17,7 +20,10 @@
         };
         docker_compose_language_service = {
           enable = true;
-          filetypes = [ "yaml" "docker-compose" ];
+          filetypes = [
+            "yaml"
+            "docker-compose"
+          ];
         };
         dotls = {
           enable = true;
@@ -25,12 +31,26 @@
         };
         eslint = {
           enable = true;
-          filetypes = [ "javascript" "javascriptreact" "typescript" "typescriptreact" ];
+          filetypes = [
+            "javascript"
+            "javascriptreact"
+            "typescript"
+            "typescriptreact"
+          ];
         };
         gopls = {
           enable = true;
-          filetypes = [ "go" "gomod" "gowork" "gotmpl" ];
-          rootMarkers = [ "go.mod" "go.work" ".git" ];
+          filetypes = [
+            "go"
+            "gomod"
+            "gowork"
+            "gotmpl"
+          ];
+          rootMarkers = [
+            "go.mod"
+            "go.work"
+            ".git"
+          ];
         };
         helm_ls = {
           enable = true;
@@ -42,12 +62,18 @@
         };
         jsonls = {
           enable = true;
-          filetypes = [ "json" "jsonc" ];
+          filetypes = [
+            "json"
+            "jsonc"
+          ];
         };
         lua_ls = {
           enable = true;
           filetypes = [ "lua" ];
-          rootMarkers = [ ".luarc.json" ".luarc.jsonc" ];
+          rootMarkers = [
+            ".luarc.json"
+            ".luarc.jsonc"
+          ];
           settings = {
             Lua = {
               diagnostics = {
@@ -59,7 +85,13 @@
         pylsp = {
           enable = true;
           filetypes = [ "python" ];
-          rootMarkers = [ "pyproject.toml" "setup.py" "setup.cfg" "requirements.txt" "Pipfile" ];
+          rootMarkers = [
+            "pyproject.toml"
+            "setup.py"
+            "setup.cfg"
+            "requirements.txt"
+            "Pipfile"
+          ];
         };
         rust_analyzer = {
           enable = true;
@@ -70,12 +102,21 @@
         };
         terraformls = {
           enable = true;
-          filetypes = [ "terraform" "tf" ];
-          rootMarkers = [ ".terraform" ".git" ];
+          filetypes = [
+            "terraform"
+            "tf"
+          ];
+          rootMarkers = [
+            ".terraform"
+            ".git"
+          ];
         };
         tflint = {
           enable = true;
-          filetypes = [ "terraform" "tf" ];
+          filetypes = [
+            "terraform"
+            "tf"
+          ];
           rootMarkers = [ ".tflint.hcl" ];
         };
       };
@@ -147,7 +188,7 @@
     terraform-ls
     tflint
     fish-lsp
-    vscode-langservers-extracted  # Provides eslint, html, json, css
+    vscode-langservers-extracted # Provides eslint, html, json, css
   ];
 
   # Additional LSP configuration

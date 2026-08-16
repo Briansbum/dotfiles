@@ -13,7 +13,7 @@
     tree
     coreutils
     gnused
-    
+
     # Build tools
     cmake
     ninja
@@ -23,7 +23,7 @@
     ccache
     pkgconf
     nasm
-    
+
     # Development languages & runtimes
     nodejs
     python311
@@ -34,13 +34,13 @@
     openjdk
     leiningen
     maven
-    
+
     # Go tools
     delve
-    
+
     # Version control & Git tools
     gh
-    
+
     # Text processing & CLI tools
     fd
     ripgrep
@@ -53,7 +53,7 @@
     watchexec
     parallel
     glow
-    
+
     # DevOps & Cloud
     ansible
     azure-cli
@@ -65,7 +65,7 @@
 
     # Kubernetes ecosystem
     kubectl
-    kubernetes-helm  
+    kubernetes-helm
     k9s
     kind
     kubectx
@@ -74,16 +74,16 @@
     minikube
     operator-sdk
     stern
-    
+
     # Infrastructure as Code
     terraform-docs
     tflint
-    tenv  
-    
+    tenv
+
     # Monitoring & Observability
     trivy
     dive
-    
+
     # Security & Secrets
     age
     sops
@@ -102,24 +102,24 @@
     neovim
     shellcheck
     pay-respects
-    
+
     # Networking
     dnscontrol
-    inetutils  # Provides telnet on darwin
+    inetutils # Provides telnet on darwin
     hurl
-    
+
     # Graphics & Build dependencies
     graphviz
     harfbuzz
     qemu
-    
+
     # Other utilities
     uv
     avrdude
     yarn
     steampipe
     buf
-    ory  
+    ory
   ];
 
   # User configuration
@@ -142,12 +142,12 @@
   # Enable nix-darwin to manage Homebrew
   homebrew = {
     enable = true;
-    
+
     # Automatically update Homebrew and upgrade packages
     onActivation = {
       autoUpdate = true;
       upgrade = true;
-      cleanup = "zap";  # Uninstall packages not listed
+      cleanup = "zap"; # Uninstall packages not listed
     };
 
     # Taps for packages not in nixpkgs
@@ -180,18 +180,18 @@
       "ory/tap/hydra"
       "qmk/qmk/qmk"
       "atlassian/acli/acli"
-      
+
       # Tools that might need specific versions or macOS integration
-      "pam-reattach"  # For tmux Touch ID support
+      "pam-reattach" # For tmux Touch ID support
       "fish-lsp"
       "kcat"
       "pixie"
       "pngpaste"
       "pop"
       "helm-docs"
-      "terraformer"  # If not available in nixpkgs
-      "kubelogin"  # Azure kubelogin from tap
-      
+      "terraformer" # If not available in nixpkgs
+      "kubelogin" # Azure kubelogin from tap
+
     ];
 
     # GUI Applications (Casks)
@@ -257,7 +257,7 @@
   # Shell configuration
   programs.fish.enable = true;
   environment.shells = [ pkgs.fish ];
-  programs.zsh.enable = true;  # Keep zsh as fallback
+  programs.zsh.enable = true; # Keep zsh as fallback
 
   # Install pre-commit via uv (avoids heavy swift/dotnet dependency chain in nixpkgs)
   system.activationScripts.postActivation.text = ''

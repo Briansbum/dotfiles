@@ -219,6 +219,7 @@ in
     brightnessctl
     btop-cuda
     yubikey-manager
+    zmx
   ];
 
   hardware.bluetooth = {

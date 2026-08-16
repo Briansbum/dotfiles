@@ -33,6 +33,11 @@
           inputs.nixpkgs.follows = "nixpkgs";
         };
 
+        zmx = {
+          url = "github:neurosnap/zmx";
+          flake = false;
+        };
+
         # Chore chart PWA for Grocy — flake ships a static bundle + NixOS module
         chorcy = {
           url = "git+ssh://git@codeberg.org/briansbum/chorcy.git";

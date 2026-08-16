@@ -191,6 +191,7 @@
     pango
     harfbuzz
     yubikey-manager
+    zmx
   ];
 
   hardware.bluetooth = {

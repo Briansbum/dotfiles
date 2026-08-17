@@ -1,5 +1,15 @@
 { lib, pkgs, ... }:
 
+let
+  # Wayland-friendly pinentry: GNOME3 (gcr) by default, curses when the
+  # caller opts in via `PINENTRY_USER_DATA=curses` (e.g. over SSH).
+  pinentry-auto = pkgs.writeShellScriptBin "pinentry-auto" ''
+    if [ "$PINENTRY_USER_DATA" = "curses" ]; then
+      exec ${pkgs.pinentry-curses}/bin/pinentry-curses "$@"
+    fi
+    exec ${pkgs.pinentry-gnome3}/bin/pinentry-gnome3 "$@"
+  '';
+in
 {
   programs.gpg = {
     enable = true;
@@ -22,7 +32,7 @@
     maxCacheTtl = 14400;
     maxCacheTtlSsh = 14400;
     pinentry.package = lib.mkDefault (
-      if pkgs.stdenv.isDarwin then pkgs.pinentry_mac else pkgs.pinentry-curses
+      if pkgs.stdenv.isDarwin then pkgs.pinentry_mac else pinentry-auto
     );
   };
 

@@ -41,6 +41,9 @@
   # No pcscd on koch, so scdaemon keeps its built-in CCID driver
   programs.gpg.scdaemonSettings.disable-ccid = false;
 
+  # Headless box — no display for pinentry-gnome3, always use curses
+  services.gpg-agent.pinentry.package = pkgs.pinentry-curses;
+
   programs.git = {
     enable = true;
     settings = {

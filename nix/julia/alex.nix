@@ -66,8 +66,6 @@
     "rofi".source = ../../config/rofi;
   };
 
-  services.gpg-agent.pinentry.package = pkgs.pinentry-gtk2;
-
   # NixVim configuration
   programs.nixvim = {
     enable = true;

@@ -89,7 +89,7 @@ in
       user = {
         name = "Alex Freestone";
         email = "freestone.alex@gmail.com";
-        signingkey = "A0E7C0BF628420C273078074873DF106014C63F7";
+        signingkey = "048A9A1A139F42646792C0E39E0B4C28A344E764";
       };
       commit = {
         gpgsign = true;

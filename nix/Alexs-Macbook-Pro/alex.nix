@@ -170,33 +170,12 @@ in
     '';
     
     functions = {
-      # macOS-specific SSH agent key management
-      sshagent_add_key_macos = {
-        description = "Add SSH key to macOS keychain";
-        body = "ssh-add --apple-use-keychain $argv";
-      };
-      
+      # Imports the key into gpg-agent permanently, not just this session
       sshagent_add_key = {
-        description = "Add SSH key";
+        description = "Import an SSH key into gpg-agent";
         body = "ssh-add $argv";
       };
-      
-      sshagent_add_keys = {
-        description = "Add all SSH keys from bitwarden";
-        body = ''
-          set files "$HOME/.ssh/bitwarden"
-          for f in $files
-            if not ssh-add -L | grep -q $f
-              if uname -a | grep -q Darwin
-                sshagent_add_key_macos $f
-              else
-                sshagent_add_key $f
-              end
-            end
-          end
-        '';
-      };
-      
+
       # Ghostty SSH with terminfo
       gssh = {
         description = "copies ghostty terminfo onto ssh targets";

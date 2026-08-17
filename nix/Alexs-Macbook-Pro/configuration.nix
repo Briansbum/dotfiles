@@ -89,7 +89,6 @@
     sops
     gopass
     certbot
-    pinentry_mac
     wireguard-tools
     aws-vault
     _1password-cli
@@ -200,7 +199,6 @@
       "claude"
       "container"
       "ghostty"
-      "gpg-suite"
       "k6-studio"
       "spotify"
       "visual-studio-code"

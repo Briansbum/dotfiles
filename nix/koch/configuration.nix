@@ -47,12 +47,6 @@
     fi
   '';
 
-  programs.gnupg.agent = {
-    enable = true;
-    enableSSHSupport = false;
-    pinentryPackage = pkgs.pinentry-curses;
-  };
-
   # ---------------------------------------------------------------------------
   # Core services
   # ---------------------------------------------------------------------------

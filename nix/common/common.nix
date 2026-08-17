@@ -1,6 +1,10 @@
 { pkgs, config, ... }:
 
 {
+  imports = [
+    ./gpg.nix
+  ];
+
   # Common packages that should be available on all systems
   home.packages = with pkgs; [
     autojump

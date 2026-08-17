@@ -77,19 +77,6 @@ in
     '';
   };
 
-  programs.gnupg.agent = {
-    enable = true;
-    enableSSHSupport = true;
-    enableBrowserSocket = true;
-    pinentryPackage = null;
-    settings.pinentry-program = lib.getExe (pkgs.writeShellScriptBin "pinentry-auto" ''
-      if [ "$PINENTRY_USER_DATA" = "curses" ]; then
-        exec ${pkgs.pinentry-curses}/bin/pinentry-curses "$@"
-      fi
-      exec ${pkgs.pinentry-gnome3}/bin/pinentry-gnome3 "$@"
-    '');
-  };
-
   services.dbus.packages = [ pkgs.gcr ];
 
   environment.interactiveShellInit = ''

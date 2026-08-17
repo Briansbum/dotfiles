@@ -77,6 +77,13 @@
     "rofi".source = ../../config/rofi;
   };
 
+  services.gpg-agent.pinentry.package = pkgs.writeShellScriptBin "pinentry-auto" ''
+    if [ "$PINENTRY_USER_DATA" = "curses" ]; then
+      exec ${pkgs.pinentry-curses}/bin/pinentry-curses "$@"
+    fi
+    exec ${pkgs.pinentry-gnome3}/bin/pinentry-gnome3 "$@"
+  '';
+
   # NixVim configuration
   programs.nixvim = {
     enable = true;

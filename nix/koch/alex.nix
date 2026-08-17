@@ -33,6 +33,9 @@
     "yazi".source = ../../config/yazi;
   };
 
+  # No pcscd on koch, so scdaemon keeps its built-in CCID driver
+  programs.gpg.scdaemonSettings.disable-ccid = false;
+
   programs.git = {
     enable = true;
     settings = {

@@ -90,13 +90,6 @@
     localNetworkGameTransfers.openFirewall = true; # Open ports in the firewall for Steam Local Network Game Transfers
   };
 
-  programs.gnupg.agent = {
-    enable = true;
-    enableSSHSupport = true;
-    enableBrowserSocket = true;
-    pinentryPackage = pkgs.pinentry-gtk2;
-  };
-
   nixpkgs.config.allowUnfree = true;
 
   # Intel integrated graphics

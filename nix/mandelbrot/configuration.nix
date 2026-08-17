@@ -45,6 +45,8 @@ in
   services.avahi.enable = true;
   services.playerctld.enable = true;
   services.resolved.enable = true;
+  services.pcscd.enable = true;
+  services.udev.packages = [ pkgs.yubikey-personalization ];
 
   services.mullvad-vpn = {
     enable = true;
@@ -274,6 +276,7 @@ in
     playerctl
     brightnessctl
     btop-cuda
+    yubikey-manager
   ];
 
   hardware.bluetooth = {

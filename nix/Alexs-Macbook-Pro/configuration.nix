@@ -93,6 +93,7 @@
     wireguard-tools
     aws-vault
     _1password-cli
+    yubikey-manager
     
     # Terminal & Shell
     tmux

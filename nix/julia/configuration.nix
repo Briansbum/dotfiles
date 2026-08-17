@@ -34,6 +34,8 @@
   services.resolved.enable = true;
   services.thermald.enable = true;
   services.power-profiles-daemon.enable = true;
+  services.pcscd.enable = true;
+  services.udev.packages = [ pkgs.yubikey-personalization ];
 
   services.logind.settings.Login = {
     HandleLidSwitch = "suspend-then-hibernate";
@@ -195,6 +197,7 @@
     libthai
     pango
     harfbuzz
+    yubikey-manager
   ];
 
   hardware.bluetooth = {

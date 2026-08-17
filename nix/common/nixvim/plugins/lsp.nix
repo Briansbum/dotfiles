@@ -51,6 +51,37 @@
             "go.work"
             ".git"
           ];
+          settings.gopls = {
+            gofumpt = true;
+            staticcheck = true;
+            completeUnimported = true;
+            hints = {
+              assignVariableTypes = true;
+              compositeLiteralFields = true;
+              compositeLiteralTypes = true;
+              constantValues = true;
+              functionTypeParameters = true;
+              parameterNames = true;
+              rangeVariableTypes = true;
+            };
+            analyses = {
+              nilness = true;
+              unusedparams = true;
+              unusedwrite = true;
+              unreachable = true;
+              unusedresult = true;
+              useany = true;
+              shadow = true;
+            };
+          };
+        };
+        golangci_lint_ls = {
+          enable = true;
+          filetypes = [
+            "go"
+            "gomod"
+            "gowork"
+          ];
         };
         helm_ls = {
           enable = true;
@@ -181,6 +212,8 @@
     docker-language-server
     dot-language-server
     gopls
+    golangci-lint
+    golangci-lint-langserver
     helm-ls
     lua-language-server
     python3Packages.python-lsp-server
@@ -227,6 +260,36 @@
         local opts = { buffer = event.buf, remap = false }
         vim.keymap.set("i", "<C-h>", function() vim.lsp.buf.signature_help() end, opts)
       end
+    })
+
+    -- Go: goimports + gofumpt on save
+    vim.api.nvim_create_autocmd('BufWritePre', {
+      pattern = '*.go',
+      callback = function()
+        vim.lsp.buf.code_action({ context = { only = { 'source.organizeImports' } }, apply = true })
+        vim.lsp.buf.format({ async = false })
+      end,
+    })
+
+    -- Go: run golangci-lint into the quickfix list
+    vim.api.nvim_create_autocmd('FileType', {
+      pattern = 'go',
+      callback = function(event)
+        vim.keymap.set('n', '<leader>ll', function()
+          local root = vim.fs.root(event.buf, { 'go.work', 'go.mod', '.git' }) or vim.fn.getcwd()
+          local lines = vim.fn.systemlist('cd ' .. vim.fn.shellescape(root) .. ' && golangci-lint run ./...')
+          if vim.v.shell_error > 1 then -- >1 means golangci-lint itself errored
+            vim.notify('golangci-lint failed:\n' .. table.concat(lines, '\n'), vim.log.levels.ERROR)
+            return
+          end
+          vim.fn.setqflist({}, ' ', { title = 'golangci-lint', lines = lines, efm = '%f:%l:%c: %m,%f:%l: %m' })
+          if #vim.fn.getqflist() == 0 then
+            vim.notify('golangci-lint: no issues', vim.log.levels.INFO)
+          else
+            vim.cmd.copen()
+          end
+        end, { buffer = event.buf, desc = 'Run golangci-lint' })
+      end,
     })
   '';
 }

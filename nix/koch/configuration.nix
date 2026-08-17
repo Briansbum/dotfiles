@@ -39,9 +39,13 @@
     isNormalUser = true;
     description = "Alex";
     extraGroups = [ "wheel" ];
-    openssh.authorizedKeys.keys = [
-      "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBIfEsNDo0qIws3jPsuD9YNlqS+a4/T9Zl5p8TmjGv7UVnYaiDBNU/MSedshMGo9OsRW9Eu7NFVz7b+w3dmj+XNY= alex@AlexF.local"
-    ];
+    openssh = {
+      authorizedKeys.keyFiles = [ ../common/alex-yubikey.pub ];
+      settings = {
+        PasswordAuthentication = false;
+        KbdInteractiveAuthentication = false;
+      };
+    };
   };
 
   # ---------------------------------------------------------------------------

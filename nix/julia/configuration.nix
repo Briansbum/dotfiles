@@ -31,13 +31,6 @@
       "networkmanager"
       "video"
     ];
-    openssh = {
-      authorizedKeys.keyFiles = [ ../common/alex-yubikey.pub ];
-      settings = {
-        PasswordAuthentication = false;
-        KbdInteractiveAuthentication = false;
-      };
-    };
   };
 
   users.users.cass = {

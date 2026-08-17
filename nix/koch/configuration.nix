@@ -41,10 +41,6 @@
     extraGroups = [ "wheel" ];
     openssh = {
       authorizedKeys.keyFiles = [ ../common/alex-yubikey.pub ];
-      settings = {
-        PasswordAuthentication = false;
-        KbdInteractiveAuthentication = false;
-      };
     };
   };
 
@@ -72,6 +68,7 @@
     settings = {
       PasswordAuthentication = false;
       PermitRootLogin = "no";
+      KbdInteractiveAuthentication = false;
     };
   };
 

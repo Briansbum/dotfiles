@@ -58,7 +58,6 @@ in
 
     # macOS-specific configs
     "ghostty/config".source = ../../config/ghostty/macos-config;
-    "zed/settings.json".source = ../../config/zed/settings.json;
     "gh/config.yml".source = ../../config/gh/config.yml;
     "gopass/config".source = ../../config/gopass/config;
 

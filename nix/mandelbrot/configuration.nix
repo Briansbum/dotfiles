@@ -52,11 +52,6 @@ in
     ];
     openssh = {
       authorizedKeys.keyFiles = [ ../common/alex-yubikey.pub ];
-      settings = {
-        PasswordAuthentication = false;
-        KbdInteractiveAuthentication = false;
-        PermitRootLogin = "no";
-      };
     };
   };
 

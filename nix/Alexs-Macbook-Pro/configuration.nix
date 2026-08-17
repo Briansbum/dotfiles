@@ -152,21 +152,21 @@
 
     # Taps for packages not in nixpkgs
     taps = [
-      "andreybleme/lazycontainer"
-      "artginzburg/tap"
-      "azure/kubelogin"
-      "bufbuild/buf"
-      "charmbracelet/tap"
-      "clojure/tools"
-      "danvergara/tools"
+      { name = "andreybleme/lazycontainer"; trusted = true; }
+      { name = "artginzburg/tap"; trusted = true; }
+      { name = "azure/kubelogin"; trusted = true; }
+      { name = "bufbuild/buf"; trusted = true; }
+      { name = "charmbracelet/tap"; trusted = true; }
+      { name = "clojure/tools"; trusted = true; }
+      { name = "danvergara/tools"; trusted = true; }
       "homebrew/services"
-      "omissis/go-jsonschema"
-      "ory/tap"
-      "osx-cross/arm"
-      "osx-cross/avr"
-      "qmk/qmk"
-      "turbot/tap"
-      "atlassian/acli"
+      { name = "omissis/go-jsonschema"; trusted = true; }
+      { name = "ory/tap"; trusted = true; }
+      { name = "osx-cross/arm"; trusted = true; }
+      { name = "osx-cross/avr"; trusted = true; }
+      { name = "qmk/qmk"; trusted = true; }
+      { name = "turbot/tap"; trusted = true; }
+      { name = "atlassian/acli"; trusted = true; }
     ];
 
     # Brew formulae (CLI tools not in nixpkgs or better via brew)

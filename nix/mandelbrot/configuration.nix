@@ -94,6 +94,9 @@ in
         koch = {
           id = "JTUB74R-CWOPZOL-3BHTAFF-ZLPXWPX-SUKYALW-C76M4WD-56FMC5A-PKR5LQ6";
         };
+        pixel10 = {
+          id = "KIRCSTT-YWT37YF-BNIFKK2-LRE2Q4V-LRNYPL6-5WVYV6U-PB2XBYN-5CNQCA4";
+        };
       };
       folders = {
         "synchspace" = {

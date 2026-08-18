@@ -298,6 +298,9 @@
         julia = {
           id = "PCDES7Z-7DYANWV-RGMXFMP-EVAV4MF-5DB4I3M-HEEPXAA-DTRUML4-MFPSBAP";
         };
+        pixel10 = {
+          id = "KIRCSTT-YWT37YF-BNIFKK2-LRE2Q4V-LRNYPL6-5WVYV6U-PB2XBYN-5CNQCA4";
+        };
       };
       folders = {
         "synchspace" = {

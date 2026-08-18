@@ -293,6 +293,7 @@
       folders = {
         "synchspace" = {
           devices = [ "doccla-mac" "mandelbrot" "julia" ];
+          path = "/data/synchspace";
           versioning = {
               type = "simple";
               params.keep = "10";

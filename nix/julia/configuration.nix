@@ -98,6 +98,7 @@
       folders = {
         "synchspace" = {
           devices = [ "koch" ];
+          path = "/data/synchspace";
           versioning = {
               type = "simple";
               params.keep = "10";

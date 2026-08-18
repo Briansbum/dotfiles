@@ -93,6 +93,7 @@ in
       folders = {
         "synchspace" = {
           devices = [ "koch" ];
+          path = "~/synchspace";
           versioning = {
               type = "simple";
               params.keep = "10";

@@ -104,7 +104,7 @@
       folders = {
         "synchspace" = {
           devices = [ "koch" ];
-          path = "/data/synchspace";
+          path = "~/synchspace";
           versioning = {
               type = "simple";
               params.keep = "10";

@@ -371,8 +371,11 @@
   # Immich's subtree is pinned separately so it stays under the immich service user.
   systemd.tmpfiles.rules = [
     # /data must be root-owned or tmpfiles refuses to descend ("unsafe path transition")
-    "d /data               0755 root   root   -"
-    "d /data/photos        0755 alex   users  -"
+    "d /data               0755 root   root      -"
+    # Syncthing runs as alex:syncthing; keep the folder and marker writable.
+    "d /data/synchspace    2775 alex   syncthing -"
+    "d /data/synchspace/.stfolder 2775 alex syncthing -"
+    "d /data/photos        0755 alex   users     -"
     "d /data/photos/immich 0750 immich immich -"
     "Z /data/photos/immich 0750 immich immich -"
     "d /data/grocy/data    0750 grocy  nginx  -"

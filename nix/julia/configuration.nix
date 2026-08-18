@@ -21,6 +21,10 @@
 
   security.sudo.enable = true;
 
+  # sops values show up at /run/secrets/
+  sops.defaultSopsFile = ./secrets.yaml;
+  sops.age.keyFile = "/var/lib/sops-nix/keys.txt";
+
   users.users.alex = {
     uid = 1000;
     isNormalUser = true;

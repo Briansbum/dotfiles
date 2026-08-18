@@ -1,11 +1,17 @@
 keys:
   - &koch age13ajx5lt624w5sfht2tr064fyfnk4ula3x4xn67qgvhszlsgtrgvq0zr9x0
   - &mandelbrot age1adp5qhmnahsqvezathn7vg3n6e3ts4lwz6syv7uvc64kzg46h5gqp95fkn
+  - &julia age1mzdve8jxlgvjl49xaxgxv7f49z9yn4v3kpnf6prwr2wwfvls0g0szn2uc8
   # Generate with: age-keygen -o ~/Library/Application\ Support/sops/age/keys.txt
   # Then paste the public key here and re-encrypt secrets.yaml
   - &alexs-macbook-pro age14at6vl4jmsfv5h09y7a0sdm843aa6v4fwq3yx5x4x8vm0l2h2awqg4te95
   - &yubikey-alex age1yubikey1qt6rmrn7qgupgkkmw974xtnkpfsk7v5rmwfhuhgh2c9mm3efy95csgfhdhx
 creation_rules:
+  - path_regex: nix/julia/secrets\.yaml$
+    key_groups:
+      - age:
+          - *julia
+          - *yubikey-alex
   - path_regex: nix/koch/secrets\.yaml$
     key_groups:
       - age:

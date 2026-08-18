@@ -87,19 +87,6 @@
   services.resolved.enable = true;
   services.avahi.enable = true;
 
-  services.syncthing = {
-    enable = true;
-    openDefaultPorts = true;
-    folders = {
-      "SynchSpace" = {
-        path = "/data/synchspace";
-        devices = [ 
-          "LI4CXJ6-WCQVB7Y-LZNZJYR-XKT3RYB-W7IDWIJ-JQKGHI4-OLJMCKY-ZLX57QU" # Doccla Mac Device ID
-        ];
-      };
-    };
-  }; 
-
   # ---------------------------------------------------------------------------
   # DNSControl - a oneshot used by services that have names to run dnscontrol
   # ---------------------------------------------------------------------------
@@ -294,15 +281,18 @@
       localAnnounceEnabled = true;
       devices = {
         doccla-mac = {
-          id = "LI4CXJ6-WCQVB7Y-LZNZJYR-XKT3RYB-W7IDWIJ-JQKGHI4-OLJMCKY-ZLX57QU" 
+          id = "LI4CXJ6-WCQVB7Y-LZNZJYR-XKT3RYB-W7IDWIJ-JQKGHI4-OLJMCKY-ZLX57QU"; 
         };
         mandelbrot = {
-          id = "LIXMZLQ-F5CQCIQ-JN6OLEZ-QUDKAQC-ZAHAPRY-Y76AREC-A7OGEUT-VSGPKQL"
+          id = "LIXMZLQ-F5CQCIQ-JN6OLEZ-QUDKAQC-ZAHAPRY-Y76AREC-A7OGEUT-VSGPKQL";
+        };
+        julia = {
+          id = "PCDES7Z-7DYANWV-RGMXFMP-EVAV4MF-5DB4I3M-HEEPXAA-DTRUML4-MFPSBAP";
         };
       };
       folders = {
         "synchspace" = {
-          devices = [ "doccla-mac" "mandelbrot" ];
+          devices = [ "doccla-mac" "mandelbrot" "julia" ];
           versioning = {
               type = "simple";
               params.keep = "10";

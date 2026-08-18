@@ -86,16 +86,13 @@ in
       openDefaultPorts = true;
       localAnnounceEnabled = true;
       devices = {
-        doccla-mac = {
-          id = "LI4CXJ6-WCQVB7Y-LZNZJYR-XKT3RYB-W7IDWIJ-JQKGHI4-OLJMCKY-ZLX57QU" 
-        };
         koch = {
-          id = "JTUB74R-CWOPZOL-3BHTAFF-ZLPXWPX-SUKYALW-C76M4WD-56FMC5A-PKR5LQ6"
+          id = "JTUB74R-CWOPZOL-3BHTAFF-ZLPXWPX-SUKYALW-C76M4WD-56FMC5A-PKR5LQ6";
         };
       };
       folders = {
         "synchspace" = {
-          devices = [ "doccla-mac" "koch" ];
+          devices = [ "koch" ];
           versioning = {
               type = "simple";
               params.keep = "10";

@@ -79,6 +79,35 @@
     gui.enable = true;
   };
 
+  sops.secrets."syncthing_cert" = { };
+  sops.secrets."syncthing_key" = { };
+
+  services.syncthing = {
+    enable = true;
+    cert = config.sops.secrets."syncthing_cert".path;
+    key = config.sops.secrets."syncthing_key".path;
+    dataDir = "/data";
+    settings = {
+      openDefaultPorts = true;
+      localAnnounceEnabled = true;
+      devices = {
+        koch = {
+          id = "JTUB74R-CWOPZOL-3BHTAFF-ZLPXWPX-SUKYALW-C76M4WD-56FMC5A-PKR5LQ6";
+        };
+      };
+      folders = {
+        "synchspace" = {
+          devices = [ "koch" ];
+          versioning = {
+              type = "simple";
+              params.keep = "10";
+          };
+        };
+      };
+    };
+  };
+
+
   # Fingerprint reader (Framework 13 Goodix MOC sensor)
   services.fprintd.enable = true;
 

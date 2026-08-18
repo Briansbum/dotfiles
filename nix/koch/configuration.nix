@@ -38,7 +38,10 @@
     uid = 1000;
     isNormalUser = true;
     description = "Alex";
-    extraGroups = [ "wheel" ];
+    extraGroups = [
+      "wheel"
+      "syncthing"
+    ];
     openssh = {
       authorizedKeys.keyFiles = [ ../common/alex-yubikey.pub ];
     };

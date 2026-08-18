@@ -81,8 +81,12 @@
     gui.enable = true;
   };
 
-  sops.secrets."syncthing_cert" = { };
-  sops.secrets."syncthing_key" = { };
+  sops.secrets."syncthing_cert" = {
+    owner = "syncthing";
+  };
+  sops.secrets."syncthing_key" = {
+    owner = "syncthing";
+  };
 
   services.syncthing = {
     enable = true;

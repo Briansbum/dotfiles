@@ -53,6 +53,7 @@ in
       "wheel"
       "plugdev"
       "dialout"
+      "syncthing"
     ];
     openssh = {
       authorizedKeys.keyFiles = [ ../common/alex-yubikey.pub ];

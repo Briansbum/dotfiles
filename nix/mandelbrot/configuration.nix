@@ -70,6 +70,19 @@ in
     gui.enable = true;
   };
 
+  services.syncthing = {
+    enable = true;
+    openDefaultPorts = true;
+    folders = {
+      "SynchSpace" = {
+        path = "";
+        devices = [ 
+          "LI4CXJ6-WCQVB7Y-LZNZJYR-XKT3RYB-W7IDWIJ-JQKGHI4-OLJMCKY-ZLX57QU" # Doccla Mac Device ID
+        ];
+      };
+    };
+  }; 
+
   services.getty = {
     autologinUser = "alex";
     autologinOnce = true;

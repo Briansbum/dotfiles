@@ -210,6 +210,11 @@
     enable = true;
   };
 
+  services.syncthing = {
+    enable = true;
+    openDefaultPorts = true;
+  }; 
+
   # Steampipe service (local Postgres endpoint for cloud queries)
   launchd.user.agents.steampipe = {
     serviceConfig = {

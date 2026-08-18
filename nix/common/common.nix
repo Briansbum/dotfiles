@@ -11,6 +11,7 @@
     flyctl
     kubeswitch
     prismlauncher
+    age-plugin-yubikey
   ];
 
   # Shared program configurations

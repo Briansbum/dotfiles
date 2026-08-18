@@ -34,6 +34,7 @@
       "plugdev"
       "networkmanager"
       "video"
+      "syncthing"
     ];
   };
 
@@ -44,6 +45,7 @@
       "wheel"
       "networkmanager"
       "video"
+      "syncthing"
     ];
   };
 

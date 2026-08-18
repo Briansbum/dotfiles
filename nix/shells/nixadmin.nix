@@ -20,11 +20,11 @@ let
     else
       "/var/lib/sops-nix/keys.txt";
 
-  nixDir = ../nix;
+  nixDir = ../.;
 
   hostsWithSecrets = builtins.attrNames (
-    builtins.filterAttrs (
-      name: type: type == "directory" && builtins.pathExists "${nixDir}/${name}/secrets.yaml"
+    pkgs.lib.filterAttrs (
+      name: type: type == "directory" && builtins.pathExists (nixDir + "/${name}/secrets.yaml")
     ) (builtins.readDir nixDir)
   );
 

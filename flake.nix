@@ -77,6 +77,7 @@
             ./nix/modules/tailscale-serve.nix
             ./nix/mandelbrot/configuration.nix
             ./nix/mandelbrot/hardware.nix
+            sops-nix.nixosModules.sops
             home-manager.nixosModules.home-manager
             {
               home-manager.useGlobalPkgs = true;
@@ -93,6 +94,7 @@
           modules = [
             ./nix/julia/configuration.nix
             ./nix/julia/hardware.nix
+            sops-nix.nixosModules.sops
             home-manager.nixosModules.home-manager
             {
               home-manager.useGlobalPkgs = true;
@@ -165,6 +167,10 @@
       devShells.aarch64-darwin.nixadmin = import ./nix/shells/nixadmin.nix {
         inherit nixpkgs;
         system = "aarch64-darwin";
+      };
+      devShells.x86_64-linux.nixadmin = import ./nix/shells/nixadmin.nix {
+        inherit nixpkgs;
+        system = "x86_64-linux";
       };
     };
 }

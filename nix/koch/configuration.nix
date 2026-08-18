@@ -273,18 +273,21 @@
 
   sops.secrets."syncthing_cert" = {
     sopsFile = ./syncthing.yaml;
-    owner = "syncthing";
+    owner = "alex";
   };
   sops.secrets."syncthing_key" = {
     sopsFile = ./syncthing.yaml;
-    owner = "syncthing";
+    owner = "alex";
   };
 
   services.syncthing = {
     enable = true;
     cert = config.sops.secrets."syncthing_cert".path;
     key = config.sops.secrets."syncthing_key".path;
-    dataDir = "/data";
+    user = "alex";
+    group = "syncthing";
+    dataDir = config.users.users.alex.home + "/syncthing";
+    configDir = config.users.users.alex.home + "/.config/syncthing";
     settings = {
       openDefaultPorts = true;
       localAnnounceEnabled = true;
@@ -309,6 +312,7 @@
             "doccla-mac"
             "mandelbrot"
             "julia"
+            "pixel10"
           ];
           versioning = {
             type = "simple";
@@ -366,6 +370,8 @@
   # Ensure NFS export dirs are owned by alex so the squashed uid=1000 can r/w.
   # Immich's subtree is pinned separately so it stays under the immich service user.
   systemd.tmpfiles.rules = [
+    # /data must be root-owned or tmpfiles refuses to descend ("unsafe path transition")
+    "d /data               0755 root   root   -"
     "d /data/photos        0755 alex   users  -"
     "d /data/photos/immich 0750 immich immich -"
     "Z /data/photos/immich 0750 immich immich -"

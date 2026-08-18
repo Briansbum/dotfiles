@@ -92,7 +92,7 @@ in
       localAnnounceEnabled = true;
       devices = {
         koch = {
-          id = "JTUB74R-CWOPZOL-3BHTAFF-ZLPXWPX-SUKYALW-C76M4WD-56FMC5A-PKR5LQ6";
+          id = "EWHGTJQ-G23E4XW-SXO3YIQ-5TBIFZH-L4IEKDQ-BWCHVNR-EIS5FZN-H6HUOQA";
         };
         pixel10 = {
           id = "KIRCSTT-YWT37YF-BNIFKK2-LRE2Q4V-LRNYPL6-5WVYV6U-PB2XBYN-5CNQCA4";

@@ -74,6 +74,37 @@ in
     gui.enable = true;
   };
 
+  sops.secrets."syncthing_cert" = { };
+  sops.secrets."syncthing_key" = { };
+
+  services.syncthing = {
+    enable = true;
+    cert = config.sops.secrets."syncthing_cert".path;
+    key = config.sops.secrets."syncthing_key".path;
+    dataDir = "/data";
+    settings = {
+      openDefaultPorts = true;
+      localAnnounceEnabled = true;
+      devices = {
+        doccla-mac = {
+          id = "LI4CXJ6-WCQVB7Y-LZNZJYR-XKT3RYB-W7IDWIJ-JQKGHI4-OLJMCKY-ZLX57QU" 
+        };
+        koch = {
+          id = "JTUB74R-CWOPZOL-3BHTAFF-ZLPXWPX-SUKYALW-C76M4WD-56FMC5A-PKR5LQ6"
+        };
+      };
+      folders = {
+        "synchspace" = {
+          devices = [ "doccla-mac" "koch" ];
+          versioning = {
+              type = "simple";
+              params.keep = "10";
+          };
+        };
+      };
+    };
+  };
+
   services.getty = {
     autologinUser = "alex";
     autologinOnce = true;

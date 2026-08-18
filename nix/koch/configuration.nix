@@ -87,6 +87,19 @@
   services.resolved.enable = true;
   services.avahi.enable = true;
 
+  services.syncthing = {
+    enable = true;
+    openDefaultPorts = true;
+    folders = {
+      "SynchSpace" = {
+        path = "/data/synchspace";
+        devices = [ 
+          "LI4CXJ6-WCQVB7Y-LZNZJYR-XKT3RYB-W7IDWIJ-JQKGHI4-OLJMCKY-ZLX57QU" # Doccla Mac Device ID
+        ];
+      };
+    };
+  }; 
+
   # ---------------------------------------------------------------------------
   # DNSControl - a oneshot used by services that have names to run dnscontrol
   # ---------------------------------------------------------------------------
@@ -263,6 +276,41 @@
   services.postgresql.authentication = lib.mkAfter ''
     local immich alloy peer
   '';
+
+  # ---------------------------------------------------------------------------
+  # Syncthing - easy file sync
+  # ---------------------------------------------------------------------------
+
+  sops.secrets."syncthing_cert" = { };
+  sops.secrets."syncthing_key" = { };
+
+  services.syncthing = {
+    enable = true;
+    cert = config.sops.secrets."syncthing_cert".path;
+    key = config.sops.secrets."syncthing_key".path;
+    dataDir = "/data";
+    settings = {
+      openDefaultPorts = true;
+      localAnnounceEnabled = true;
+      devices = {
+        doccla-mac = {
+          id = "LI4CXJ6-WCQVB7Y-LZNZJYR-XKT3RYB-W7IDWIJ-JQKGHI4-OLJMCKY-ZLX57QU" 
+        };
+        mandelbrot = {
+          id = "LIXMZLQ-F5CQCIQ-JN6OLEZ-QUDKAQC-ZAHAPRY-Y76AREC-A7OGEUT-VSGPKQL"
+        };
+      };
+      folders = {
+        "synchspace" = {
+          devices = [ "doccla-mac" "mandelbrot" ];
+          versioning = {
+              type = "simple";
+              params.keep = "10";
+          };
+        };
+      };
+    };
+  };
 
   # ---------------------------------------------------------------------------
   # Grocy — household management

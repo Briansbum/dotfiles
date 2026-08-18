@@ -82,17 +82,19 @@
   };
 
   sops.secrets."syncthing_cert" = {
-    owner = "syncthing";
+    owner = "alex";
   };
   sops.secrets."syncthing_key" = {
-    owner = "syncthing";
+    owner = "alex";
   };
 
   services.syncthing = {
     enable = true;
     cert = config.sops.secrets."syncthing_cert".path;
     key = config.sops.secrets."syncthing_key".path;
-    dataDir = "/data";
+    dataDir = "/home/alex";
+    user = "alex";
+    group = "users";
     settings = {
       openDefaultPorts = true;
       localAnnounceEnabled = true;

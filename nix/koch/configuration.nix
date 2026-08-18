@@ -268,8 +268,14 @@
   # Syncthing - easy file sync
   # ---------------------------------------------------------------------------
 
-  sops.secrets."syncthing_cert" = { };
-  sops.secrets."syncthing_key" = { };
+  sops.secrets."syncthing_cert" = {
+    sopsFile = ./syncthing.yaml;
+    owner = "syncthing";
+  };
+  sops.secrets."syncthing_key" = {
+    sopsFile = ./syncthing.yaml;
+    owner = "syncthing";
+  };
 
   services.syncthing = {
     enable = true;
@@ -281,7 +287,7 @@
       localAnnounceEnabled = true;
       devices = {
         doccla-mac = {
-          id = "LI4CXJ6-WCQVB7Y-LZNZJYR-XKT3RYB-W7IDWIJ-JQKGHI4-OLJMCKY-ZLX57QU"; 
+          id = "LI4CXJ6-WCQVB7Y-LZNZJYR-XKT3RYB-W7IDWIJ-JQKGHI4-OLJMCKY-ZLX57QU";
         };
         mandelbrot = {
           id = "LIXMZLQ-F5CQCIQ-JN6OLEZ-QUDKAQC-ZAHAPRY-Y76AREC-A7OGEUT-VSGPKQL";
@@ -292,11 +298,15 @@
       };
       folders = {
         "synchspace" = {
-          devices = [ "doccla-mac" "mandelbrot" "julia" ];
           path = "/data/synchspace";
+          devices = [
+            "doccla-mac"
+            "mandelbrot"
+            "julia"
+          ];
           versioning = {
-              type = "simple";
-              params.keep = "10";
+            type = "simple";
+            params.keep = "10";
           };
         };
       };

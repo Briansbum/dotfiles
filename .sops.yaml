@@ -17,6 +17,11 @@ creation_rules:
       - age:
           - *koch
           - *yubikey-alex
+  - path_regex: nix/koch/syncthing\.yaml$
+    key_groups:
+      - age:
+          - *koch
+          - *yubikey-alex
   - path_regex: nix/mandelbrot/secrets\.yaml$
     key_groups:
       - age:

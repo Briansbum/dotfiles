@@ -74,8 +74,12 @@ in
     gui.enable = true;
   };
 
-  sops.secrets."syncthing_cert" = { };
-  sops.secrets."syncthing_key" = { };
+  sops.secrets."syncthing_cert" = {
+    owner = "syncthing";
+  };
+  sops.secrets."syncthing_key" = {
+    owner = "syncthing";
+  };
 
   services.syncthing = {
     enable = true;
@@ -87,16 +91,16 @@ in
       localAnnounceEnabled = true;
       devices = {
         koch = {
-          id = "JTUB74R-CWOPZOL-3BHTAFF-ZLPXWPX-SUKYALW-C76M4WD-56FMC5A-PKR5LQ6";
+          id = "EWHGTJQ-G23E4XW-SXO3YIQ-5TBIFZH-L4IEKDQ-BWCHVNR-EIS5FZN-H6HUOQA";
         };
       };
       folders = {
         "synchspace" = {
-          devices = [ "koch" ];
           path = "~/synchspace";
+          devices = [ "koch" ];
           versioning = {
-              type = "simple";
-              params.keep = "10";
+            type = "simple";
+            params.keep = "10";
           };
         };
       };

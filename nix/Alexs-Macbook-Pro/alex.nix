@@ -17,6 +17,7 @@ in
   imports = [
     ../common/common.nix
     inputs.nixvim.homeModules.nixvim
+    inputs.sops-nix.homeManagerModules.sops
   ];
 
   # User info
@@ -31,6 +32,35 @@ in
 
   # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;
+
+  # sops values show up under $DARWIN_USER_TEMP_DIR/secrets.d/
+  sops.defaultSopsFile = ./secrets.yaml;
+  sops.age.keyFile = "/Users/alex/Library/Application Support/sops/age/keys.txt";
+  sops.secrets."syncthing_cert" = { };
+  sops.secrets."syncthing_key" = { };
+
+  services.syncthing = {
+    enable = true;
+    cert = config.sops.secrets."syncthing_cert".path;
+    key = config.sops.secrets."syncthing_key".path;
+    settings = {
+      devices = {
+        koch = {
+          id = "EWHGTJQ-G23E4XW-SXO3YIQ-5TBIFZH-L4IEKDQ-BWCHVNR-EIS5FZN-H6HUOQA";
+        };
+      };
+      folders = {
+        "synchspace" = {
+          path = "~/synchspace";
+          devices = [ "koch" ];
+          versioning = {
+            type = "simple";
+            params.keep = "10";
+          };
+        };
+      };
+    };
+  };
 
   # macOS-specific packages that aren't in system config
   home.packages = [

@@ -92,7 +92,7 @@ in
       localAnnounceEnabled = true;
       devices = {
         koch = {
-          id = "EWHGTJQ-G23E4XW-SXO3YIQ-5TBIFZH-L4IEKDQ-BWCHVNR-EIS5FZN-H6HUOQA";
+          id = "JTUB74R-CWOPZOL-3BHTAFF-ZLPXWPX-SUKYALW-C76M4WD-56FMC5A-PKR5LQ6";
         };
       };
       folders = {

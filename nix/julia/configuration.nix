@@ -23,7 +23,7 @@
 
   # sops values show up at /run/secrets/
   sops.defaultSopsFile = ./secrets.yaml;
-  sops.age.keyFile = "/var/lib/sops-nix/keys.txt";
+  sops.age.keyFile = config.users.users.alex.home + "/.config/sops/age/keys.txt";
 
   users.users.alex = {
     uid = 1000;

@@ -16,6 +16,12 @@ paths = ["journal"]
 filename = "{{format-date now}}"
 template = "daily.md"
 
+[group.music]
+paths = ["music"]
+
+[group.music.note]
+template = "music.md"
+
 [format.markdown]
 link-format = "wiki"
 hashtags = true
@@ -31,3 +37,4 @@ dead-link = "error"
 daily = 'zk new --no-input "$ZK_NOTEBOOK_DIR/journal"'
 edit = 'zk edit --interactive'
 recent = 'zk list --sort modified- --limit 15'
+music = 'zk new "$ZK_NOTEBOOK_DIR/music" "$@"'

@@ -12,6 +12,7 @@
     kubeswitch
     prismlauncher
     age-plugin-yubikey
+    zk
   ];
 
   # Shared program configurations
@@ -397,6 +398,8 @@
 
   xdg.configFile = {
     "xdg-terminals.list".text = "com.mitchellh.ghostty.desktop\n";
+    "zk/config.toml".source = ../../config/zk/config.toml;
+    "zk/templates".source = ../../config/zk/templates;
   };
 
   home.sessionVariables = {

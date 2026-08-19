@@ -7,5 +7,6 @@
     ./ui.nix
     ./editor.nix
     ./git.nix
+    ./zk.nix
   ];
 }

@@ -1,0 +1,33 @@
+[notebook]
+dir = "~/notes"
+
+[note]
+filename = "{{id}}-{{slug title}}"
+extension = "md"
+template = "default.md"
+id-charset = "alphanum"
+id-length = 4
+id-case = "lower"
+
+[group.journal]
+paths = ["journal"]
+
+[group.journal.note]
+filename = "{{format-date now}}"
+template = "daily.md"
+
+[format.markdown]
+link-format = "wiki"
+hashtags = true
+
+[tool]
+editor = "nvim"
+
+[lsp.diagnostics]
+wiki-title = "hint"
+dead-link = "error"
+
+[alias]
+daily = 'zk new --no-input "$ZK_NOTEBOOK_DIR/journal"'
+edit = 'zk edit --interactive'
+recent = 'zk list --sort modified- --limit 15'

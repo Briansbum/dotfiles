@@ -409,5 +409,6 @@
   home.sessionVariables = {
     EDITOR = "nvim";
     VISUAL = "nvim";
+    ZK_NOTEBOOK_DIR = "${config.home.homeDirectory}/notes";
   };
 }

@@ -32,6 +32,8 @@
     ripgrep
   ];
 
+  home.file."notes".source = config.lib.file.mkOutOfStoreSymlink "/data/synchspace/notes";
+
   xdg.configFile = {
     "fish/themes/cyberdream.theme".source = ../../config/fish/themes/cyberdream.theme;
     "starship.toml".source = ../../config/starship.toml;

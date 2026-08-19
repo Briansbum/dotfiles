@@ -1,4 +1,4 @@
-{ pkgs, config, ... }:
+{ pkgs, config, lib, ... }:
 
 {
   imports = [
@@ -158,8 +158,8 @@
         };
 
         notes = {
-          description = "alias notes=nvim ~/notes";
-          body = "nvim ~/notes $argv";
+          description = "open zk notebook via interactive edit picker";
+          body = "zk edit --interactive $argv";
         };
 
         # ============ Navigation & Directory Management ============
@@ -395,6 +395,10 @@
       };
     };
   };
+
+  home.file."notes".source = lib.mkDefault (
+    config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/synchspace/notes"
+  );
 
   xdg.configFile = {
     "xdg-terminals.list".text = "com.mitchellh.ghostty.desktop\n";

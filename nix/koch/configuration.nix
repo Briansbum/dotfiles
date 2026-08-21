@@ -231,46 +231,24 @@
   };
 
   # ---------------------------------------------------------------------------
-  # Immich — photo management
+  # Immich, Grocy, Chorcy and Syncthing now run as rootless qemu VMs —
+  # see nix/koch/vms/. Traefik still fronts them on localhost:<port>.
+  # Host uid/gid pins kept so 9p shares line up with guest uids.
   # ---------------------------------------------------------------------------
 
   users.users.immich = {
     uid = 996;
+    group = "immich";
   };
   users.groups.immich = {
     gid = 997;
   };
+  # Guest-side uid pins for grocy; host only needs the group so alex can
+  # reach /data/grocy through the VM's 9p share.
+  users.groups.grocy.gid = lib.mkForce 310;
 
-  services.immich = {
-    enable = true;
-    port = 2283;
-    openFirewall = false; # Traefik fronts this
-    mediaLocation = "/data/photos/immich";
-    # machine-learning has known NixOS issues — if it fails, set enable = false
-    # and use the server without ML, or run ML remotely from mandelbrot
-    machine-learning.enable = true;
-  };
-
-  # Bind-mount external photo directories into Immich's namespace
-  systemd.services.immich-server.serviceConfig = {
-    BindReadOnlyPaths = [
-      "/data/photos/google"
-      "/data/photos/Export"
-      "/data/photos/Ingest"
-      "/data/photos/sync"
-    ];
-    PrivateUsers = lib.mkForce false;
-  };
-
-  # Allow Alloy to read Immich's PostgreSQL for metrics
-  services.postgresql.authentication = lib.mkAfter ''
-    local immich alloy peer
-  '';
-
-  # ---------------------------------------------------------------------------
-  # Syncthing - easy file sync
-  # ---------------------------------------------------------------------------
-
+  # Syncthing identity secrets: decrypted here, symlinked by vms/runner.nix
+  # into /var/lib/koch-vm/syncthing/ for the syncthing VM.
   sops.secrets."syncthing_cert" = {
     sopsFile = ./syncthing.yaml;
     owner = "alex";
@@ -280,79 +258,7 @@
     owner = "alex";
   };
 
-  services.syncthing = {
-    enable = true;
-    cert = config.sops.secrets."syncthing_cert".path;
-    key = config.sops.secrets."syncthing_key".path;
-    user = "alex";
-    group = "syncthing";
-    dataDir = config.users.users.alex.home + "/syncthing";
-    configDir = config.users.users.alex.home + "/.config/syncthing";
-    settings = {
-      openDefaultPorts = true;
-      localAnnounceEnabled = true;
-      devices = {
-        doccla-mac = {
-          id = "LI4CXJ6-WCQVB7Y-LZNZJYR-XKT3RYB-W7IDWIJ-JQKGHI4-OLJMCKY-ZLX57QU";
-        };
-        mandelbrot = {
-          id = "LIXMZLQ-F5CQCIQ-JN6OLEZ-QUDKAQC-ZAHAPRY-Y76AREC-A7OGEUT-VSGPKQL";
-        };
-        julia = {
-          id = "PCDES7Z-7DYANWV-RGMXFMP-EVAV4MF-5DB4I3M-HEEPXAA-DTRUML4-MFPSBAP";
-        };
-        pixel10 = {
-          id = "KIRCSTT-YWT37YF-BNIFKK2-LRE2Q4V-LRNYPL6-5WVYV6U-PB2XBYN-5CNQCA4";
-        };
-      };
-      folders = {
-        "synchspace" = {
-          path = "/data/synchspace";
-          devices = [
-            "doccla-mac"
-            "mandelbrot"
-            "julia"
-            "pixel10"
-          ];
-          versioning = {
-            type = "simple";
-            params.keep = "10";
-          };
-        };
-      };
-    };
-  };
 
-  # ---------------------------------------------------------------------------
-  # Grocy — household management
-  # ---------------------------------------------------------------------------
-
-  services.grocy = {
-    enable = true;
-    hostName = "grocy.koch.brians.skin";
-    nginx.enableSSL = false;
-    dataDir = "/data/grocy/data";
-    settings = {
-      currency = "GBP";
-      culture = "en_GB";
-      calendar.firstDayOfWeek = 1; # Monday
-    };
-  };
-
-  # Move Grocy's nginx to 8080 so Traefik can own 80/443
-  services.nginx.virtualHosts."grocy.koch.brians.skin".listen = [
-    {
-      addr = "127.0.0.1";
-      port = 2383;
-    }
-  ];
-
-  # ---------------------------------------------------------------------------
-  # Chorcy — chore chart PWA for Grocy (static bundle served by nginx on :2483,
-  # fronted by Traefik at chorcy.koch.brians.skin). Module from the chorcy flake.
-  # ---------------------------------------------------------------------------
-
-  services.chorcy.enable = true;
 
   # ---------------------------------------------------------------------------
   # NFS server
@@ -372,14 +278,7 @@
   systemd.tmpfiles.rules = [
     # /data must be root-owned or tmpfiles refuses to descend ("unsafe path transition")
     "d /data               0755 root   root      -"
-    # Syncthing runs as alex:syncthing; keep the folder and marker writable.
-    "d /data/synchspace    2775 alex   syncthing -"
-    "d /data/synchspace/.stfolder 2775 alex syncthing -"
     "d /data/photos        0755 alex   users     -"
-    "d /data/photos/immich 0750 immich immich -"
-    "Z /data/photos/immich 0750 immich immich -"
-    "d /data/grocy/data    0750 grocy  nginx  -"
-    "Z /data/grocy/data    0750 grocy  nginx  -"
     "d /data/state-store   0755 alex   users  -"
   ];
 
@@ -429,44 +328,9 @@
     };
   };
 
-  systemd.services.immich-db-dump-prep = {
-    description = "immich-db-dump runs as a postgres user and can't make its own backup directory";
-    after = [ "postgresql.service" ];
-    requires = [ "postgresql.service" ];
-    serviceConfig = {
-      Type = "oneshot";
-      ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p /data/photos/immich/db-backup";
-      ExecStart = "${pkgs.coreutils}/bin/chmod -R 762 /data/photos/immich/db-backup";
-    };
-  };
+  # Immich DB dumps moved into the immich VM (postgres runs there now);
+  # the dump lands on /data/photos/immich/db-backup via the shared dir.
 
-  systemd.services.immich-db-dump = {
-    description = "Dump Immich PostgreSQL database for backup";
-    after = [
-      "postgresql.service"
-      "immich-db-dump-prep.service"
-    ];
-    requires = [
-      "postgresql.service"
-      "immich-db-dump-prep.service"
-    ];
-    serviceConfig = {
-      Type = "oneshot";
-      User = "postgres";
-      ExecStart = pkgs.writeShellScript "immich-db-dump" ''
-        ${config.services.postgresql.package}/bin/pg_dump immich | ${pkgs.gzip}/bin/gzip > /data/photos/immich/db-backup/immich-dump.sql.gz
-      '';
-    };
-  };
-
-  systemd.timers.immich-db-dump = {
-    description = "Daily Immich DB dump";
-    wantedBy = [ "timers.target" ];
-    timerConfig = {
-      OnCalendar = "daily";
-      Persistent = true;
-    };
-  };
 
   # ---------------------------------------------------------------------------
   # Grafana Alloy — system metrics + journal logs -> Grafana Cloud

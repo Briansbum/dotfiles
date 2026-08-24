@@ -95,6 +95,25 @@
   ];
 
   # ---------------------------------------------------------------------------
+  # Console
+  # ---------------------------------------------------------------------------
+
+  # The kernel VT caps out at 512 PSF glyphs, so kmscon renders the TTYs from
+  # userspace instead and the Nerd Font glyphs survive
+  services.kmscon = {
+    enable = true;
+    useXkbConfig = true;
+    config = {
+      font-name = "GoMono Nerd Font";
+      font-size = 12;
+      font-engine = "pango";
+      hwaccel = true;
+    };
+  };
+
+  fonts.packages = [ pkgs.nerd-fonts.go-mono ];
+
+  # ---------------------------------------------------------------------------
   # System packages
   # ---------------------------------------------------------------------------
 

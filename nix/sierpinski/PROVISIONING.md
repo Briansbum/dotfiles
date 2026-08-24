@@ -202,8 +202,8 @@ This uses:
   subvolumes
 - `hardware.nix` for `systemd-boot`, the eMMC and AMD kernel modules, zram swap,
   and periodic fstrim
-- `configuration.nix` for SSH, Tailscale, NetworkManager, and the space hygiene
-  settings
+- `configuration.nix` for SSH, Tailscale, NetworkManager, the kmscon console,
+  and the space hygiene settings
 
 ## Post-install
 
@@ -225,6 +225,29 @@ configuration.
 ssh alex@<ip>
 sudo tailscale up
 ```
+
+### Console font
+
+The in-kernel VT renders PSF bitmap fonts and stops at 512 glyphs, which is
+below what a Nerd Font needs. `services.kmscon` replaces the kernel VT with a
+userspace console that renders TrueType through pango, so the Nerd Font glyphs
+appear at the console rather than only over SSH. It draws `GoMono Nerd Font`,
+the same face mandelbrot and julia use. Together kmscon and the font add roughly
+172MB to the closure, both substituted from the cache.
+
+Confirm the font resolves by the name kmscon asks for, and that the console is
+running:
+
+```bash
+fc-list | grep -i gomono
+systemctl status kmscon@tty1
+```
+
+`services.kmscon.enable` takes over every TTY rather than one, so a failure
+leaves no working local console and recovery runs over SSH or through the
+previous generation in the boot menu. If the console comes up black, set
+`hwaccel = false` to drop the amdgpu GL path for software rendering, which two
+Excavator cores handle without trouble for a terminal.
 
 ## Deploying afterwards
 
@@ -268,6 +291,9 @@ bootctl list
 # Networking
 tailscale status
 lspci -nnk | grep -iA3 network
+
+# Console is up on the userspace VT, not the kernel one
+systemctl status kmscon@tty1
 ```
 
 ## Adding secrets later

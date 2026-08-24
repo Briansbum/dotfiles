@@ -45,6 +45,7 @@
     uid = 1000;
     isNormalUser = true;
     description = "Alex";
+    initialHashedPassword = "$y$j9T$Ins5oEP6fb3JGY1tEdQtW.$bnEtJdoGv7t4xDWLfEtL8RllIPAe1TVh/DdqlU72iaA";
     extraGroups = [
       "wheel"
       "networkmanager"

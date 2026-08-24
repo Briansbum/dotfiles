@@ -17,6 +17,10 @@
       "nix-command"
       "flakes"
     ];
+    trusted-users = [
+      "root"
+      "alex"
+    ];
   };
 
   security.sudo.enable = true;

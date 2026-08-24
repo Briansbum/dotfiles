@@ -150,6 +150,34 @@ anything:
 nix run github:nix-community/disko -- --mode disko --dry-run ./nix/sierpinski/disk-config.nix
 ```
 
+## Set alex's password before installing
+
+`nixos-anywhere` sets no root password and leaves root locked, so alex is the
+only account that can reach the console. `users.users.alex` in
+`nix/sierpinski/configuration.nix` must carry a password hash before the install
+runs. Without one no account can log in, and this machine has no ethernet port
+to fall back on.
+
+Generate the hash on a fleet host:
+
+```bash
+nix run nixpkgs#mkpasswd -- -m yescrypt
+```
+
+Then set it on `users.users.alex`:
+
+```nix
+initialHashedPassword = "$y$j9T$...";
+```
+
+`initialHashedPassword` applies when the account is created, and
+`users.mutableUsers` defaults to true, so `passwd` overrides it afterwards and
+the committed hash stops being the live value.
+
+Deploys depend on this as well. `security.sudo` prompts for alex's password, so
+`deploy-sierpinski`, which runs `nixos-rebuild --sudo`, has nothing to
+authenticate against until a password exists.
+
 ## Install
 
 From `koch`, `mandelbrot`, or `julia`, with the repository checked out:
@@ -181,12 +209,15 @@ This uses:
 
 ### First login
 
-`nixos-anywhere` sets no root password, and root SSH login is disabled in the
-configuration. Set alex's password at the console once:
+Log in at the console as alex, using the password whose hash went into
+`configuration.nix` before the install. Change it once:
 
 ```bash
 passwd alex
 ```
+
+Root has no password and stays locked, and root SSH login is disabled in the
+configuration.
 
 ### Join Tailscale
 

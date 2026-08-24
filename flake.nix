@@ -130,6 +130,24 @@
             }
           ];
         };
+        sierpinski = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          specialArgs = { inherit inputs; };
+          modules = [
+            disko.nixosModules.disko
+            ./nix/sierpinski/configuration.nix
+            ./nix/sierpinski/hardware.nix
+            ./nix/sierpinski/disk-config.nix
+            home-manager.nixosModules.home-manager
+            {
+              home-manager.useGlobalPkgs = true;
+              home-manager.useUserPackages = true;
+              home-manager.extraSpecialArgs = { inherit inputs; };
+              home-manager.users.alex = ./nix/sierpinski/alex.nix;
+              home-manager.backupFileExtension = ".before";
+            }
+          ];
+        };
       };
 
       darwinConfigurations = {
@@ -167,10 +185,12 @@
       devShells.aarch64-darwin.nixadmin = import ./nix/shells/nixadmin.nix {
         inherit nixpkgs;
         system = "aarch64-darwin";
+        nixosHosts = builtins.attrNames self.nixosConfigurations;
       };
       devShells.x86_64-linux.nixadmin = import ./nix/shells/nixadmin.nix {
         inherit nixpkgs;
         system = "x86_64-linux";
+        nixosHosts = builtins.attrNames self.nixosConfigurations;
       };
     };
 }

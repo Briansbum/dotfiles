@@ -3,16 +3,28 @@
 # A sops-<host> script is generated for every host that has a
 # secrets.yaml at nix/<host>/secrets.yaml.
 #
+# A deploy-<host> script is generated for every nixosConfiguration, on
+# x86_64-linux only. The closure is built on the invoking machine and pushed to
+# the target, so the origin must already be x86_64-linux — there is no remote
+# building here. Override the SSH destination with TARGET_HOST.
+#
 # Usage in flake.nix:
 #   devShells.aarch64-darwin.nixadmin = import ./nix/shells/nixadmin.nix {
 #     inherit nixpkgs;
 #     system = "aarch64-darwin";
+#     nixosHosts = builtins.attrNames self.nixosConfigurations;
 #   };
 
-{ nixpkgs, system }:
+{
+  nixpkgs,
+  system,
+  nixosHosts,
+}:
 
 let
   pkgs = import nixpkgs { inherit system; };
+
+  isLinux = system == "x86_64-linux";
 
   sopsKeyFile =
     if system == "aarch64-darwin" then
@@ -41,6 +53,23 @@ let
 
   sopsScripts = map mkSopsEdit hostsWithSecrets;
 
+  mkDeploy =
+    hostName:
+    pkgs.writeShellScriptBin "deploy-${hostName}" ''
+      set -euo pipefail
+      repo_root="''${DOTFILES_ROOT:-$(git rev-parse --show-toplevel)}"
+      target="''${TARGET_HOST:-alex@${hostName}}"
+      cd "$repo_root"
+      exec nixos-rebuild switch \
+        --flake ".#${hostName}" \
+        --target-host "$target" \
+        --sudo \
+        --no-reexec \
+        "$@"
+    '';
+
+  deployScripts = if isLinux then map mkDeploy nixosHosts else [ ];
+
 in
 pkgs.mkShell {
   packages =
@@ -52,7 +81,9 @@ pkgs.mkShell {
       jq
       yq
     ]
-    ++ sopsScripts;
+    ++ pkgs.lib.optional isLinux pkgs.nixos-anywhere
+    ++ sopsScripts
+    ++ deployScripts;
 
   shellHook = ''
     export SOPS_AGE_KEY_FILE="${sopsKeyFile}"
@@ -62,7 +93,20 @@ pkgs.mkShell {
     echo "Secrets (sops-<host> for each host with nix/<host>/secrets.yaml):"
     ${pkgs.lib.concatMapStrings (h: "echo \"  sops-${h}\"\n") hostsWithSecrets}
     echo ""
-    echo "Deploy (run from repo root):"
-    echo "  nixos-rebuild switch --flake .#<host> --target-host root@<host> --use-remote-sudo"
+    ${
+      if isLinux then
+        ''
+          echo "Deploy (builds here, pushes to the target):"
+          ${pkgs.lib.concatMapStrings (h: "echo \"  deploy-${h}\"\n") nixosHosts}
+          echo ""
+          echo "  TARGET_HOST=alex@1.2.3.4 deploy-<host>   override the SSH destination"
+          echo "  nixos-anywhere --flake .#<host> root@<ip>   first install"
+        ''
+      else
+        ''
+          echo "Deploy: run from an x86_64-linux fleet host (koch, mandelbrot, julia)."
+          echo "This machine cannot build x86_64-linux closures."
+        ''
+    }
   '';
 }

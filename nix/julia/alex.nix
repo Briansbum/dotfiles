@@ -23,6 +23,7 @@
   home.packages = with pkgs; [
     brave
     discord
+    prismlauncher
     zig
     gdb
     lshw

@@ -10,7 +10,6 @@
     autojump
     flyctl
     kubeswitch
-    prismlauncher
     age-plugin-yubikey
     zk
   ];

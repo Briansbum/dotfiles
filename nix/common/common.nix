@@ -275,7 +275,7 @@
 
         # Initialize a local repository and create its bare origin on the git VM.
         gi = {
-          description = "initialize a repository with a git.koch origin";
+          description = "initialize a repository with a git.koch.brians.skin origin";
           body = ''
             if test (count $argv) -gt 1
               echo "usage: gi [repository-name]" >&2
@@ -287,9 +287,9 @@
             end
             git init
             or return 1
-            ssh -p 2222 alex@git.koch "mkdir -p '$repo.git' && git init --bare '$repo.git'"
+            ssh -p 2222 alex@git.koch.brians.skin "mkdir -p '$repo.git' && git init --bare '$repo.git'"
             or return 1
-            git remote add origin "ssh://alex@git.koch:2222/data/git/alex/$repo.git"
+            git remote add origin "ssh://alex@git.koch.brians.skin:2222/data/git/alex/$repo.git"
           '';
         };
 

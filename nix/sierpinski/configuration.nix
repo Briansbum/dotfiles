@@ -91,6 +91,7 @@
   services.devmon.enable = true;
   services.tailscale.enable = true;
   services.resolved.enable = true;
+  services.pcscd.enable = true;
 
   networking.networkmanager.enable = true;
   networking.nftables.enable = true;

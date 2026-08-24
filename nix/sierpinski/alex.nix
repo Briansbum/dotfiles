@@ -35,9 +35,6 @@
     "yazi".source = ../../config/yazi;
   };
 
-  # No pcscd on sierpinski, so scdaemon keeps its built-in CCID driver
-  programs.gpg.scdaemonSettings.disable-ccid = false;
-
   # No display for pinentry-gnome3, always use curses
   services.gpg-agent.pinentry.package = pkgs.pinentry-curses;
 

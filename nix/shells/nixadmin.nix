@@ -64,6 +64,7 @@ let
         --flake ".#${hostName}" \
         --target-host "$target" \
         --sudo \
+        --ask-elevate-password \
         --no-reexec \
         "$@"
     '';

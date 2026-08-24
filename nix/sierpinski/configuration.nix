@@ -18,6 +18,10 @@
       "flakes"
     ];
     auto-optimise-store = true;
+    trusted-users = [
+      "root"
+      "alex"
+    ];
   };
 
   nix.gc = {

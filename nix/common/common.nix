@@ -273,6 +273,26 @@
           '';
         };
 
+        # Initialize a local repository and create its bare origin on the git VM.
+        gi = {
+          description = "initialize a repository with a git.koch origin";
+          body = ''
+            if test (count $argv) -gt 1
+              echo "usage: gi [repository-name]" >&2
+              return 2
+            end
+            set -l repo (basename (pwd))
+            if test (count $argv) -eq 1
+              set repo $argv[1]
+            end
+            git init
+            or return 1
+            ssh -p 2222 alex@git.koch "mkdir -p '$repo.git' && git init --bare '$repo.git'"
+            or return 1
+            git remote add origin "ssh://alex@git.koch:2222/data/git/alex/$repo.git"
+          '';
+        };
+
         # ============ Docker & Container Tools ============
         ch = {
           description = "run crush inside of a sandboxed docker container";

@@ -106,6 +106,13 @@
             }
           ];
         };
+        # Per-service micro VMs run as rootless QEMU/KVM units on koch.
+        koch-chorcy = import ./nix/koch/vms/chorcy.nix { inherit inputs; };
+        koch-grocy = import ./nix/koch/vms/grocy.nix { inherit inputs; };
+        koch-immich = import ./nix/koch/vms/immich.nix { inherit inputs; };
+        koch-syncthing = import ./nix/koch/vms/syncthing.nix { inherit inputs; };
+        koch-git = import ./nix/koch/vms/git.nix { inherit inputs; };
+
         koch = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
@@ -116,6 +123,7 @@
             disko.nixosModules.disko
             sops-nix.nixosModules.sops
             chorcy.nixosModules.default
+            ./nix/koch/vms/runner.nix
             ./nix/modules/tailscale-serve.nix
             ./nix/koch/configuration.nix
             ./nix/koch/hardware.nix

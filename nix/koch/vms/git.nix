@@ -18,7 +18,10 @@ import ./mk-service-vm.nix {
           openssh.authorizedKeys.keyFiles = [ ../../common/alex-yubikey.pub ];
         };
 
-        programs.git.enable = true;
+        programs.git = {
+          enable = true;
+          config.init.defaultBranch = "main";
+        };
         services.openssh = {
           enable = true;
           settings = {

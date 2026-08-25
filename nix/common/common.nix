@@ -287,9 +287,9 @@
             end
             git init
             or return 1
-            ssh -p 2222 alex@git.koch.brians.skin "mkdir -p '$repo.git' && git init --bare '$repo.git'"
+            ssh -p 2222 alex@git.koch.brians.skin "git init --bare '$repo.git'"
             or return 1
-            git remote add origin "ssh://alex@git.koch.brians.skin:2222/data/git/alex/$repo.git"
+            git remote add origin "ssh://alex@git.koch.brians.skin:2222/~/$repo.git"
           '';
         };
 

@@ -45,9 +45,10 @@
         # Krew kubectl plugin manager
         fish_add_path "$HOME/.krew/bin"
 
-        # zmx session directory
-        set -gx ZMX_DIR "$HOME/.zmx/sessions"
-        mkdir -p "$ZMX_DIR"
+        # zmx session restore cache
+        set -gx ZMX_RESTORE 1
+        set -gx ZMX_RESTORE_DIR "$HOME/.zmx/sessions"
+        mkdir -p "$ZMX_RESTORE_DIR"
       '';
 
       # Interactive shell initialization

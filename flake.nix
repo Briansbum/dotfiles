@@ -34,7 +34,7 @@
     };
 
     zmx = {
-      url = "github:neurosnap/zmx";
+      url = "github:Briansbum/zmx/session-restore";
       flake = false;
     };
 

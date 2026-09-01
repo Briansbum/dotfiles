@@ -33,10 +33,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    zmx = {
-      url = "github:Briansbum/zmx/session-restore";
-      flake = false;
-    };
+    zmx.url = "github:Briansbum/zmx/session-restore";
 
     # Chore chart PWA for Grocy — flake ships a static bundle + NixOS module
     chorcy = {
@@ -67,6 +64,12 @@
         }
       );
 
+      zmxOverlay = (
+        final: prev: {
+          zmx = inputs.zmx.packages.${final.stdenv.hostPlatform.system}.zmx;
+        }
+      );
+
     in
     {
       nixosConfigurations = {
@@ -74,6 +77,7 @@
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
           modules = [
+            { nixpkgs.overlays = [ zmxOverlay ]; }
             ./nix/modules/tailscale-serve.nix
             ./nix/mandelbrot/configuration.nix
             ./nix/mandelbrot/hardware.nix
@@ -92,6 +96,7 @@
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
           modules = [
+            { nixpkgs.overlays = [ zmxOverlay ]; }
             ./nix/julia/configuration.nix
             ./nix/julia/hardware.nix
             sops-nix.nixosModules.sops
@@ -118,7 +123,10 @@
           specialArgs = { inherit inputs; };
           modules = [
             {
-              nixpkgs.overlays = [ kochOverlay ];
+              nixpkgs.overlays = [
+                kochOverlay
+                zmxOverlay
+              ];
             }
             disko.nixosModules.disko
             sops-nix.nixosModules.sops
@@ -169,6 +177,7 @@
             {
               nixpkgs.overlays = [
                 claude-code.overlays.default
+                zmxOverlay
                 # direnv's zsh test hangs on macOS 26 (waitforpid/SIGCHLD)
                 (final: prev: {
                   direnv = prev.direnv.overrideAttrs (old: {

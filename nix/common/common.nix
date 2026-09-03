@@ -166,6 +166,11 @@
           body = "zk edit --interactive $argv";
         };
 
+        slop = {
+          description = "open claude in ~/devel/scratch/slop";
+          body = "mkdir -p ~/devel/scratch/slop; cd ~/devel/scratch/slop; claude";
+        };
+
         # ============ Navigation & Directory Management ============
         l = {
           description = "alias l=ls -lsah";

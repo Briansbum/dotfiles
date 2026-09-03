@@ -27,6 +27,8 @@
   # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;
 
+  machine.agent.primary = "pi";
+
   # Packages to install that don't have a module.
   home.packages = with pkgs; [
     brave

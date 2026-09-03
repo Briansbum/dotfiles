@@ -20,6 +20,8 @@
 
   programs.home-manager.enable = true;
 
+  machine.agent.primary = "pi";
+
   home.packages = with pkgs; [
     ripgrep
     python3

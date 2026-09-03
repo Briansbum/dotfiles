@@ -20,6 +20,8 @@
 
   programs.home-manager.enable = true;
 
+  machine.agent.primary = "pi";
+
   # Server-only packages — no GUI apps
   home.packages = with pkgs; [
     lshw

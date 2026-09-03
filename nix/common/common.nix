@@ -3,6 +3,7 @@
 {
   imports = [
     ./gpg.nix
+    ./machine.nix
   ];
 
   # Common packages that should be available on all systems

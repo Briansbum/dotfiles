@@ -33,6 +33,8 @@ in
   # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;
 
+  machine.agent.primary = "claude";
+
   # sops values show up under $DARWIN_USER_TEMP_DIR/secrets.d/
   sops.defaultSopsFile = ./secrets.yaml;
   sops.age.keyFile = "/Users/alex/Library/Application Support/sops/age/keys.txt";

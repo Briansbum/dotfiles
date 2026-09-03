@@ -35,6 +35,12 @@
 
     zmx.url = "github:Briansbum/zmx/session-restore";
 
+    # Doccla CLI, macbook only
+    docctor = {
+      url = "git+ssh://git@github.com/doccla-experiments/docctor.git";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Chore chart PWA for Grocy — flake ships a static bundle + NixOS module
     chorcy = {
       url = "git+ssh://git@codeberg.org/briansbum/chorcy.git";
@@ -67,6 +73,27 @@
       zmxOverlay = (
         final: prev: {
           zmx = inputs.zmx.packages.${final.stdenv.hostPlatform.system}.zmx;
+        }
+      );
+
+      # Built from the docctor source rather than its own flake output, which
+      # sets vendorHash = null against a repo that ships no vendor dir.
+      docctorOverlay = (
+        final: prev: {
+          docctor = final.buildGoModule rec {
+            pname = "docctor";
+            version = inputs.docctor.shortRev or "dev";
+            src = "${inputs.docctor}/cli";
+            vendorHash = "sha256-EqkQwW6w3/u/5ccOQjK9jIAS+6mRLxm2To4T6cs4QUI=";
+            subPackages = [ "cmd" ];
+            ldflags = [
+              "-X main.version=${version}"
+              "-X main.commit=${inputs.docctor.rev or "dirty"}"
+              "-X main.branch=nix-build"
+            ];
+            postInstall = "mv $out/bin/cmd $out/bin/docctor";
+            meta.mainProgram = "docctor";
+          };
         }
       );
 
@@ -178,6 +205,7 @@
               nixpkgs.overlays = [
                 claude-code.overlays.default
                 zmxOverlay
+                docctorOverlay
                 # direnv's zsh test hangs on macOS 26 (waitforpid/SIGCHLD)
                 (final: prev: {
                   direnv = prev.direnv.overrideAttrs (old: {

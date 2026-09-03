@@ -120,6 +120,7 @@
     steampipe
     buf
     ory
+    docctor
   ];
 
   # User configuration

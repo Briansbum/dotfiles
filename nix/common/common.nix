@@ -168,8 +168,8 @@
         };
 
         slop = {
-          description = "open claude in ~/devel/scratch/slop";
-          body = "mkdir -p ~/devel/scratch/slop; cd ~/devel/scratch/slop; claude";
+          description = "open ${config.machine.agent.primary} in ~/devel/scratch/slop";
+          body = "mkdir -p ~/devel/scratch/slop; cd ~/devel/scratch/slop; ${config.machine.agent.command}";
         };
 
         # ============ Navigation & Directory Management ============

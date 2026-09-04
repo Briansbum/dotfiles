@@ -11,8 +11,7 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
     nixvim.url = "github:nix-community/nixvim";
-    # The docs say that using .follows here can cause instability in
-    # nixvim and so it is not used.
+    nixvim.inputs.nixpkgs.follows = "nixpkgs";
 
     nix-software-center = {
       url = "github:snowfallorg/nix-software-center";
@@ -21,6 +20,7 @@
 
     # Provides bleeding edge claude-code updates
     claude-code.url = "github:sadjow/claude-code-nix";
+    claude-code.inputs.nixpkgs.follows = "nixpkgs";
 
     # koch (NAS) dependencies
     disko = {

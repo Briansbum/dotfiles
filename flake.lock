@@ -69,11 +69,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1788525479,
-        "narHash": "sha256-6ZU/vwzmxYfFl8VHJw2A1sjcUZ0cAW4LS3U4gSaoE8Y=",
+        "lastModified": 1788536218,
+        "narHash": "sha256-ZZxvRKxczDpPbgHewzcwZ2LaM/Iv3wvBTQY0v74noLI=",
         "ref": "refs/heads/main",
-        "rev": "a1f73bfe5bd088d25cd72c4115567ef2c1a2fd69",
-        "revCount": 138,
+        "rev": "489aff3113b730902fc3294dceec220261da8b79",
+        "revCount": 156,
         "type": "git",
         "url": "ssh://git@github.com/doccla-experiments/docctor.git"
       },
@@ -230,11 +230,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1788316716,
-        "narHash": "sha256-bc7rSpXIdn9QWGNqfWcPZWOhEVF8NoeAZkWq0XWnf/k=",
+        "lastModified": 1788404924,
+        "narHash": "sha256-lhEhY8X5EgkQ/eg6IFz4cc8jRuSYSvnxx1al7d1dvZ0=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "3ed67ec0a4d3c7ab4ae1f04f8ee8df07bfa506a2",
+        "rev": "0968519e14f7aa7d3e9b389682bd74d2b51c8ce8",
         "type": "github"
       },
       "original": {

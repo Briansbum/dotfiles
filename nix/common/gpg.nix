@@ -32,7 +32,7 @@ in
     maxCacheTtl = 14400;
     maxCacheTtlSsh = 14400;
     pinentry.package = lib.mkDefault (
-      if pkgs.stdenv.isDarwin then pkgs.pinentry_mac else pinentry-auto
+      if pkgs.stdenv.hostPlatform.isDarwin then pkgs.pinentry_mac else pinentry-auto
     );
   };
 

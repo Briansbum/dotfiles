@@ -69,11 +69,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1788455267,
-        "narHash": "sha256-Lvj6t+/ijCL32ZBkOzjiaPmsf0/MuE1fsdTcNkayRFU=",
+        "lastModified": 1788525479,
+        "narHash": "sha256-6ZU/vwzmxYfFl8VHJw2A1sjcUZ0cAW4LS3U4gSaoE8Y=",
         "ref": "refs/heads/main",
-        "rev": "c4b7021b2a64cd0a9b0c5c455dedbc23f08d8e65",
-        "revCount": 128,
+        "rev": "a1f73bfe5bd088d25cd72c4115567ef2c1a2fd69",
+        "revCount": 138,
         "type": "git",
         "url": "ssh://git@github.com/doccla-experiments/docctor.git"
       },

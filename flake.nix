@@ -84,7 +84,7 @@
             pname = "docctor";
             version = inputs.docctor.shortRev or "dev";
             src = "${inputs.docctor}/cli";
-            vendorHash = "sha256-EqkQwW6w3/u/5ccOQjK9jIAS+6mRLxm2To4T6cs4QUI=";
+            vendorHash = "sha256-zSNOlAC9hsIyuDX9ILfwUC2sTiD0pA5rKUU1BpDZSo4=";
             subPackages = [ "cmd" ];
             ldflags = [
               "-X main.version=${version}"

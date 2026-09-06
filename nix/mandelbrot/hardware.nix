@@ -73,6 +73,19 @@
     ];
   };
 
+  fileSystems."/mnt/media" = {
+    device = "192.168.1.228:/data/media";
+    fsType = "nfs";
+    options = [
+      "nofail"
+      "x-systemd.automount"
+      "noauto"
+      "softerr"
+      "timeo=30"
+      "retrans=3"
+    ];
+  };
+
   swapDevices = [
     { device = "/dev/disk/by-uuid/6305ecf6-1c88-4b62-8667-82477ac4b7b0"; }
   ];

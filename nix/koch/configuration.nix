@@ -367,8 +367,8 @@
     enable = true;
     exports = ''
       /data/photos         192.168.1.0/24(rw,sync,no_subtree_check,all_squash,anonuid=1000,anongid=100)
-      /data/moving-photos  192.168.1.0/24(rw,sync,no_subtree_check,no_root_squash)
       /data/state-store    192.168.1.0/24(rw,sync,no_subtree_check,all_squash,anonuid=1000,anongid=100)
+      /data/media          192.168.1.0/24(rw,sync,no_subtree_check,no_root_squash)
     '';
   };
 
@@ -386,6 +386,7 @@
     "d /data/grocy/data    0750 grocy  nginx  -"
     "Z /data/grocy/data    0750 grocy  nginx  -"
     "d /data/state-store   0755 alex   users  -"
+    "d /data/media         0755 alex   users  -"
   ];
 
   # ---------------------------------------------------------------------------

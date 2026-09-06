@@ -263,6 +263,13 @@
                     "noatime"
                   ];
                 };
+                "@media" = {
+                  mountpoint = "/data/media";
+                  mountOptions = [
+                    "compress=zstd"
+                    "noatime"
+                  ];
+                };
               };
             };
           };

@@ -33,7 +33,6 @@
 
     zmx = {
       url = "github:Briansbum/zmx/session-restore";
-      inputs.nixpkgs.follows = "nixpkgs";
     }; 
 
     # doccla tool

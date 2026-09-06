@@ -246,11 +246,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1778556142,
-        "narHash": "sha256-n6P0m0ahFtMMkubMcHe4ole6N01B2Ywhz8ROq6ncSxk=",
+        "lastModified": 1788664981,
+        "narHash": "sha256-7XcoeUSm9v1zn9NHNYNItxIbCUGBTBlTClQDG3qrLQk=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "dcddeceb5be51a26d1d4440c50c591bea424073f",
+        "rev": "94aa2762715b736cea911d96d6a2f3b448f0b296",
         "type": "github"
       },
       "original": {
@@ -417,11 +417,11 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1778610364,
-        "narHash": "sha256-0rhkhp+Vi2gfwblOB138lOpfHTKOvR0xHZYWnRcA0DU=",
+        "lastModified": 1788665847,
+        "narHash": "sha256-4w4iu/CpH7ZWaI4ZKDm2E6Dxtp/EZlyU7ky5jmAcvZw=",
         "owner": "Cloudef",
         "repo": "zig2nix",
-        "rev": "4541f97bd2f114e304c518fc058d1ebc45440315",
+        "rev": "dd46d5ced45aed3137c4c0a7e44a9a3a160aaa77",
         "type": "github"
       },
       "original": {
@@ -435,11 +435,11 @@
         "zig2nix": "zig2nix"
       },
       "locked": {
-        "lastModified": 1788253817,
-        "narHash": "sha256-LcKXqGO17kYIOeShuKHbChbZnp9xXiA96nqyatjU+fA=",
+        "lastModified": 1788680705,
+        "narHash": "sha256-EoJVzONXW44eR2On6RnjWEgmYCXUnZxjUFspmQ1Zntc=",
         "owner": "Briansbum",
         "repo": "zmx",
-        "rev": "c983368257152049e9a31131516434be480bba7a",
+        "rev": "e0a1734d436ab0dfddc2d96b99647a06858ca293",
         "type": "github"
       },
       "original": {

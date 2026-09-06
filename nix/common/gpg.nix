@@ -36,7 +36,7 @@ in
     );
   };
 
-  systemd.user.sockets.gpg-agent-browser = lib.mkIf pkgs.stdenv.isLinux {
+  systemd.user.sockets.gpg-agent-browser = lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
     Unit = {
       Description = "GnuPG cryptographic agent and passphrase cache (access for web browsers)";
       Documentation = "man:gpg-agent(1)";

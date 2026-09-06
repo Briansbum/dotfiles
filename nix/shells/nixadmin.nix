@@ -24,7 +24,7 @@
 let
   pkgs = import nixpkgs { inherit system; };
 
-  isLinux = system == "x86_64-linux";
+  isLinux = pkgs.stdEnv.hostPlatform.isLinux;
 
   sopsKeyFile =
     if system == "aarch64-darwin" then

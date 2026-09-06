@@ -18,11 +18,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Provides bleeding edge claude-code updates
     claude-code.url = "github:sadjow/claude-code-nix";
     claude-code.inputs.nixpkgs.follows = "nixpkgs";
 
-    # koch (NAS) dependencies
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -35,18 +33,16 @@
 
     zmx.url = "github:Briansbum/zmx/session-restore";
 
-    # Doccla CLI, macbook only
+    # doccla tool
     docctor = {
       url = "git+ssh://git@github.com/doccla-experiments/docctor.git";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Chore chart PWA for Grocy — flake ships a static bundle + NixOS module
     chorcy = {
       url = "git+ssh://git@codeberg.org/briansbum/chorcy.git";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
   };
 
   outputs =

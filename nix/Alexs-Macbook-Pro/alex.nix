@@ -92,6 +92,7 @@ in
     "ghostty/config".source = ../../config/ghostty/macos-config;
     "gh/config.yml".source = ../../config/gh/config.yml;
     "gopass/config".source = ../../config/gopass/config;
+    "aerospace/aerospace.toml".source = ../../config/aerospace/aerospace.toml;
 
     # Note: htop, wireshark configs are runtime state - not managed
     # Note: spotifyd, spotify-tui, op configs have secrets - not managed

@@ -435,11 +435,11 @@
         "zig2nix": "zig2nix"
       },
       "locked": {
-        "lastModified": 1788680705,
-        "narHash": "sha256-EoJVzONXW44eR2On6RnjWEgmYCXUnZxjUFspmQ1Zntc=",
+        "lastModified": 1788682020,
+        "narHash": "sha256-d8TzGZwC6tZyEvAgLpPA9HCKFgg5LTPB+y17sQgV27E=",
         "owner": "Briansbum",
         "repo": "zmx",
-        "rev": "e0a1734d436ab0dfddc2d96b99647a06858ca293",
+        "rev": "842270823a9ed9d4b1b5e01b5919cea14bb7f12d",
         "type": "github"
       },
       "original": {

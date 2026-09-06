@@ -7,7 +7,7 @@
   ...
 }:
 let
-  vmNames = [ "chorcy" "grocy" "immich" "syncthing" "git" ];
+  vmNames = [ "chorcy" "grocy" "immich" "syncthing" "git" "knot" ];
   vmCfg = name: inputs.self.nixosConfigurations."koch-${name}".config;
   publishedPorts = name:
     map (p: if p.hostPort == null then p.guestPort else p.hostPort)

@@ -142,6 +142,7 @@
         koch-immich = import ./nix/koch/vms/immich.nix { inherit inputs; };
         koch-syncthing = import ./nix/koch/vms/syncthing.nix { inherit inputs; };
         koch-git = import ./nix/koch/vms/git.nix { inherit inputs; };
+        koch-knot = import ./nix/koch/vms/knot.nix { inherit inputs; };
 
         koch = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";

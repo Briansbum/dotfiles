@@ -18,6 +18,7 @@ inputs.nixpkgs.lib.nixosSystem {
         options.koch-vm = {
           memory = lib.mkOption { type = lib.types.ints.positive; default = 512; };
           vcpus = lib.mkOption { type = lib.types.ints.positive; default = 2; };
+          diskSize = lib.mkOption { type = lib.types.ints.positive; default = 2048; };
           ports = lib.mkOption {
             type = lib.types.listOf (lib.types.submodule ({ ... }: {
               options = {
@@ -40,7 +41,7 @@ inputs.nixpkgs.lib.nixosSystem {
             graphics = false;
             memorySize = cfg.memory;
             cores = cfg.vcpus;
-            diskSize = 2048;
+            diskSize = cfg.diskSize;
             msize = lib.mkDefault 524288;
             qemu.consoles = [ "ttyS0,115200n8" ];
             forwardPorts = map (p: {

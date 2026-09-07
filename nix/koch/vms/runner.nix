@@ -12,6 +12,8 @@ let
   publishedPorts = name:
     map (p: if p.hostPort == null then p.guestPort else p.hostPort)
       (lib.filter (p: p.bind == "all-interfaces" && p.proto == "tcp") (vmCfg name).koch-vm.ports);
+  stageSecret = vm: file: secret:
+    "C+ /var/lib/koch-vm/${vm}/${file} 0600 alex users - ${config.sops.secrets.${secret}.path}";
   mkVmUnit = name: {
     "koch-vm-${name}" = {
       description = "koch ${name} service VM (rootless qemu)";
@@ -36,15 +38,18 @@ let
   };
 in
 {
+  sops.secrets."syncthing_cert".sopsFile = ../syncthing.yaml;
+  sops.secrets."syncthing_key".sopsFile = ../syncthing.yaml;
   systemd.services = lib.mkMerge (map mkVmUnit vmNames);
   networking.firewall.allowedTCPPorts = lib.unique (lib.flatten (map publishedPorts vmNames));
   users.groups.git = { };
-  users.users.alex.extraGroups = [ "immich" "grocy" "git" ];
-  # Syncthing identity secrets are staged on the host and shared into that VM.
+  users.users.alex.extraGroups = [ "kvm" "git" ];
   systemd.tmpfiles.rules = [
     "d /var/lib/koch-vm/syncthing 0700 alex users -"
-    "L+ /var/lib/koch-vm/syncthing/cert.pem - - - - ${config.sops.secrets."syncthing_cert".path}"
-    "L+ /var/lib/koch-vm/syncthing/key.pem - - - - ${config.sops.secrets."syncthing_key".path}"
+    (stageSecret "syncthing" "cert.pem" "syncthing_cert")
+    (stageSecret "syncthing" "key.pem" "syncthing_key")
+    "d /var/lib/koch-vm/immich 0700 alex users -"
+    (stageSecret "immich" "alloy-pg-password" "immich_alloy_pg_password")
     "d /data/state-store/vm 0755 alex users -"
     "d /data/state-store/git 0755 alex users -"
   ]

@@ -248,19 +248,19 @@
     '';
   };
 
-  # Ensure NFS export dirs are owned by alex so the squashed uid=1000 can r/w.
-  # Immich's subtree is pinned separately so it stays under the immich service user.
+  # Everything under /data is owned by alex: NFS squashes to uid 1000 and the
+  # service VMs run their writers as uid 1000 over 9p (see vms/).
+  users.groups.syncthing = { };
   systemd.tmpfiles.rules = [
     # /data must be root-owned or tmpfiles refuses to descend ("unsafe path transition")
     "d /data               0755 root   root      -"
-    # Syncthing runs as alex:syncthing; keep the folder and marker writable.
     "d /data/synchspace    2775 alex   syncthing -"
     "d /data/synchspace/.stfolder 2775 alex syncthing -"
     "d /data/photos        0755 alex   users     -"
-    "d /data/photos/immich 0750 immich immich -"
-    "Z /data/photos/immich 0750 immich immich -"
-    "d /data/grocy/data    0750 grocy  nginx  -"
-    "Z /data/grocy/data    0750 grocy  nginx  -"
+    "d /data/photos/immich 0750 alex   users     -"
+    "Z /data/photos/immich 0750 alex   users     -"
+    "d /data/grocy/data    0750 alex   users     -"
+    "Z /data/grocy/data    0750 alex   users     -"
     "d /data/state-store   0755 alex   users  -"
     "d /data/media         0755 alex   users  -"
   ];
@@ -311,83 +311,21 @@
     };
   };
 
-  systemd.services.immich-db-dump-prep = {
-    description = "immich-db-dump runs as a postgres user and can't make its own backup directory";
-    after = [ "postgresql.service" ];
-    requires = [ "postgresql.service" ];
-    serviceConfig = {
-      Type = "oneshot";
-      ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p /data/photos/immich/db-backup";
-      ExecStart = "${pkgs.coreutils}/bin/chmod -R 762 /data/photos/immich/db-backup";
-    };
-  };
-
-  systemd.services.immich-db-dump = {
-    description = "Dump Immich PostgreSQL database for backup";
-    after = [
-      "postgresql.service"
-      "immich-db-dump-prep.service"
-    ];
-    requires = [
-      "postgresql.service"
-      "immich-db-dump-prep.service"
-    ];
-    serviceConfig = {
-      Type = "oneshot";
-      User = "postgres";
-      ExecStart = pkgs.writeShellScript "immich-db-dump" ''
-        ${config.services.postgresql.package}/bin/pg_dump immich | ${pkgs.gzip}/bin/gzip > /data/photos/immich/db-backup/immich-dump.sql.gz
-      '';
-    };
-  };
-
-  systemd.timers.immich-db-dump = {
-    description = "Daily Immich DB dump";
-    wantedBy = [ "timers.target" ];
-    timerConfig = {
-      OnCalendar = "daily";
-      Persistent = true;
-    };
-  };
-
   # ---------------------------------------------------------------------------
   # Grafana Alloy — system metrics + journal logs -> Grafana Cloud
   # Also accepts OTLP from local services (Immich, microvms, etc.)
   # ---------------------------------------------------------------------------
 
-  # secrets show up at /run/secrets
-  sops.secrets."alloy_env" = {
-    owner = "alloy";
-    group = "alloy";
-    mode = "0440";
-    restartUnits = [ "alloy.service" ];
-  };
-
-  users.users.alloy = {
-    isSystemUser = true;
-    group = "alloy";
-    extraGroups = [ "systemd-journal" ];
-  };
-  users.groups.alloy = { };
-
-  services.alloy = {
+  services.alloy-host = {
     enable = true;
-    configPath = "/etc/alloy";
-    environmentFile = config.sops.secrets.alloy_env.path;
-    extraFlags = [
-      "--stability.level=generally-available"
-      "--server.http.listen-addr=127.0.0.1:12345"
-      "--disable-reporting"
-    ];
+    configFile = ./alloy-config.alloy;
   };
 
-  systemd.services.alloy.serviceConfig.DynamicUser = lib.mkForce false;
-  systemd.services.alloy.serviceConfig.User = lib.mkForce "alloy";
-  systemd.services.alloy.serviceConfig.Group = lib.mkForce "alloy";
-
-  environment.etc."alloy/config.alloy" = {
-    source = ./alloy-config.alloy;
-    mode = "0644";
+  sops.secrets."immich_alloy_pg_password" = { };
+  sops.templates."immich-alloy-dsn" = {
+    owner = "alloy";
+    restartUnits = [ "alloy.service" ];
+    content = "postgresql://alloy:${config.sops.placeholder.immich_alloy_pg_password}@127.0.0.1:5432/immich?sslmode=disable";
   };
 
   # ---------------------------------------------------------------------------

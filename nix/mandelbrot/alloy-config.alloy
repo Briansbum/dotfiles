@@ -1,0 +1,202 @@
+// ---------------------------------------------------------------------------
+// Grafana Alloy — mandelbrot workstation observability
+//
+// Collects: system metrics, service states, structured journal logs
+//           -> Grafana Cloud via OTLP
+// ---------------------------------------------------------------------------
+
+logging {
+  level  = "info"
+  format = "logfmt"
+}
+
+// ===========================================================================
+// METRICS
+// ===========================================================================
+
+prometheus.exporter.unix "node" {
+  // Lean collector set — free tier friendly
+  set_collectors = [
+    "cpu",
+    "diskstats",
+    "filesystem",
+    "hwmon",
+    "loadavg",
+    "meminfo",
+    "netdev",
+    "thermal_zone",
+    "uname",
+  ]
+
+  filesystem {
+    fs_types_exclude = "^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs|tmpfs)$"
+  }
+
+  netdev {
+    device_exclude = "^(veth.*|br-.*|docker0|wg.*-mullvad)$"
+  }
+}
+
+prometheus.scrape "node" {
+  targets         = prometheus.exporter.unix.node.targets
+  forward_to      = [prometheus.relabel.add_host.receiver]
+  scrape_interval = "5m"
+}
+
+prometheus.exporter.unix "systemd" {
+  set_collectors = ["systemd"]
+
+  systemd {
+    unit_include = "(tailscaled|alloy|syncthing|docker|sshd|mullvad-daemon|display-manager)\\.service"
+  }
+}
+
+prometheus.scrape "systemd" {
+  targets         = prometheus.exporter.unix.systemd.targets
+  forward_to      = [prometheus.relabel.add_host.receiver]
+  scrape_interval = "2m"
+}
+
+prometheus.relabel "add_host" {
+  forward_to = [otelcol.receiver.prometheus.default.receiver]
+
+  rule {
+    target_label = "instance"
+    replacement  = "mandelbrot"
+  }
+  rule {
+    target_label = "host"
+    replacement  = "mandelbrot"
+  }
+}
+
+otelcol.receiver.prometheus "default" {
+  output {
+    metrics = [otelcol.processor.batch.default.input]
+  }
+}
+
+// ===========================================================================
+// LOGS
+// ===========================================================================
+
+loki.relabel "journal" {
+  forward_to = []
+
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    target_label  = "unit"
+  }
+  rule {
+    source_labels = ["__journal__hostname"]
+    target_label  = "host"
+  }
+  rule {
+    source_labels = ["__journal_priority_keyword"]
+    target_label  = "level"
+  }
+  rule {
+    source_labels = ["__journal__transport"]
+    target_label  = "transport"
+  }
+  rule {
+    source_labels = ["__journal__comm"]
+    target_label  = "process"
+  }
+
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    regex         = "syncthing.*"
+    target_label  = "service"
+    replacement   = "syncthing"
+  }
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    regex         = "docker.*"
+    target_label  = "service"
+    replacement   = "docker"
+  }
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    regex         = "tailscaled\\.service"
+    target_label  = "service"
+    replacement   = "tailscale"
+  }
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    regex         = "mullvad.*"
+    target_label  = "service"
+    replacement   = "mullvad"
+  }
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    regex         = "(display-manager|greetd|niri).*"
+    target_label  = "service"
+    replacement   = "desktop"
+  }
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    regex         = "alloy\\.service"
+    target_label  = "service"
+    replacement   = "alloy"
+  }
+}
+
+loki.source.journal "default" {
+  forward_to    = [loki.process.filter.receiver]
+  max_age       = "1h"
+  relabel_rules = loki.relabel.journal.rules
+  labels        = {
+    job      = "systemd-journal",
+    instance = "mandelbrot",
+  }
+}
+
+// Free tier: only warn and above
+loki.process "filter" {
+  forward_to = [otelcol.receiver.loki.default.receiver]
+
+  stage.drop {
+    expression = ".*pam_unix.*session (opened|closed).*"
+  }
+
+  stage.drop {
+    source              = "level"
+    expression          = "^(notice|info|debug)$"
+    drop_counter_reason = "free_tier_filter"
+  }
+}
+
+otelcol.receiver.loki "default" {
+  output {
+    logs = [otelcol.processor.batch.default.input]
+  }
+}
+
+// ===========================================================================
+// PIPELINE — batch + export
+// ===========================================================================
+
+otelcol.processor.batch "default" {
+  timeout             = "60s"
+  send_batch_size     = 500
+  send_batch_max_size = 1000
+
+  output {
+    metrics = [otelcol.exporter.otlphttp.grafana_cloud.input]
+    logs    = [otelcol.exporter.otlphttp.grafana_cloud.input]
+  }
+}
+
+// Credentials injected via systemd EnvironmentFile from sops-nix
+otelcol.auth.basic "grafana_cloud" {
+  username = sys.env("GRAFANA_INSTANCE_ID")
+  password = sys.env("GRAFANA_API_TOKEN")
+}
+
+otelcol.exporter.otlphttp "grafana_cloud" {
+  client {
+    endpoint = sys.env("GRAFANA_OTLP_ENDPOINT")
+    auth     = otelcol.auth.basic.grafana_cloud.handler
+  }
+}

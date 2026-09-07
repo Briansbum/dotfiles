@@ -43,6 +43,7 @@ inputs.nixpkgs.lib.nixosSystem {
             cores = cfg.vcpus;
             diskSize = cfg.diskSize;
             msize = lib.mkDefault 524288;
+            qemu.forceAccel = true;
             qemu.consoles = [ "ttyS0,115200n8" ];
             forwardPorts = map (p: {
               from = "host";

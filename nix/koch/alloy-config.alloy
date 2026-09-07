@@ -92,7 +92,7 @@ prometheus.exporter.unix "systemd" {
 
   systemd {
     // Only track services we care about, not every unit on the system
-    unit_include = "(immich-server|immich-machine-learning|postgresql|grocy|tailscaled|alloy|rclone-photos|immich-db-dump|smartd|sshd|nfs-server|docker|firecracker.*)\\.service"
+    unit_include = "(koch-vm-.*|traefik|tailscaled|alloy|rclone-photos|smartd|sshd|nfs-server|docker)\\.service"
   }
 }
 
@@ -104,10 +104,16 @@ prometheus.scrape "systemd" {
 
 // ---------------------------------------------------------------------------
 // PostgreSQL — Immich database health
+// Postgres runs inside the immich VM; qemu forwards it to 127.0.0.1:5432.
 // ---------------------------------------------------------------------------
 
+local.file "immich_dsn" {
+  filename  = "/run/secrets/rendered/immich-alloy-dsn"
+  is_secret = true
+}
+
 prometheus.exporter.postgres "immich" {
-  data_source_names = ["postgresql:///immich?host=/run/postgresql&user=alloy"]
+  data_source_names = [local.file.immich_dsn.content]
 }
 
 prometheus.scrape "postgres" {

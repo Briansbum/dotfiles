@@ -104,6 +104,7 @@
           modules = [
             { nixpkgs.overlays = [ zmxOverlay ]; }
             ./nix/modules/tailscale-serve.nix
+            ./nix/modules/alloy-host.nix
             ./nix/mandelbrot/configuration.nix
             ./nix/mandelbrot/hardware.nix
             sops-nix.nixosModules.sops
@@ -159,6 +160,7 @@
             chorcy.nixosModules.default
             ./nix/koch/vms/runner.nix
             ./nix/modules/tailscale-serve.nix
+            ./nix/modules/alloy-host.nix
             ./nix/koch/configuration.nix
             ./nix/koch/hardware.nix
             ./nix/koch/disk-config.nix

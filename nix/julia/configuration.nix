@@ -101,6 +101,10 @@
       devices = {
         koch = {
           id = "EWHGTJQ-G23E4XW-SXO3YIQ-5TBIFZH-L4IEKDQ-BWCHVNR-EIS5FZN-H6HUOQA";
+          addresses = [
+            "tcp://koch:22000"
+            "tcp://100.113.219.76:22000"
+          ];
         };
       };
       folders = {

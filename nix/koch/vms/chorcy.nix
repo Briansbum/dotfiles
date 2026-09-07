@@ -11,7 +11,10 @@ import ./mk-service-vm.nix {
       { lib, ... }:
       {
         imports = [ inputs.chorcy.nixosModules.default ];
-        services.chorcy.enable = true;
+        services.chorcy = {
+          enable = true;
+          listenAddress = "0.0.0.0";
+        };
 
         koch-vm = {
           memory = 256;

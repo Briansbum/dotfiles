@@ -5,9 +5,9 @@
 #     staged by runner.nix into /var/lib/koch-vm/syncthing/, shared into the
 #     guest so the device ID stays stable across VM rebuilds.
 # Networking: qemu user-net forwards TCP 22000 (sync protocol); local
-# discovery (UDP 21027) doesn't traverse user-net NAT — peers must be
-# configured with explicit addresses (they already are: static device IDs +
-# introductions). Relaying via Tailscale/LAN TCP still works.
+# discovery (UDP 21027) doesn't traverse user-net NAT and global discovery
+# would advertise the slirp address, so every peer lists koch with explicit
+# addresses (tcp://koch:22000 and the Tailscale IP).
 {
   inputs,
 }:
@@ -36,6 +36,7 @@ import ./mk-service-vm.nix {
           group = "syncthing";
           dataDir = "/data/synchspace";
           configDir = "${alexHome}/.config/syncthing";
+          guiAddress = "0.0.0.0:8384";
           overrideDevices = true;
           overrideFolders = true;
           settings = {
@@ -65,7 +66,6 @@ import ./mk-service-vm.nix {
           };
         };
 
-        # Stage cert/key from the host share (see runner.nix tmpfiles)
         # Stage cert/key from the host share before first start
         systemd.services.syncthing.preStart = lib.mkAfter ''
           install -m 600 /mnt/syncthing-secrets/cert.pem ${alexHome}/.config/syncthing/cert.pem
@@ -81,7 +81,7 @@ import ./mk-service-vm.nix {
               guestPort = 22000;
               bind = "all-interfaces";
             }
-            # Web UI — loopback only, reach via ssh tunnel
+            # Web UI: host side binds loopback only, reach via ssh tunnel
             { guestPort = 8384; }
           ];
         };

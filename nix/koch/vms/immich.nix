@@ -1,7 +1,7 @@
 # immich VM — photo management (server + machine-learning + postgres).
 # Heaviest guest (4G RAM for ML). State:
-#   - /data/photos/immich (library + postgres data dir lives under it on the
-#     old setup; here postgresql dataDir is pointed into the share too)
+#   - /data/photos/immich (library) via 9p; postgres lives on the guest disk
+#     and a daily dump lands on the share for the host's B2 backup
 #   - external photo dirs shared read-only-ish (9p rw for v1, tighten later)
 {
   inputs,
@@ -17,31 +17,57 @@ import ./mk-service-vm.nix {
         pkgs,
         ...
       }:
+      let
+        dumpDir = "/data/photos/immich/db-backup";
+        dump = "${dumpDir}/immich-dump.sql.gz";
+        pgBin = "${config.services.postgresql.package}/bin";
+      in
       {
-        users.users.immich.uid = 996;
+        users.users.immich.uid = 1000;
         users.users.immich.group = "immich";
-        users.groups.immich.gid = 997;
 
         services.immich = {
           enable = true;
+          host = "";
           port = 2283;
           mediaLocation = "/data/photos/immich";
           machine-learning.enable = true;
         };
 
-        # DB dumps still happen on the host against this share
-        services.postgresql.dataDir = lib.mkForce "/data/photos/immich/postgresql";
-
         koch-vm = {
           memory = 4096;
           vcpus = 4; # ML is CPU-hungry; don't let it eat all of koch
+          diskSize = 16384;
           ports = [
             { guestPort = 2283; } # -> 127.0.0.1:2283, Traefik fronts this
+            { guestPort = 5432; } # -> 127.0.0.1:5432, host Alloy scrapes postgres
           ];
         };
 
-        # securityModel "none": qemu runs unprivileged as alex on the host;
-        # guest uids are chosen to match host uids (immich=996) so 9p just works.
+        services.postgresql = {
+          enableTCPIP = true;
+          authentication = "host immich alloy 10.0.2.2/32 scram-sha-256";
+          ensureUsers = [ { name = "alloy"; } ];
+        };
+        systemd.services.immich-alloy-role = {
+          description = "Set the alloy monitoring role's password and grants";
+          after = [ "postgresql.target" ];
+          requires = [ "postgresql.target" ];
+          wantedBy = [ "multi-user.target" ];
+          serviceConfig = {
+            Type = "oneshot";
+            User = "postgres";
+            LoadCredential = [ "pw:/mnt/immich-secrets/alloy-pg-password" ];
+            ExecStart = pkgs.writeShellScript "immich-alloy-role" ''
+              set -euo pipefail
+              ${pgBin}/psql -v ON_ERROR_STOP=1 -v pw="$(cat "$CREDENTIALS_DIRECTORY/pw")" <<'SQL'
+              ALTER ROLE alloy WITH LOGIN PASSWORD :'pw';
+              GRANT pg_monitor TO alloy;
+              SQL
+            '';
+          };
+        };
+
         virtualisation = {
           # Photo archive is read-mostly and scanned on a schedule: give the
           # guest a real page cache instead of a vmexit round-trip per read.
@@ -51,6 +77,10 @@ import ./mk-service-vm.nix {
             source = "/data/photos";
             target = "/data/photos";
             securityModel = "none";
+          };
+          sharedDirectories.immich-secrets = {
+            source = "/var/lib/koch-vm/immich";
+            target = "/mnt/immich-secrets";
           };
         };
 
@@ -67,20 +97,41 @@ import ./mk-service-vm.nix {
           "d /data/photos/immich 0750 immich immich -"
         ];
 
-        # Daily DB dump (moved from the koch host — postgres runs here now).
-        # Lands on /data/photos/immich/db-backup via the 9p share so the
-        # host's B2 backup picks it up unchanged.
-        systemd.services.immich-db-dump = {
-          description = "Dump Immich PostgreSQL database for backup";
-          after = [ "postgresql.service" ];
-          requires = [ "postgresql.service" ];
+        systemd.services.immich-db-restore = {
+          description = "Restore the Immich database from the dump on the share";
+          after = [ "postgresql.target" ];
+          requires = [ "postgresql.target" ];
+          unitConfig.ConditionPathExists = "!/var/lib/immich-restore/done";
           serviceConfig = {
             Type = "oneshot";
-            User = "postgres";
-            ExecStart = with pkgs; writeShellScript "immich-db-dump" ''
-              mkdir -p /data/photos/immich/db-backup
-              chmod 762 /data/photos/immich/db-backup || true
-              ${config.services.postgresql.package}/bin/pg_dump immich | ${gzip}/bin/gzip > /data/photos/immich/db-backup/immich-dump.sql.gz
+            User = "immich";
+            StateDirectory = "immich-restore";
+            ExecStart = pkgs.writeShellScript "immich-db-restore" ''
+              set -euo pipefail
+              if [ -e ${dump} ]; then
+                ${pkgs.gzip}/bin/gunzip -c ${dump} | ${pgBin}/psql -d immich
+              fi
+              touch /var/lib/immich-restore/done
+            '';
+          };
+        };
+        systemd.services.immich-server = {
+          after = [ "immich-db-restore.service" ];
+          requires = [ "immich-db-restore.service" ];
+        };
+
+        systemd.services.immich-db-dump = {
+          description = "Dump Immich PostgreSQL database for backup";
+          after = [ "postgresql.target" ];
+          requires = [ "postgresql.target" ];
+          serviceConfig = {
+            Type = "oneshot";
+            User = "immich";
+            ExecStart = pkgs.writeShellScript "immich-db-dump" ''
+              set -euo pipefail
+              mkdir -p ${dumpDir}
+              ${pgBin}/pg_dump immich | ${pkgs.gzip}/bin/gzip > ${dump}.tmp
+              mv ${dump}.tmp ${dump}
             '';
           };
         };

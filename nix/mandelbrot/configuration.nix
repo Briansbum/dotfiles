@@ -95,6 +95,10 @@ in
       devices = {
         koch = {
           id = "EWHGTJQ-G23E4XW-SXO3YIQ-5TBIFZH-L4IEKDQ-BWCHVNR-EIS5FZN-H6HUOQA";
+          addresses = [
+            "tcp://koch:22000"
+            "tcp://100.113.219.76:22000"
+          ];
         };
         pixel10 = {
           id = "KIRCSTT-YWT37YF-BNIFKK2-LRE2Q4V-LRNYPL6-5WVYV6U-PB2XBYN-5CNQCA4";
@@ -116,6 +120,11 @@ in
   services.getty = {
     autologinUser = "alex";
     autologinOnce = true;
+  };
+
+  services.alloy-host = {
+    enable = true;
+    configFile = ./alloy-config.alloy;
   };
 
   virtualisation.docker.enable = true;

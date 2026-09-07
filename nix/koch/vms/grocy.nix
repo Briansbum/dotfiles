@@ -10,8 +10,7 @@ import ./mk-service-vm.nix {
     (
       { lib, ... }:
       {
-        users.users.grocy.uid = 310;
-        users.groups.grocy.gid = 310;
+        users.users.grocy.uid = 1000;
 
         services.grocy = {
           enable = true;

@@ -9,10 +9,17 @@
 #
 # === DAY-2 OPERATIONS ===
 #
-# -- Adding a new subvolume --
-# 1. Create it on disk:  btrfs subvolume create /data/@new-thing
-# 2. Add a new entry to the subvolumes block below
-# 3. Run: sudo nixos-rebuild switch --flake .#koch
+# -- Adding a new subvolume to the HDD pool --
+# /data is the @data subvolume, so creating /data/@new-thing would incorrectly
+# create @data/@new-thing. Mount the btrfs top level (subvolid=5) first:
+# 1. sudo mkdir -p /mnt/btrfs-top
+# 2. sudo mount -o subvolid=5 \
+#      /dev/disk/by-id/ata-WDC_WD40EFRX-68N32N0_WD-WCC7K4EZH27C-part1 \
+#      /mnt/btrfs-top
+# 3. sudo btrfs subvolume create /mnt/btrfs-top/@new-thing
+# 4. Add @new-thing with its mountpoint to the subvolumes block below
+# 5. sudo umount /mnt/btrfs-top && sudo rmdir /mnt/btrfs-top
+# 6. sudo nixos-rebuild switch --flake .#koch
 #
 # -- Adding a new disk to the HDD pool --
 # 1. Add the disk:       btrfs device add /dev/disk/by-id/NEW-DISK /data

@@ -97,6 +97,12 @@ import ./mk-service-vm.nix {
           "d /data/photos/immich 0750 immich immich -"
         ];
 
+        # Restores from the dump the previous setup left in db-backup/. Runs as
+        # postgres because the dump (pg_dump --clean) recreates extensions and
+        # schemas, which needs superuser. The dump was taken while the old
+        # install still had pgvecto.rs around, so its vestigial empty "vectors"
+        # schema/extension is stripped: the extension no longer exists in
+        # nixpkgs and those statements would abort an ON_ERROR_STOP restore.
         systemd.services.immich-db-restore = {
           description = "Restore the Immich database from the dump on the share";
           after = [ "postgresql.target" ];
@@ -104,12 +110,16 @@ import ./mk-service-vm.nix {
           unitConfig.ConditionPathExists = "!/var/lib/immich-restore/done";
           serviceConfig = {
             Type = "oneshot";
-            User = "immich";
+            User = "postgres";
             StateDirectory = "immich-restore";
             ExecStart = pkgs.writeShellScript "immich-db-restore" ''
               set -euo pipefail
               if [ -e ${dump} ]; then
-                ${pkgs.gzip}/bin/gunzip -c ${dump} | ${pgBin}/psql -d immich
+                ${pkgs.gzip}/bin/gunzip -c ${dump} \
+                  | grep -vE '^(CREATE EXTENSION IF NOT EXISTS vectors|CREATE SCHEMA vectors|ALTER SCHEMA vectors|GRANT SELECT ON TABLE vectors\.|COMMENT ON EXTENSION vectors)' \
+                  | ${pgBin}/psql -v ON_ERROR_STOP=1 -d immich
+              else
+                echo "WARNING: no dump at ${dump}; starting with an empty database"
               fi
               touch /var/lib/immich-restore/done
             '';
@@ -120,10 +130,18 @@ import ./mk-service-vm.nix {
           requires = [ "immich-db-restore.service" ];
         };
 
+        # Daily dump. Depends on immich-db-restore so a fresh/blank database
+        # can never overwrite a good dump on the share (restore is a oneshot
+        # gated on the done marker; a skipped condition counts as success,
+        # so this ordering is safe across reboots).
         systemd.services.immich-db-dump = {
           description = "Dump Immich PostgreSQL database for backup";
-          after = [ "postgresql.target" ];
+          after = [
+            "postgresql.target"
+            "immich-db-restore.service"
+          ];
           requires = [ "postgresql.target" ];
+          wants = [ "immich-db-restore.service" ];
           serviceConfig = {
             Type = "oneshot";
             User = "immich";

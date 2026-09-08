@@ -42,9 +42,14 @@
   };
 
   fileSystems."/mnt/tb" = {
-    device = "/dev/disk/by-uuid/F8D8B7AAD8B76612";
-    fsType = "ntfs3";
-    options = [ "nofail" ];
+    device = "/dev/disk/by-label/tb";
+    fsType = "f2fs";
+    options = [
+      "nofail"
+      "noatime"
+      "lazytime"
+      "gc_merge"
+    ];
   };
 
   fileSystems."/mnt/photos" = {

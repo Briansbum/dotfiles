@@ -121,7 +121,7 @@
     {
       mode = "n";
       key = "<leader>gi";
-      action = "<cmd>GoImplements<cr>";
+      action = "<cmd>Telescope lsp_implementations<cr>";
       options = {
         desc = "Go Implements";
       };

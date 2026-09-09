@@ -11,6 +11,22 @@ let
   '';
 in
 {
+  # NOTE: do not enable `use-keyboxd` (e.g. via a hand-written ~/.gnupg/common.conf).
+  # keyboxd serves the keyring out of a SQLite database, and every pubkey lookup
+  # (git signing, encrypt, verify) then contends on "database is locked"
+  # (SQLITE_BUSY) whenever gpg runs concurrently. The default pubring.kbx is
+  # lock-free for reads and much more reliable. The activation below strips it
+  # from machines where it was added manually.
+  home.activation.removeKeyboxd = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    conf="$HOME/.gnupg/common.conf"
+    if [ -f "$conf" ] && grep -q '^use-keyboxd' "$conf"; then
+      sed '/^use-keyboxd/d' "$conf" > "$conf.tmp" && mv "$conf.tmp" "$conf"
+      chmod 600 "$conf"
+      ${pkgs.gnupg}/bin/gpgconf --kill gpg-agent || true
+      $DRY_RUN_CMD echo "Removed use-keyboxd from ~/.gnupg/common.conf"
+    fi
+  '';
+
   programs.gpg = {
     enable = true;
     scdaemonSettings.disable-ccid = lib.mkDefault true;

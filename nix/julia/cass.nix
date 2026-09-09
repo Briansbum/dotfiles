@@ -31,14 +31,7 @@
     enable = true;
   };
 
-  xdg.mimeApps = {
-    enable = true;
-    defaultApplications = {
-      "text/html" = "brave-browser.desktop";
-      "x-scheme-handler/http" = "brave-browser.desktop";
-      "x-scheme-handler/https" = "brave-browser.desktop";
-      "x-scheme-handler/about" = "brave-browser.desktop";
-      "x-scheme-handler/unknown" = "brave-browser.desktop";
-    };
-  };
+  # No xdg.mimeApps here: KDE's Default Applications UI writes mimeapps.list,
+  # and it must stay mutable so System Settings can manage it. Set Brave as the
+  # default browser via System Settings → Apps & Windows → Default Applications.
 }

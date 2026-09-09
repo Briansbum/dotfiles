@@ -112,17 +112,35 @@
           devices = [ "koch" ];
           path = "~/synchspace";
           versioning = {
-              type = "simple";
-              params.keep = "10";
+            type = "simple";
+            params.keep = "10";
           };
         };
       };
     };
   };
 
-
   # Fingerprint reader (Framework 13 Goodix MOC sensor)
   services.fprintd.enable = true;
+
+  # cass has a fingerprint enrolled, so LightDM's login PAM substack waits for
+  # a scan instead of accepting the password promptly. Skip only the fprintd
+  # rule for cass; alex retains fingerprint login and sudo authentication.
+  #
+  # This uses the experimental PAM rules API. Keep the order relative to the
+  # built-in fprintd rule so NixOS changes cannot silently reorder the guard.
+  security.pam.services.login.rules.auth.skipFprintForCass = {
+    enable = config.services.fprintd.enable;
+    order = config.security.pam.services.login.rules.auth.fprintd.order - 10;
+    control = "[success=1 default=ignore]";
+    modulePath = "${config.security.pam.package}/lib/security/pam_succeed_if.so";
+    args = [
+      "quiet_success"
+      "user"
+      "="
+      "cass"
+    ];
+  };
 
   # Firmware updates (needed for fingerprint sensor firmware)
   services.fwupd.enable = true;
@@ -186,18 +204,21 @@
     enable = true;
     greeters.gtk.enable = true;
   };
-  services.displayManager.defaultSession = "niri";
+  # No forced default: LightDM remembers a session per user (Niri for alex,
+  # Plasma for cass) instead of writing one session into AccountsService for all.
+  services.displayManager.defaultSession = null;
 
-  xdg.portal = {
-    enable = true;
-    xdgOpenUsePortal = true;
-    config = {
-      common.default = [ "gtk" ];
-    };
-    extraPortals = [
-      pkgs.xdg-desktop-portal-gtk
-    ];
-  };
+  services.desktopManager.plasma6.enable = true;
+
+  # DMS is installed as a user unit for graphical-session.target; only run it
+  # in a Niri session so it doesn't fight Plasma's shell on cass's desktop.
+  systemd.user.services.dms.unitConfig.ConditionEnvironment = "XDG_CURRENT_DESKTOP=niri";
+
+  # Portal implementations and routing come from the enabled desktop modules:
+  # Niri adds the GNOME/GTK portals and niri-portals.conf; Plasma adds the KDE
+  # and GTK portals. XDG_CURRENT_DESKTOP selects the right one per session.
+  xdg.portal.enable = true;
+  xdg.portal.xdgOpenUsePortal = true;
 
   boot.kernelParams = [
     "resume_offset=2047"
@@ -218,9 +239,10 @@
     }
   ];
 
+  # Session launchers (Niri, Plasma) set XDG_CURRENT_DESKTOP and
+  # XDG_SESSION_TYPE themselves; forcing them machine-wide would mislabel
+  # cass's Plasma session as Niri.
   environment.sessionVariables = {
-    XDG_CURRENT_DESKTOP = "niri";
-    XDG_SESSION_TYPE = "wayland";
     MOZ_ENABLE_WAYLAND = "1";
     NIXOS_OZONE_WL = "1";
   };

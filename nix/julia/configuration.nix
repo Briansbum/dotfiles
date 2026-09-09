@@ -127,9 +127,6 @@
   # Firmware updates (needed for fingerprint sensor firmware)
   services.fwupd.enable = true;
 
-  # Fingerprint auth for sudo only (explicitly disabled for greetd — dms-greeter drops
-  # the PAM conversation socket before fprintd can respond, leaving auth stuck)
-  security.pam.services.greetd.fprintAuth = false;
   security.pam.services.sudo.fprintAuth = true;
 
   fonts.packages = [
@@ -183,15 +180,13 @@
     enableAudioWavelength = true;
   };
 
-  services.displayManager.dms-greeter = {
+  # LightDM — dm-tool switch-to-greeter lets us start a login screen on a free VT
+  # (greetd can't) so users can switch sessions without logging anyone out.
+  services.xserver.displayManager.lightdm = {
     enable = true;
-
-    compositor = {
-      name = "niri";
-    };
-
-    configHome = "/home/alex";
+    greeters.gtk.enable = true;
   };
+  services.displayManager.defaultSession = "niri";
 
   xdg.portal = {
     enable = true;

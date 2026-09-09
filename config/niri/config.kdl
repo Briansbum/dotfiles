@@ -401,6 +401,10 @@ binds {
     Mod+D hotkey-overlay-title="Run an Application: rofi" { spawn "/home/alex/.config/rofi/scripts/launcher_t7"; }
     Super+Alt+L hotkey-overlay-title="Lock the Screen: swaylock" { spawn "swaylock"; }
 
+    // Jump to the login screen (starts the LightDM greeter on a free VT) without
+    // ending the current session — used for switching between user sessions.
+    Super+Alt+U hotkey-overlay-title="Switch to Login Screen" { spawn "dm-tool" "switch-to-greeter"; }
+
     // Use spawn-sh to run a shell command. Do this if you need pipes, multiple commands, etc.
     // Note: the entire command goes as a single argument. It's passed verbatim to `sh -c`.
     // For example, this is a standard bind to toggle the screen reader (orca).

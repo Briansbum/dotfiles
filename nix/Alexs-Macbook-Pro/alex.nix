@@ -155,7 +155,6 @@ in
   programs.jq.enable = true;
   programs.fd.enable = true;
   programs.fzf.enable = true;
-  programs.go.enable = true;
   programs.aerospace = {
     enable = true;
     launchd = {
@@ -185,10 +184,6 @@ in
       # Homebrew paths
       fish_add_path -p /opt/homebrew/bin
       fish_add_path -p /opt/homebrew/opt/coreutils/libexec/gnubin
-
-      # Bun
-      set --export BUN_INSTALL "$HOME/.bun"
-      fish_add_path $BUN_INSTALL/bin
 
       # GCloud SDK (provides gke-gcloud-auth-plugin for kubectl GKE auth)
       for gdir in /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin /opt/homebrew/share/google-cloud-sdk/bin

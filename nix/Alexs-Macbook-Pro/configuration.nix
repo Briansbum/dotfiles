@@ -14,30 +14,6 @@
     coreutils
     gnused
 
-    # Build tools
-    cmake
-    ninja
-    autoconf
-    autoconf-archive
-    automake
-    ccache
-    pkgconf
-    nasm
-
-    # Development languages & runtimes
-    nodejs
-    python311
-    beam28Packages.elixir_1_19
-    zig
-    lua
-    luarocks
-    openjdk
-    leiningen
-    maven
-
-    # Go tools
-    delve
-
     # Version control & Git tools
     gh
 
@@ -114,11 +90,7 @@
     qemu
 
     # Other utilities
-    uv
-    avrdude
-    yarn
     steampipe
-    buf
     ory
     docctor
   ];
@@ -156,16 +128,10 @@
       { name = "andreybleme/lazycontainer"; trusted = true; }
       { name = "artginzburg/tap"; trusted = true; }
       { name = "azure/kubelogin"; trusted = true; }
-      { name = "bufbuild/buf"; trusted = true; }
       { name = "charmbracelet/tap"; trusted = true; }
-      { name = "clojure/tools"; trusted = true; }
       { name = "danvergara/tools"; trusted = true; }
       "homebrew/services"
-      { name = "omissis/go-jsonschema"; trusted = true; }
       { name = "ory/tap"; trusted = true; }
-      { name = "osx-cross/arm"; trusted = true; }
-      { name = "osx-cross/avr"; trusted = true; }
-      { name = "qmk/qmk"; trusted = true; }
       { name = "turbot/tap"; trusted = true; }
       { name = "atlassian/acli"; trusted = true; }
     ];
@@ -176,10 +142,7 @@
       "lazycontainer"
       "artginzburg/tap/sudo-touchid"
       "charmbracelet/tap/crush"
-      "clojure/tools/clojure"
-      "omissis/go-jsonschema/go-jsonschema"
       "ory/tap/hydra"
-      "qmk/qmk/qmk"
       "atlassian/acli/acli"
 
       # Tools that might need specific versions or macOS integration
@@ -259,12 +222,6 @@
   programs.fish.enable = true;
   environment.shells = [ pkgs.fish ];
   programs.zsh.enable = true; # Keep zsh as fallback
-
-  # Install pre-commit via uv (avoids heavy swift/dotnet dependency chain in nixpkgs)
-  system.activationScripts.postActivation.text = ''
-    echo "Installing pre-commit via uv..."
-    sudo -u alex HOME=/Users/alex ${pkgs.uv}/bin/uv tool install pre-commit --quiet || true
-  '';
 
   # System version
   system.stateVersion = 5;

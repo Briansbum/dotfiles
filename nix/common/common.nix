@@ -28,7 +28,7 @@
     direnv = {
       enable = true;
       nix-direnv.enable = true;
-      config.whitelist.prefix = [ "/Users/alex/devel" ];
+      config.whitelist.prefix = [ "${config.home.homeDirectory}/devel" ];
     };
 
     # Fish shell configuration
@@ -40,7 +40,6 @@
         # User-installed Go binaries
         fish_add_path -p "$HOME/go/bin"
 
-        # uv (Python package manager)
         fish_add_path "$HOME/.local/bin"
 
         # Krew kubectl plugin manager

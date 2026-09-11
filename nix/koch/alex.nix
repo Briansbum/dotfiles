@@ -26,7 +26,6 @@
   home.packages = with pkgs; [
     lshw
     shellcheck
-    python3
     bash
     yq
     gnupg

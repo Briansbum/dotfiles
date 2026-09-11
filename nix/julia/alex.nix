@@ -26,8 +26,6 @@
     brave
     discord
     prismlauncher
-    zig
-    gdb
     lshw
     imagemagick
     lxmenu-data
@@ -36,7 +34,6 @@
     wl-clipboard
     tenv
     shellcheck
-    python3
     bash
     helm
     yq
@@ -57,7 +54,6 @@
     xwayland-satellite
     mako
     pinta
-    uv
   ];
 
   # Config file locations for programs that cannot manage themselves
@@ -138,7 +134,6 @@
     enable = true;
     enableFishIntegration = false;
   };
-  programs.go.enable = true;
 
   programs.starship.enable = true;
 

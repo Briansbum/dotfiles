@@ -24,7 +24,6 @@
 
   home.packages = with pkgs; [
     ripgrep
-    python3
     yq
     gnupg
     pinentry-curses

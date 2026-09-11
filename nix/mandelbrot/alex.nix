@@ -34,8 +34,6 @@
     brave
     discord
     prismlauncher
-    zig
-    gdb
     lshw
     darktable
     imagemagick
@@ -45,7 +43,6 @@
     wl-clipboard
     tenv
     shellcheck
-    python3
     bash
     helm
     yq
@@ -69,7 +66,6 @@
     mako
     gamescope
     pinta
-    uv
   ];
 
   # Config file locations for programs that cannot manage themselves
@@ -152,7 +148,6 @@
     enable = true;
     enableFishIntegration = false;
   };
-  programs.go.enable = true;
 
   # -----------------------------
   # Programs in this section might have partial configs defined here but

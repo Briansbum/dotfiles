@@ -21,6 +21,8 @@ let
       ''
     );
   GPUOffloadApp = pkg: desktopName: patchDesktop pkg desktopName "^Exec=" "Exec=nvidia-offload ";
+  
+  user = "alex";
 in
 {
   nix.settings = {
@@ -32,7 +34,7 @@ in
 
   # sops values show up at /run/secrets/
   sops.defaultSopsFile = ./secrets.yaml;
-  sops.age.keyFile = config.users.users.alex.home + "/.config/sops/age/keys.txt";
+  sops.age.keyFile = config.users.users.${user}.home + "/.config/sops/age/keys.txt";
 
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
@@ -45,7 +47,7 @@ in
   '';
   security.sudo.enable = true;
 
-  users.users.alex = {
+  users.users.${user} = {
     uid = 1000;
     isNormalUser = true;
     description = "Alex";
@@ -76,18 +78,18 @@ in
   };
 
   sops.secrets."syncthing_cert" = {
-    owner = "alex";
+    owner = ${user};
   };
   sops.secrets."syncthing_key" = {
-    owner = "alex";
+    owner = ${user};
   };
 
   services.syncthing = {
+    inherit user;
     enable = true;
     cert = config.sops.secrets."syncthing_cert".path;
     key = config.sops.secrets."syncthing_key".path;
-    dataDir = "/home/alex";
-    user = "alex";
+    dataDir = "/home/${user}";
     group = "users";
     settings = {
       openDefaultPorts = true;
@@ -118,7 +120,7 @@ in
   };
 
   services.getty = {
-    autologinUser = "alex";
+    autologinUser = ${user};
     autologinOnce = true;
   };
 
@@ -235,14 +237,12 @@ in
     enableAudioWavelength = true;
   };
 
-  services.displayManager.dms-greeter = {
+  services.greetd = {
     enable = true;
-
-    compositor = {
-      name = "niri";
+    settings = {
+      command = "${config.programs.niri.package}/bin/niri-session";
+      inherit user;
     };
-
-    configHome = "/home/alex";
   };
 
   xdg.portal = {
@@ -276,6 +276,8 @@ in
     remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
     dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
     localNetworkGameTransfers.openFirewall = true; # Open ports in the firewall for Steam Local Network Game Transfers
+    extest.enable = true;
+    gamescopeSession.enable = true;
   };
 
   security.rtkit.enable = true;

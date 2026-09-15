@@ -5,6 +5,14 @@
   ...
 }:
 
+let
+  steamAutostart = pkgs.makeDesktopItem {
+    name = "steam-autostart";
+    desktopName = "Steam";
+    exec = "${pkgs.steam}/bin/steam -silent -pipewire";
+    noDisplay = true;
+  };
+in
 {
   imports = [
     ../common/common.nix
@@ -77,6 +85,14 @@
     "yazi".source = ../../config/yazi;
     # nvim now managed by nixvim - old config at ../../config/nvim for reference
     "rofi".source = ../../config/rofi;
+  };
+
+  # Niri supports the freedesktop XDG autostart specification.
+  xdg.autostart = {
+    enable = true;
+    entries = [
+      "${steamAutostart}/share/applications/steam-autostart.desktop"
+    ];
   };
 
   # NixVim configuration

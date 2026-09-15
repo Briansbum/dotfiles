@@ -6,3 +6,14 @@ ratio = [2, 2, 4]
 linemode = "permissions"
 
 cursor_blink = true
+
+[preview]
+# Allow fit-image to render up to the preview pane's actual pixel dimensions.
+max_width = 4000
+max_height = 4000
+
+[plugin]
+# Upscale or downscale images to fit the preview pane while preserving aspect ratio.
+prepend_previewers = [
+  { mime = "image/*", run = "fit-image" },
+]

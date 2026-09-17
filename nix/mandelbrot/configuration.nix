@@ -34,7 +34,7 @@ in
 
   # sops values show up at /run/secrets/
   sops.defaultSopsFile = ./secrets.yaml;
-  sops.age.keyFile = config.users.users.${user}.home + "/.config/sops/age/keys.txt";
+  sops.age.keyFile = config.users.users."${user}".home + "/.config/sops/age/keys.txt";
 
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
@@ -47,7 +47,7 @@ in
   '';
   security.sudo.enable = true;
 
-  users.users.${user} = {
+  users.users."${user}" = {
     uid = 1000;
     isNormalUser = true;
     description = "Alex";
@@ -78,10 +78,10 @@ in
   };
 
   sops.secrets."syncthing_cert" = {
-    owner = ${user};
+    owner = "${user}";
   };
   sops.secrets."syncthing_key" = {
-    owner = ${user};
+    owner = "${user}";
   };
 
   services.syncthing = {
@@ -120,7 +120,7 @@ in
   };
 
   services.getty = {
-    autologinUser = ${user};
+    autologinUser = "${user}";
     autologinOnce = true;
   };
 
@@ -239,7 +239,7 @@ in
 
   services.greetd = {
     enable = true;
-    settings = {
+    settings.default_session = {
       command = "${config.programs.niri.package}/bin/niri-session";
       inherit user;
     };

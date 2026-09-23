@@ -3,8 +3,12 @@
 # A sops-<host> script is generated for every host that has a
 # secrets.yaml at nix/<host>/secrets.yaml.
 #
-# A deploy-<host> script is generated for every nixosConfiguration, on
-# x86_64-linux only. The closure is built on the invoking machine and pushed to
+# A deploy-<host> script is generated for every nixosConfiguration backed by a
+# directory under nix/ (i.e. a real machine), on x86_64-linux only. Service VMs
+# (nixosConfigurations like koch-<vm> with no directory of their own) are not
+# given deploy scripts: they are QEMU guests with no SSH endpoint and are
+# deployed by deploying their host — the host closure embeds the VM's
+# system.build.vm. The closure is built on the invoking machine and pushed to
 # the target, so the origin must already be x86_64-linux — there is no remote
 # building here. Override the SSH destination with TARGET_HOST.
 #
@@ -53,6 +57,10 @@ let
 
   sopsScripts = map mkSopsEdit hostsWithSecrets;
 
+  # Real machines have a nix/<host>/ directory; VM configs (e.g. koch-chorcy)
+  # live under nix/<host>/vms/ and deploy via their host instead.
+  deployableHosts = builtins.filter (h: builtins.pathExists (nixDir + "/${h}")) nixosHosts;
+
   mkDeploy =
     hostName:
     pkgs.writeShellScriptBin "deploy-${hostName}" ''
@@ -62,14 +70,14 @@ let
       cd "$repo_root"
       exec nixos-rebuild switch \
         --flake ".#${hostName}" \
-        --target-host "${hostName}" \
+        --target-host "$target" \
         --sudo \
         --ask-elevate-password \
         --no-reexec \
         "$@"
     '';
 
-  deployScripts = if isLinux then map mkDeploy nixosHosts else [ ];
+  deployScripts = if isLinux then map mkDeploy deployableHosts else [ ];
 
 in
 pkgs.mkShell {
@@ -98,10 +106,13 @@ pkgs.mkShell {
       if isLinux then
         ''
           echo "Deploy (builds here, pushes to the target):"
-          ${pkgs.lib.concatMapStrings (h: "echo \"  deploy-${h}\"\n") nixosHosts}
+          ${pkgs.lib.concatMapStrings (h: "echo \"  deploy-${h}\"\n") deployableHosts}
           echo ""
           echo "  TARGET_HOST=alex@1.2.3.4 deploy-<host>   override the SSH destination"
           echo "  nixos-anywhere --flake .#<host> root@<ip>   first install"
+          echo ""
+          echo "Service VMs (koch-chorcy, koch-grocy, ...) have no deploy script:"
+          echo "deploy their host instead — deploy-koch rebuilds and restarts the VMs."
         ''
       else
         ''

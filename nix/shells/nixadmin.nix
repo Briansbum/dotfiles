@@ -62,7 +62,7 @@ let
       cd "$repo_root"
       exec nixos-rebuild switch \
         --flake ".#${hostName}" \
-        --target-host "$target" \
+        --target-host "${hostName}" \
         --sudo \
         --ask-elevate-password \
         --no-reexec \

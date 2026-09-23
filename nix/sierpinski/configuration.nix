@@ -1,6 +1,7 @@
 # System configuration for sierpinski (Chromebook thin client)
 #
-# Console only — SSH and Tailscale, no graphical stack.
+# Ghostty workstation: a cage kiosk auto-logs in on tty1 and runs ghostty
+# fullscreen. Nothing else graphical — no DE, no greeter, no portals.
 # 32GB eMMC is the binding constraint, so store growth is weighed first.
 
 {
@@ -100,20 +101,29 @@
   ];
 
   # ---------------------------------------------------------------------------
-  # Console
+  # Ghostty workstation — cage kiosk on tty1
   # ---------------------------------------------------------------------------
 
-  # The kernel VT caps out at 512 PSF glyphs, so kmscon renders the TTYs from
-  # userspace instead and the Nerd Font glyphs survive
-  services.kmscon = {
+  # kmscon existed only because the kernel VT caps out at 512 PSF glyphs and
+  # could not render the Nerd Font. Ghostty renders TrueType itself through
+  # fontconfig, so the graphical terminal replaces the graphical console and
+  # kmscon goes away entirely. Cage is the smallest thing that gives ghostty a
+  # Wayland seat: one application, fullscreen, no chrome, no compositor
+  # features. The module auto-logs in as the user through its own PAM session.
+  # tty2-6 keep plain agetty for recovery, and the kernel VT font there is good
+  # enough for fixing a broken kiosk over the local keyboard.
+  services.cage = {
     enable = true;
-    useXkbConfig = true;
-    config = {
-      font-name = "GoMono Nerd Font";
-      font-size = 12;
-      font-engine = "pango";
-      hwaccel = true;
-    };
+    user = "alex";
+    program = "${pkgs.ghostty}/bin/ghostty";
+    restartIfChanged = true;
+  };
+
+  # If ghostty exits or crashes the kiosk comes back instead of leaving a black
+  # VT. A deliberate `systemctl stop cage-tty1` still stays down.
+  systemd.services."cage-tty1".serviceConfig = {
+    Restart = "always";
+    RestartSec = 1;
   };
 
   fonts.packages = [ pkgs.nerd-fonts.go-mono ];

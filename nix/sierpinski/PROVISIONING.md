@@ -2,7 +2,9 @@
 
 Sierpinski is an HP Chromebook 14-db0003na (ChromeOS board `careena`, baseboard
 `grunt`) converted to UEFI with MrChromebox Full ROM firmware and running NixOS
-as a console-only thin client.
+as a ghostty workstation: a cage kiosk auto-logs in on tty1 and runs ghostty
+fullscreen, with SSH and Tailscale for everything else. There is no display
+manager, no desktop environment and no portals.
 
 ## Hardware
 
@@ -226,28 +228,35 @@ ssh alex@<ip>
 sudo tailscale up
 ```
 
-### Console font
+### Ghostty workstation
 
-The in-kernel VT renders PSF bitmap fonts and stops at 512 glyphs, which is
-below what a Nerd Font needs. `services.kmscon` replaces the kernel VT with a
-userspace console that renders TrueType through pango, so the Nerd Font glyphs
-appear at the console rather than only over SSH. It draws `GoMono Nerd Font`,
-the same face mandelbrot and julia use. Together kmscon and the font add roughly
-172MB to the closure, both substituted from the cache.
+The display stack is one thing: `services.cage` auto-logs in alex on tty1 via
+its own PAM service and runs ghostty fullscreen under Wayland. There is no
+greeter and no window manager — cage shows a single application and dies with
+it, and the `cage-tty1` unit is configured with `Restart = always` so an exited
+or crashed ghostty comes back within a second. Exiting the shell therefore
+restarts a fresh kiosk rather than leaving a black VT.
 
-Confirm the font resolves by the name kmscon asks for, and that the console is
-running:
+kmscon was removed when the kiosk arrived. It existed only because the kernel
+VT stops at 512 PSF glyphs and cannot render a Nerd Font; ghostty renders
+TrueType itself through fontconfig, so the reason for a userspace console
+disappears. `fonts.packages` keeps `GoMono Nerd Font`, the same face mandelbrot
+and julia use, and ghostty resolves it by name. The closure cost is the
+GTK4/libadwaita chain ghostty drags in, all substituted from the cache since
+nothing builds on the machine.
+
+Confirm the kiosk is up and the font resolves:
 
 ```bash
+systemctl status cage-tty1
 fc-list | grep -i gomono
-systemctl status kmscon@tty1
 ```
 
-`services.kmscon.enable` takes over every TTY rather than one, so a failure
-leaves no working local console and recovery runs over SSH or through the
-previous generation in the boot menu. If the console comes up black, set
-`hwaccel = false` to drop the amdgpu GL path for software rendering, which two
-Excavator cores handle without trouble for a terminal.
+tty2 through tty6 keep plain agetty as the recovery console, with the kernel's
+bitmap font. That is good enough for fixing a broken kiosk from the local
+keyboard; everything else runs over SSH. If the kiosk comes up black, check
+`journalctl -u cage-tty1` — the first suspects are the amdgpu GL path and the
+wlroots seat session.
 
 ## Deploying afterwards
 
@@ -292,8 +301,8 @@ bootctl list
 tailscale status
 lspci -nnk | grep -iA3 network
 
-# Console is up on the userspace VT, not the kernel one
-systemctl status kmscon@tty1
+# Kiosk is up on tty1, logged in as alex, running ghostty
+systemctl status cage-tty1
 ```
 
 ## Adding secrets later
@@ -336,5 +345,7 @@ the running hardware.
 - **Delete key.** No key on this chassis produces `KEY_DELETE`. If one is wanted
   it has to be synthesised, for example as a chord through `keyd`. This is a
   preference decision rather than a hardware unknown.
-- **Desktop environment.** The machine is console-only for now. Any graphical
-  stack needs weighing against a 4GB RAM budget and the 32GB disk.
+- **Kiosk hardening.** The cage session is a normal alex login, not a locked
+  down account: ghostty can run anything, the machine can be rebooted from the
+  shell, and tty2-6 are reachable without a password. Fine for a thin client
+  that lives at home; revisit if the machine ever leaves the desk.

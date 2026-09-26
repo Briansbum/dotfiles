@@ -75,7 +75,11 @@ input {
 // Find more information on the wiki:
 // https://yalter.github.io/niri/Configuration:-Outputs
 // Remember to uncomment the node by removing "/-"!
-output "HDMI-A-4" {
+// Monitor outputs are matched by EDID description ("manufacturer model serial")
+// rather than connector name (e.g. HDMI-A-1), so the config keeps working when
+// the monitor is plugged into a different port or connector names change.
+// Run `niri msg outputs` to see the quoted description for each monitor.
+output "ASUSTek COMPUTER INC ASUS PA279CV T2LMTF027761" {
     // off
 
     mode "3840x2160@60.000"
@@ -89,14 +93,14 @@ output "HDMI-A-4" {
     }
 }
 
-output "DP-4" {
+output "PNP(AOC) AG322QWS4R4 0x00000462" {
     // off
 
     mode "2560x1440@143.912"
 
     scale 1
 
-    position x=2560 y=0
+    position x=1080 y=0
 }
 /-output "eDP-1" {
     // Uncomment this line to disable this output.

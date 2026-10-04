@@ -160,7 +160,9 @@ in
     );
   };
 
-  services.dbus.packages = [ pkgs.gcr ];
+  # NOTE: `gcr` was removed upstream; pinentry-gnome3 links against and
+  # registers the org.gnome.keyring D-Bus prompter service from gcr_3.
+  services.dbus.packages = [ pkgs.gcr_3 ];
 
   environment.interactiveShellInit = ''
     if [ -n "$SSH_CONNECTION" ]; then export PINENTRY_USER_DATA=curses; fi

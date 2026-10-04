@@ -231,10 +231,6 @@ in
       enable = true;
       restartIfChanged = true;
     };
-
-    enableSystemMonitoring = true;
-    enableDynamicTheming = true;
-    enableAudioWavelength = true;
   };
 
   services.greetd = {

@@ -230,6 +230,9 @@
               return
             end
 
+            # --short never auto-restores; a full list repopulates the cache after a reboot
+            zmx list >/dev/null 2>&1
+
             set -l out (zmx list --short 2>/dev/null | fzf \
               --print-query \
               --expect=ctrl-n \

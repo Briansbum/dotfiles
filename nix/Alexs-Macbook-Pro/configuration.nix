@@ -125,7 +125,6 @@
     # Taps for packages not in nixpkgs
     taps = [
       { name = "andreybleme/lazycontainer"; trusted = true; }
-      { name = "artginzburg/tap"; trusted = true; }
       { name = "azure/kubelogin"; trusted = true; }
       { name = "charmbracelet/tap"; trusted = true; }
       { name = "danvergara/tools"; trusted = true; }
@@ -139,7 +138,6 @@
     brews = [
       # Custom tap packages
       "lazycontainer"
-      "artginzburg/tap/sudo-touchid"
       "charmbracelet/tap/crush"
       "ory/tap/hydra"
       "atlassian/acli/acli"

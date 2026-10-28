@@ -19,7 +19,7 @@
   # Enable providers
   withNodeJs = true;
   withPython3 = true;
-  withRuby = true;
+  withRuby = false;
 
   # Vim aliases
   vimAlias = true;

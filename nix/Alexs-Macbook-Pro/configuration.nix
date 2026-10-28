@@ -32,7 +32,6 @@
 
     # DevOps & Cloud
     ansible
-    azure-cli
     awscli2
     colima
     docker-client
@@ -155,6 +154,7 @@
       "helm-docs"
       "terraformer" # If not available in nixpkgs
       "kubelogin" # Azure kubelogin from tap
+      "azure-cli"
 
     ];
 

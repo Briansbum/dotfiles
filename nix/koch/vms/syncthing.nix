@@ -73,6 +73,7 @@ import ./mk-service-vm.nix {
         '';
 
         koch-vm = {
+          monitoring.partials = [ ./monitoring/syncthing.alloy ];
           memory = 512;
           ports = [
             # Sync protocol — published on all interfaces so LAN/Tailscale
@@ -90,7 +91,7 @@ import ./mk-service-vm.nix {
             synchspace = {
               source = "/data/synchspace";
               target = "/data/synchspace";
-              securityModel = "none";
+              writable = true;
             };
             syncthing-secrets = {
               source = "/var/lib/koch-vm/syncthing";

@@ -19,6 +19,16 @@ inputs.nixpkgs.lib.nixosSystem {
           memory = lib.mkOption { type = lib.types.ints.positive; default = 512; };
           vcpus = lib.mkOption { type = lib.types.ints.positive; default = 2; };
           diskSize = lib.mkOption { type = lib.types.ints.positive; default = 2048; };
+          monitoring.partials = lib.mkOption {
+            type = lib.types.listOf lib.types.path;
+            default = [ ];
+            description = ''
+              Alloy configuration fragments installed by the host. A service
+              VM uses these fragments to register its Prometheus or OTLP
+              health endpoints without coupling the VM to the host's Alloy
+              configuration.
+            '';
+          };
           ports = lib.mkOption {
             type = lib.types.listOf (lib.types.submodule ({ ... }: {
               options = {
@@ -36,13 +46,20 @@ inputs.nixpkgs.lib.nixosSystem {
           networking.hostName = "koch-${name}";
           networking.firewall.enable = false;
           documentation.enable = false;
+          # QEMU is run with -nographic and its serial console is inherited by
+          # the host runner. Forward the guest journal to that console so the
+          # host systemd unit (and therefore Alloy's journal source) receives
+          # guest logs in real time.
+          services.journald.settings.Journal = {
+            ForwardToConsole = true;
+            MaxLevelConsole = "info";
+          };
           security.sudo.enable = false;
           virtualisation = {
             graphics = false;
             memorySize = cfg.memory;
             cores = cfg.vcpus;
             diskSize = cfg.diskSize;
-            msize = lib.mkDefault 524288;
             qemu.forceAccel = true;
             qemu.consoles = [ "ttyS0,115200n8" ];
             forwardPorts = map (p: {

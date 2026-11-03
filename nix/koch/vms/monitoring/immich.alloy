@@ -1,0 +1,16 @@
+// Immich's server ping is a useful application-level check, rather than
+// merely checking that the QEMU VM process is alive.
+prometheus.exporter.blackbox "immich" {
+  config = "modules:\n  http_ping:\n    prober: http\n    timeout: 5s\n    http:\n      valid_status_codes: [200]\n"
+
+  target {
+    name    = "immich-server"
+    address = "http://127.0.0.1:2283/api/server/ping"
+    module  = "http_ping"
+  }
+}
+
+prometheus.scrape "blackbox_immich" {
+  targets    = prometheus.exporter.blackbox.immich.targets
+  forward_to = [prometheus.relabel.add_host.receiver]
+}

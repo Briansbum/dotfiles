@@ -33,6 +33,7 @@ import ./mk-service-vm.nix {
         ];
 
         koch-vm = {
+          monitoring.partials = [ ./monitoring/grocy.alloy ];
           memory = 512;
           ports = [
             { guestPort = 2383; } # -> 127.0.0.1:2383, Traefik fronts this
@@ -42,7 +43,7 @@ import ./mk-service-vm.nix {
         virtualisation.sharedDirectories.grocy = {
           source = "/data/grocy";
           target = "/data/grocy";
-          securityModel = "none";
+          writable = true;
         };
 
         systemd.tmpfiles.rules = [

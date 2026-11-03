@@ -1,0 +1,15 @@
+// Grocy must serve its login page without redirecting /login back to itself.
+prometheus.exporter.blackbox "grocy" {
+  config = "modules:\n  http_login:\n    prober: http\n    timeout: 5s\n    http:\n      valid_status_codes: [200]\n"
+
+  target {
+    name    = "grocy-login"
+    address = "http://127.0.0.1:2383/login"
+    module  = "http_login"
+  }
+}
+
+prometheus.scrape "blackbox_grocy" {
+  targets    = prometheus.exporter.blackbox.grocy.targets
+  forward_to = [prometheus.relabel.add_host.receiver]
+}

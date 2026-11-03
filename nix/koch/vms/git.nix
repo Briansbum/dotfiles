@@ -34,7 +34,7 @@ import ./mk-service-vm.nix {
         virtualisation.sharedDirectories.git = {
           source = "/data/state-store/git";
           target = "/data/git";
-          securityModel = "none";
+          writable = true;
         };
 
         systemd.tmpfiles.rules = [

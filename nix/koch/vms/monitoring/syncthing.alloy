@@ -1,0 +1,17 @@
+// Syncthing's GUI is forwarded to the host loopback by the VM runner.
+// A 401 is acceptable here: it proves the guest application is listening;
+// synchronization state is covered by Syncthing's own metrics when enabled.
+prometheus.exporter.blackbox "syncthing" {
+  config = "modules:\n  http_health:\n    prober: http\n    timeout: 5s\n    http:\n      valid_status_codes: [200, 401]\n"
+
+  target {
+    name    = "syncthing"
+    address = "http://127.0.0.1:8384/"
+    module  = "http_health"
+  }
+}
+
+prometheus.scrape "blackbox_syncthing" {
+  targets    = prometheus.exporter.blackbox.syncthing.targets
+  forward_to = [prometheus.relabel.add_host.receiver]
+}

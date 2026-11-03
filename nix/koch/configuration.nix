@@ -11,6 +11,15 @@
   ...
 }:
 
+let
+  # VM flakes expose Alloy fragments through koch-vm.monitoring.partials.
+  # Discover koch-* configurations rather than maintaining a second registry.
+  serviceVmNames = lib.filter (lib.hasPrefix "koch-") (builtins.attrNames inputs.self.nixosConfigurations);
+  serviceVmConfig = name: inputs.self.nixosConfigurations.${name}.config;
+  serviceVmMonitoringPartials = lib.concatMap
+    (name: (serviceVmConfig name).koch-vm.monitoring.partials)
+    serviceVmNames;
+in
 {
   nix.settings = {
     experimental-features = [
@@ -249,7 +258,7 @@
   };
 
   # Everything under /data is owned by alex: NFS squashes to uid 1000 and the
-  # service VMs run their writers as uid 1000 over 9p (see vms/).
+  # service VMs run writers as uid 1000 through virtiofs (see vms/).
   users.groups.syncthing = { };
   systemd.tmpfiles.rules = [
     # /data must be root-owned or tmpfiles refuses to descend ("unsafe path transition")
@@ -319,6 +328,9 @@
   services.alloy-host = {
     enable = true;
     configFile = ./alloy-config.alloy;
+    # Each service VM declares its own Alloy fragments through
+    # koch-vm.monitoring.partials. They are rendered after the base config.
+    configPartials = serviceVmMonitoringPartials;
   };
 
   sops.secrets."immich_alloy_pg_password" = { };

@@ -24,10 +24,11 @@ import ./mk-service-vm.nix {
       in
       {
         users.users.immich.uid = 1000;
-        users.users.immich.group = "immich";
-
+        # virtiofsd runs as host alex (uid 1000, gid users/100). Keep Immich's
+        # service and primary group aligned so share file creation can set its gid.
         services.immich = {
           enable = true;
+          group = lib.mkForce "users";
           host = "";
           port = 2283;
           mediaLocation = "/data/photos/immich";
@@ -35,6 +36,7 @@ import ./mk-service-vm.nix {
         };
 
         koch-vm = {
+          monitoring.partials = [ ./monitoring/immich.alloy ];
           memory = 4096;
           vcpus = 4; # ML is CPU-hungry; don't let it eat all of koch
           diskSize = 16384;
@@ -69,14 +71,12 @@ import ./mk-service-vm.nix {
         };
 
         virtualisation = {
-          # Photo archive is read-mostly and scanned on a schedule: give the
-          # guest a real page cache instead of a vmexit round-trip per read.
-          # Coherency tradeoff is fine — the host doesn't mutate photos.
-          msize = 1048576; # 1M — full-res reads for thumb/ML jobs in fat chunks
+          # Immich writes derivatives and uploads into this share.
+          # virtiofs provides the page cache without the old 9p msize tuning.
           sharedDirectories.photos = {
             source = "/data/photos";
             target = "/data/photos";
-            securityModel = "none";
+            writable = true;
           };
           sharedDirectories.immich-secrets = {
             source = "/var/lib/koch-vm/immich";
@@ -84,17 +84,15 @@ import ./mk-service-vm.nix {
           };
         };
 
-        # qemu-vm.nix only sets cache= for the nix-store share, and its
-        # mkVMOverride on fileSystems swallows plain fileSystems defs — so
-        # set it at the source here.
-        virtualisation.fileSystems."/data/photos".options = [ "cache=loose" ];
+        # virtiofs caching is configured by the host-side daemon; do not add
+        # 9p-only mount options such as cache=loose to the guest filesystem.
 
         # NOTE: inotify does not cross 9p (nor virtiofs). Immich's per-library
         # "watch" toggle must stay OFF; external libraries are picked up by
         # their scheduled scan instead. Configure in the Immich UI per library.
 
         systemd.tmpfiles.rules = [
-          "d /data/photos/immich 0750 immich immich -"
+          "d /data/photos/immich 0750 immich users -"
         ];
 
         # Restores from the dump the previous setup left in db-backup/. Runs as
@@ -115,11 +113,17 @@ import ./mk-service-vm.nix {
             ExecStart = pkgs.writeShellScript "immich-db-restore" ''
               set -euo pipefail
               if [ -e ${dump} ]; then
+                # Finish decompression before psql can commit: pipefail alone
+                # cannot undo a transaction committed after a truncated input.
+                restoreSql=$(mktemp)
+                trap 'rm -f "$restoreSql"' EXIT
                 ${pkgs.gzip}/bin/gunzip -c ${dump} \
                   | grep -vE '^(CREATE EXTENSION IF NOT EXISTS vectors|CREATE SCHEMA vectors|ALTER SCHEMA vectors|GRANT SELECT ON TABLE vectors\.|COMMENT ON EXTENSION vectors)' \
-                  | ${pgBin}/psql -v ON_ERROR_STOP=1 -d immich
+                  > "$restoreSql"
+                ${pgBin}/psql --no-psqlrc --single-transaction -v ON_ERROR_STOP=1 -d immich -f "$restoreSql"
               else
-                echo "WARNING: no dump at ${dump}; starting with an empty database"
+                echo "ERROR: no dump at ${dump}; refusing to mark the database restored" >&2
+                exit 1
               fi
               touch /var/lib/immich-restore/done
             '';
@@ -140,8 +144,10 @@ import ./mk-service-vm.nix {
             "postgresql.target"
             "immich-db-restore.service"
           ];
-          requires = [ "postgresql.target" ];
-          wants = [ "immich-db-restore.service" ];
+          requires = [
+            "postgresql.target"
+            "immich-db-restore.service"
+          ];
           serviceConfig = {
             Type = "oneshot";
             User = "immich";

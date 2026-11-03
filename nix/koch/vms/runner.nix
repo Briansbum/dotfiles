@@ -33,6 +33,8 @@ let
         Restart = "on-failure";
         RestartSec = 10;
         NoNewPrivileges = true;
+        StandardOutput = "journal";
+        StandardError = "journal";
       };
     };
   };

@@ -106,7 +106,12 @@ in
         Type = "oneshot";
         RemainAfterExit = true;
         ExecStart = pkgs.writeShellScript "tailscale-serve-all" (
-          concatStringsSep "\n" (mapAttrsToList serveCmd cfg)
+          # Serve configuration is persistent in tailscaled.  Reset it first
+          # so removed declarations (for example an old GoClaw endpoint) do
+          # not survive a rebuild and continue returning stale 502s.
+          concatStringsSep "\n" ([
+            "${config.services.tailscale.package}/bin/tailscale serve reset"
+          ] ++ (mapAttrsToList serveCmd cfg))
         );
       };
     };

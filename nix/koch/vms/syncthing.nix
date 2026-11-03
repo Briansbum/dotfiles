@@ -68,6 +68,12 @@ import ./mk-service-vm.nix {
 
         # Stage cert/key from the host share before first start
         systemd.services.syncthing.preStart = lib.mkAfter ''
+          install -d -m 700 ${alexHome}/.config/syncthing
+          # The identity is staged on the host and exposed through the VM
+          # share.  Fail clearly rather than allowing Syncthing to generate a
+          # new identity (which would silently break every peer).
+          test -s /mnt/syncthing-secrets/cert.pem
+          test -s /mnt/syncthing-secrets/key.pem
           install -m 600 /mnt/syncthing-secrets/cert.pem ${alexHome}/.config/syncthing/cert.pem
           install -m 600 /mnt/syncthing-secrets/key.pem  ${alexHome}/.config/syncthing/key.pem
         '';

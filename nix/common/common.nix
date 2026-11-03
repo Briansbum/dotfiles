@@ -17,11 +17,6 @@
 
   # Shared program configurations
   programs = {
-    claude-code = {
-      enable = true;
-      enableMcpIntegration = true;
-    };
-
     pi-coding-agent.enable = true;
 
     # Still need to enable more shared config

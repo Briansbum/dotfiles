@@ -25,12 +25,20 @@ import ./mk-service-vm.nix {
         };
 
         # Keep the same on-guest port layout as before: nginx on 2383
-        services.nginx.virtualHosts."grocy.koch.brians.skin".listen = [
-          {
-            addr = "0.0.0.0";
-            port = 2383;
-          }
-        ];
+        services.nginx.virtualHosts."grocy.koch.brians.skin" = {
+          listen = [
+            {
+              addr = "0.0.0.0";
+              port = 2383;
+            }
+          ];
+          # Traefik terminates TLS before forwarding to this guest.  PHP must
+          # see the original request as HTTPS or Grocy keeps redirecting the
+          # already-HTTPS public URL back to itself.
+          locations."~ \\.php$".extraConfig = lib.mkAfter ''
+            fastcgi_param HTTPS on;
+          '';
+        };
 
         koch-vm = {
           monitoring.partials = [ ./monitoring/grocy.alloy ];

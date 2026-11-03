@@ -92,6 +92,7 @@
     steampipe
     ory
     docctor
+    claude-code
   ];
 
   # User configuration

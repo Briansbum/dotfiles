@@ -17,8 +17,18 @@ let
   mkVmUnit = name: {
     "koch-vm-${name}" = {
       description = "koch ${name} service VM (rootless qemu)";
-      after = [ "network-online.target" ];
-      wants = [ "network-online.target" ];
+      # Some guests consume secrets staged by tmpfiles from sops-nix.  The VM
+      # must not win the boot race and start with a missing/host-only secret.
+      after = [
+        "network-online.target"
+        "systemd-tmpfiles-setup.service"
+        "sops-nix.service"
+      ];
+      wants = [
+        "network-online.target"
+        "systemd-tmpfiles-setup.service"
+        "sops-nix.service"
+      ];
       wantedBy = [ "multi-user.target" ];
       environment = {
         NIX_DISK_IMAGE = "/data/state-store/vm/${name}/disk.qcow2";

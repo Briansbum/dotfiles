@@ -18,9 +18,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    claude-code.url = "github:sadjow/claude-code-nix";
-    claude-code.inputs.nixpkgs.follows = "nixpkgs";
-
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -54,7 +51,6 @@
       nix-darwin,
       home-manager,
       nixvim,
-      claude-code,
       nix-software-center,
       disko,
       sops-nix,
@@ -62,12 +58,6 @@
       ...
     }@inputs:
     let
-      kochOverlay = (
-        final: prev: {
-          claude-code = inputs.claude-code.packages.${final.stdenv.hostPlatform.system}.default;
-        }
-      );
-
       zmxOverlay = (
         final: prev: {
           zmx = inputs.zmx.packages.${final.stdenv.hostPlatform.system}.zmx;
@@ -151,7 +141,6 @@
           modules = [
             {
               nixpkgs.overlays = [
-                kochOverlay
                 zmxOverlay
               ];
             }
@@ -204,7 +193,6 @@
             home-manager.darwinModules.home-manager
             {
               nixpkgs.overlays = [
-                claude-code.overlays.default
                 zmxOverlay
                 docctorOverlay
                 # direnv's zsh test hangs on macOS 26 (waitforpid/SIGCHLD)

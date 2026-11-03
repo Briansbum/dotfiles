@@ -20,27 +20,6 @@
         "url": "ssh://git@codeberg.org/briansbum/chorcy.git"
       }
     },
-    "claude-code": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ],
-        "systems": "systems"
-      },
-      "locked": {
-        "lastModified": 1793671290,
-        "narHash": "sha256-kqeV8WOaJ1E/nS17HwhLgB6EbA+jlzXEgPH3YI4d3N0=",
-        "owner": "sadjow",
-        "repo": "claude-code-nix",
-        "rev": "bdbe1006fc66bde6578ebc732bd2eb4312b6871d",
-        "type": "github"
-      },
-      "original": {
-        "owner": "sadjow",
-        "repo": "claude-code-nix",
-        "type": "github"
-      }
-    },
     "disko": {
       "inputs": {
         "nixpkgs": [
@@ -284,7 +263,6 @@
     "root": {
       "inputs": {
         "chorcy": "chorcy",
-        "claude-code": "claude-code",
         "disko": "disko",
         "docctor": "docctor",
         "home-manager": "home-manager",

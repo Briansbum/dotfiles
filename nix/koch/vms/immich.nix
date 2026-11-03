@@ -32,12 +32,19 @@ import ./mk-service-vm.nix {
           host = "";
           port = 2283;
           mediaLocation = "/data/photos/immich";
-          machine-learning.enable = true;
+          machine-learning = {
+            enable = true;
+            # Keep the worker count explicit: a model load can otherwise
+            # coincide with several concurrent jobs and exhaust this guest.
+            environment.MACHINE_LEARNING_WORKERS = "1";
+          };
         };
 
         koch-vm = {
           monitoring.partials = [ ./monitoring/immich.alloy ];
-          memory = 4096;
+          # The ML service has recorded repeated guest OOM kills.  Leave
+          # enough headroom for the model plus PostgreSQL and Immich server.
+          memory = 6144;
           vcpus = 4; # ML is CPU-hungry; don't let it eat all of koch
           diskSize = 16384;
           ports = [

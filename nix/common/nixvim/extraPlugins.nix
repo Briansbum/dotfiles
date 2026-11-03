@@ -55,36 +55,6 @@ in
   ];
 
   extraConfigLua = ''
-    -- CodeCompanion configuration
-    require("codecompanion").setup({
-      name = "claude-code",
-      formatted_name = "Claude Code",
-      type = "acp",
-      roles = {
-        llm = "assistant",
-        user = "user",
-      },
-      opts = {
-        vision = false,
-      },
-      commands = {
-        default = {
-          "claude",
-          "acp",
-        },
-      },
-      defaults = {
-        timeout = 60000,
-      },
-      parameters = {
-        protocolVersion = 1,
-        clientInfo = {
-          name = "CodeCompanion.nvim",
-          version = "1.0.0",
-        },
-      },
-    })
-
     -- Terragrunt LSP: lazy-init on first hcl buffer.
     -- Avoids calling vim.lsp.start_client at startup (deprecation warning in
     -- nvim 0.11+ — upstream plugin uses it; we cannot suppress without patching).

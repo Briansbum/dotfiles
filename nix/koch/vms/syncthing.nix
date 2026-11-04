@@ -1,6 +1,6 @@
 # syncthing VM — file sync.
 # State:
-#   - /data/synchspace (shared folders) via 9p
+#   - /data/synchspace (shared folders) via virtiofs
 #   - device identity: cert/key are sops secrets decrypted on the HOST and
 #     staged by runner.nix into /var/lib/koch-vm/syncthing/, shared into the
 #     guest so the device ID stays stable across VM rebuilds.
@@ -16,24 +16,24 @@ import ./mk-service-vm.nix {
   name = "syncthing";
   modules = [
     (
-      {
-        config,
-        lib,
-        ...
-      }:
+      { ... }:
       let
         alexHome = "/home/alex";
       in
       {
         users.users.alex.isNormalUser = true;
-        users.groups.syncthing = { };
 
         services.syncthing = {
           enable = true;
-          cert = "${alexHome}/.config/syncthing/cert.pem";
-          key = "${alexHome}/.config/syncthing/key.pem";
+          # These are sources for NixOS' syncthing-copy-keys unit. The
+          # destination is managed by the module under configDir.
+          cert = "/mnt/syncthing-secrets/cert.pem";
+          key = "/mnt/syncthing-secrets/key.pem";
           user = "alex";
-          group = "syncthing";
+          # Match the rootless host virtiofsd's primary GID (users/100).
+          # A guest-only GID makes file creation fail with EPERM even when
+          # the host tree's mode/ACL otherwise permits the write.
+          group = "users";
           dataDir = "/data/synchspace";
           configDir = "${alexHome}/.config/syncthing";
           guiAddress = "0.0.0.0:8384";
@@ -52,6 +52,10 @@ import ./mk-service-vm.nix {
             };
             folders."synchspace" = {
               path = "/data/synchspace";
+              # The shared tree is group-writable on the host. Do not copy
+              # peer file modes back onto it, or a peer's 0755 directories
+              # can make the virtiofs-backed tree unwritable to Syncthing.
+              ignorePerms = true;
               devices = [
                 "doccla-mac"
                 "mandelbrot"
@@ -66,17 +70,11 @@ import ./mk-service-vm.nix {
           };
         };
 
-        # Stage cert/key from the host share before first start
-        systemd.services.syncthing.preStart = lib.mkAfter ''
-          install -d -m 700 ${alexHome}/.config/syncthing
-          # The identity is staged on the host and exposed through the VM
-          # share.  Fail clearly rather than allowing Syncthing to generate a
-          # new identity (which would silently break every peer).
-          test -s /mnt/syncthing-secrets/cert.pem
-          test -s /mnt/syncthing-secrets/key.pem
-          install -m 600 /mnt/syncthing-secrets/cert.pem ${alexHome}/.config/syncthing/cert.pem
-          install -m 600 /mnt/syncthing-secrets/key.pem  ${alexHome}/.config/syncthing/key.pem
-        '';
+        # Keep group writes enabled; the host tree's setgid directories
+        # and default ACLs preserve access for the host syncthing group.
+        # Retain the upstream service sandbox, including PrivateMounts and
+        # PrivateUsers: the write failure was a primary-GID mismatch.
+        systemd.services.syncthing.serviceConfig.UMask = "0002";
 
         koch-vm = {
           monitoring.partials = [ ./monitoring/syncthing.alloy ];
@@ -105,10 +103,8 @@ import ./mk-service-vm.nix {
             };
           };
 
-        systemd.tmpfiles.rules = [
-          "d /data/synchspace 2775 alex syncthing -"
-          "d /data/synchspace/.stfolder 2775 alex syncthing -"
-        ];
+        # The host owns creation/modes/ACLs of synchspace and .stfolder.
+        # Guest tmpfiles must not try to chown them to a guest-only GID.
       }
     )
   ];

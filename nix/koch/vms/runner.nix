@@ -12,8 +12,6 @@ let
   publishedPorts = name:
     map (p: if p.hostPort == null then p.guestPort else p.hostPort)
       (lib.filter (p: p.bind == "all-interfaces" && p.proto == "tcp") (vmCfg name).koch-vm.ports);
-  stageSecret = vm: file: secret:
-    "C+ /var/lib/koch-vm/${vm}/${file} 0600 alex users - ${config.sops.secrets.${secret}.path}";
   mkVmUnit = name: {
     "koch-vm-${name}" = {
       description = "koch ${name} service VM (rootless qemu)";
@@ -23,7 +21,9 @@ let
         "network-online.target"
         "systemd-tmpfiles-setup.service"
         "sops-nix.service"
+        "koch-vm-stage-secrets.service"
       ];
+      requires = [ "koch-vm-stage-secrets.service" ];
       wants = [
         "network-online.target"
         "systemd-tmpfiles-setup.service"
@@ -52,16 +52,42 @@ in
 {
   sops.secrets."syncthing_cert".sopsFile = ../syncthing.yaml;
   sops.secrets."syncthing_key".sopsFile = ../syncthing.yaml;
-  systemd.services = lib.mkMerge (map mkVmUnit vmNames);
+  systemd.services = lib.mkMerge (
+    (map mkVmUnit vmNames)
+    ++ [
+      {
+        # sops-nix deliberately makes secret paths root-readable only. Stage
+        # regular files in the VM shares as root, then let the rootless QEMU
+        # units consume them. A tmpfiles C+ rule cannot replace the old
+        # absolute symlink, which is why this is an explicit oneshot.
+        koch-vm-stage-secrets = {
+          description = "Stage secrets for koch service VMs";
+          wantedBy = [ "multi-user.target" ];
+          after = [ "sops-nix.service" "systemd-tmpfiles-setup.service" ];
+          wants = [ "sops-nix.service" ];
+          serviceConfig = {
+            Type = "oneshot";
+            RemainAfterExit = true;
+          };
+          script = ''
+            rm -f /var/lib/koch-vm/syncthing/cert.pem /var/lib/koch-vm/syncthing/key.pem
+            install -m 640 ${config.sops.secrets.syncthing_cert.path} /var/lib/koch-vm/syncthing/cert.pem
+            install -m 640 ${config.sops.secrets.syncthing_key.path} /var/lib/koch-vm/syncthing/key.pem
+            chown alex:users /var/lib/koch-vm/syncthing/cert.pem /var/lib/koch-vm/syncthing/key.pem
+            rm -f /var/lib/koch-vm/immich/alloy-pg-password
+            install -m 640 ${config.sops.secrets.immich_alloy_pg_password.path} /var/lib/koch-vm/immich/alloy-pg-password
+            chown alex:users /var/lib/koch-vm/immich/alloy-pg-password
+          '';
+        };
+      }
+    ]
+  );
   networking.firewall.allowedTCPPorts = lib.unique (lib.flatten (map publishedPorts vmNames));
   users.groups.git = { };
   users.users.alex.extraGroups = [ "kvm" "git" ];
   systemd.tmpfiles.rules = [
     "d /var/lib/koch-vm/syncthing 0700 alex users -"
-    (stageSecret "syncthing" "cert.pem" "syncthing_cert")
-    (stageSecret "syncthing" "key.pem" "syncthing_key")
     "d /var/lib/koch-vm/immich 0700 alex users -"
-    (stageSecret "immich" "alloy-pg-password" "immich_alloy_pg_password")
     "d /data/state-store/vm 0755 alex users -"
     "d /data/state-store/git 0755 alex users -"
   ]

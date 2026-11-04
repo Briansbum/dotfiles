@@ -35,6 +35,9 @@ let
     defaultMount = newVm.config.virtualisation.sharedDirectories.application-backup.target == "/var/backups/application";
     grocyStaging = grocy.virtualisation.sharedDirectories.application-backup.source == "/data/backups/vms/grocy";
     grocyProducer = builtins.hasAttr "grocy-backup" grocy.systemd.timers;
+    grocyGracefulStop = grocy.systemd.services.phpfpm-grocy.serviceConfig.KillSignal == "SIGQUIT"
+      && grocy.systemd.services.phpfpm-grocy.serviceConfig.KillMode == "mixed"
+      && grocy.systemd.services.phpfpm-grocy.serviceConfig.TimeoutStopSec == "infinity";
     directPaths = syncthing.koch-vm.backup.paths == [ "/data/synchspace" ];
     noDirectMount = !(syncthing.virtualisation.sharedDirectories ? application-backup);
     noDirectMarker = syncthing.koch-vm.backup.freshnessFile == null;

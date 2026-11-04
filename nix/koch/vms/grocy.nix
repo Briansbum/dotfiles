@@ -24,6 +24,14 @@ import ./mk-service-vm.nix {
           };
         };
 
+        # SIGQUIT asks the FPM master to stop accepting connections and drain
+        # existing requests. Only signal the master; it coordinates its workers.
+        systemd.services.phpfpm-grocy.serviceConfig = {
+          KillSignal = "SIGQUIT";
+          KillMode = "mixed";
+          TimeoutStopSec = "infinity";
+        };
+
         # The application produces recoverable material; the host only ships it.
         systemd.services.grocy-backup = lib.mkIf config.koch-vm.backup.enable {
           description = "Stage a consistent Grocy database, uploads and configuration archive";
@@ -39,7 +47,7 @@ import ./mk-service-vm.nix {
           };
           script = ''
             set -euo pipefail
-            # Stop PHP writes briefly so uploads/config match the SQLite backup.
+            # Gracefully drain PHP requests before capturing files and SQLite.
             ${pkgs.systemd}/bin/systemctl stop phpfpm-grocy.service
             # Match virtiofsd's host UID/GID when creating staged files.
             ${pkgs.util-linux}/bin/runuser -u grocy -g users -- \

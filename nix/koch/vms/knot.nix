@@ -13,6 +13,7 @@ import ./mk-service-vm.nix {
         imports = [ inputs.chorcy.nixosModules.default ];
 
         koch-vm = {
+          backup.enable = false; # Placeholder; no application state yet.
           memory = 256;
         };
       }

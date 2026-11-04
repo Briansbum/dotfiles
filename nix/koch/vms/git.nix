@@ -43,6 +43,7 @@ import ./mk-service-vm.nix {
         ];
 
         koch-vm = {
+          backup.enable = false; # Repository backups intentionally out of scope.
           memory = 512;
           vcpus = 2;
           ports = [

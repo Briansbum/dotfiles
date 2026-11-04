@@ -41,6 +41,7 @@ import ./mk-service-vm.nix {
         };
 
         koch-vm = {
+          backup.enable = false; # Existing photos job already includes DB dumps.
           monitoring.partials = [ ./monitoring/immich.alloy ];
           # The ML service has recorded repeated guest OOM kills.  Leave
           # enough headroom for the model plus PostgreSQL and Immich server.

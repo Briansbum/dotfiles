@@ -8,7 +8,7 @@ import ./mk-service-vm.nix {
   name = "grocy";
   modules = [
     (
-      { lib, ... }:
+      { config, lib, pkgs, ... }:
       {
         users.users.grocy.uid = 1000;
 
@@ -21,6 +21,39 @@ import ./mk-service-vm.nix {
             currency = "GBP";
             culture = "en_GB";
             calendar.firstDayOfWeek = 1; # Monday
+          };
+        };
+
+        # The application produces recoverable material; the host only ships it.
+        systemd.services.grocy-backup = lib.mkIf config.koch-vm.backup.enable {
+          description = "Stage a consistent Grocy database, uploads and configuration archive";
+          # Do not depend/order on the pool itself: this service stops it,
+          # and a dependency would risk stop propagation or job-order cycles.
+          after = [ "grocy-setup.service" ];
+          unitConfig.RequiresMountsFor = [ config.koch-vm.backup.directory ];
+          serviceConfig = {
+            Type = "oneshot";
+            UMask = "0077";
+            # Even if the producer fails/times out, restore application service.
+            ExecStopPost = "${pkgs.systemd}/bin/systemctl --no-block start phpfpm-grocy.service";
+          };
+          script = ''
+            set -euo pipefail
+            # Stop PHP writes briefly so uploads/config match the SQLite backup.
+            ${pkgs.systemd}/bin/systemctl stop phpfpm-grocy.service
+            # Match virtiofsd's host UID/GID when creating staged files.
+            ${pkgs.util-linux}/bin/runuser -u grocy -g users -- \
+              ${pkgs.python3}/bin/python3 ${./grocy-backup.py} \
+              ${lib.escapeShellArg config.services.grocy.dataDir} \
+              ${lib.escapeShellArg config.koch-vm.backup.directory} \
+              /etc/grocy/config.php
+          '';
+        };
+        systemd.timers.grocy-backup = lib.mkIf config.koch-vm.backup.enable {
+          wantedBy = [ "timers.target" ];
+          timerConfig = {
+            OnCalendar = "*-*-* 02:30:00";
+            Persistent = true;
           };
         };
 

@@ -7,7 +7,9 @@
   ...
 }:
 let
-  vmNames = [ "chorcy" "grocy" "immich" "syncthing" "git" "knot" ];
+  # Registering a koch-* VM in the flake also registers its runner and backups.
+  vmNames = map (lib.removePrefix "koch-")
+    (lib.filter (lib.hasPrefix "koch-") (builtins.attrNames inputs.self.nixosConfigurations));
   vmCfg = name: inputs.self.nixosConfigurations."koch-${name}".config;
   publishedPorts = name:
     map (p: if p.hostPort == null then p.guestPort else p.hostPort)
@@ -50,6 +52,8 @@ let
   };
 in
 {
+  imports = [ (import ./backups.nix { inherit inputs vmNames; }) ];
+
   sops.secrets."syncthing_cert".sopsFile = ../syncthing.yaml;
   sops.secrets."syncthing_key".sopsFile = ../syncthing.yaml;
   systemd.services = lib.mkMerge (

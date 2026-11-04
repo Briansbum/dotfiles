@@ -29,6 +29,44 @@ inputs.nixpkgs.lib.nixosSystem {
               configuration.
             '';
           };
+          backup = {
+            enable = lib.mkOption {
+              type = lib.types.bool;
+              default = true;
+              description = "Register this VM with host backups; disable explicitly for stateless or externally protected VMs.";
+            };
+            directory = lib.mkOption {
+              type = lib.types.str;
+              default = "/var/backups/application";
+              description = "Guest staging mount. The application owns producing complete, recoverable backups here.";
+            };
+            hostDirectory = lib.mkOption {
+              type = lib.types.str;
+              default = "/data/backups/vms/${name}";
+              description = "Host source for the guest staging mount.";
+            };
+            paths = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [ cfg.backup.hostDirectory ];
+              description = "Host paths to back up, replacing the default staging source. No staging mount is created unless hostDirectory is included.";
+            };
+            exclude = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [ ];
+              description = "Additional restic exclusion patterns.";
+            };
+            freshnessFile = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = if builtins.elem cfg.backup.hostDirectory cfg.backup.paths
+                then "${cfg.backup.hostDirectory}/.backup-complete" else null;
+              description = "Host-side producer completion marker; null disables producer-age checks for direct sources.";
+            };
+            maxAgeSeconds = lib.mkOption {
+              type = lib.types.ints.positive;
+              default = 36 * 60 * 60;
+              description = "Maximum age of the producer completion marker before refusing an offsite backup.";
+            };
+          };
           ports = lib.mkOption {
             type = lib.types.listOf (lib.types.submodule ({ ... }: {
               options = {
@@ -43,6 +81,22 @@ inputs.nixpkgs.lib.nixosSystem {
         };
 
         config = {
+          assertions = lib.optionals cfg.backup.enable [
+            {
+              assertion = cfg.backup.paths != [ ] && lib.all (p: lib.hasPrefix "/" p && p != "/") cfg.backup.paths;
+              message = "koch-vm.backup.paths must contain non-root absolute host paths.";
+            }
+            {
+              assertion = lib.hasPrefix "/" cfg.backup.directory && cfg.backup.directory != "/";
+              message = "koch-vm.backup.directory must be a non-root absolute guest path.";
+            }
+          ];
+          virtualisation.sharedDirectories.application-backup = lib.mkIf
+            (cfg.backup.enable && builtins.elem cfg.backup.hostDirectory cfg.backup.paths) {
+              source = cfg.backup.hostDirectory;
+              target = cfg.backup.directory;
+              writable = true;
+            };
           networking.hostName = "koch-${name}";
           networking.firewall.enable = false;
           documentation.enable = false;

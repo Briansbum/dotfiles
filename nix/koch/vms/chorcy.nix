@@ -17,6 +17,7 @@ import ./mk-service-vm.nix {
         };
 
         koch-vm = {
+          backup.enable = false; # Stateless.
           memory = 256;
           ports = [
             { guestPort = 2483; } # -> 127.0.0.1:2483, Traefik fronts this

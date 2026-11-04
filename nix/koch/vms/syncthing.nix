@@ -78,7 +78,11 @@ import ./mk-service-vm.nix {
 
         koch-vm = {
           # Direct-source backup: no staging copy/mount or producer marker.
-          backup.paths = [ "/data/synchspace" ];
+          backup = {
+            paths = [ "/data/synchspace" ];
+            requiredMounts = [ "/data" ];
+            requiredPaths = [ "/data/synchspace/notes" ];
+          };
           monitoring.partials = [ ./monitoring/syncthing.alloy ];
           memory = 512;
           ports = [

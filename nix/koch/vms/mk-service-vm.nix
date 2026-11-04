@@ -50,6 +50,16 @@ inputs.nixpkgs.lib.nixosSystem {
               default = [ cfg.backup.hostDirectory ];
               description = "Host paths to back up, replacing the default staging source. No staging mount is created unless hostDirectory is included.";
             };
+            requiredMounts = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [ ];
+              description = "Host mountpoints that must be mounted before transport.";
+            };
+            requiredPaths = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [ ];
+              description = "Additional host paths that must exist before transport.";
+            };
             exclude = lib.mkOption {
               type = lib.types.listOf lib.types.str;
               default = [ ];
@@ -83,7 +93,7 @@ inputs.nixpkgs.lib.nixosSystem {
         config = {
           assertions = lib.optionals cfg.backup.enable [
             {
-              assertion = cfg.backup.paths != [ ] && lib.all (p: lib.hasPrefix "/" p && p != "/") cfg.backup.paths;
+              assertion = cfg.backup.paths != [ ] && lib.all (p: lib.hasPrefix "/" p && p != "/") (cfg.backup.paths ++ cfg.backup.requiredMounts ++ cfg.backup.requiredPaths);
               message = "koch-vm.backup.paths must contain non-root absolute host paths.";
             }
             {

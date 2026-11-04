@@ -40,6 +40,9 @@ let
       && grocy.systemd.services.phpfpm-grocy.serviceConfig.TimeoutStopSec == "5min";
     grocyBackupTimeout = grocy.systemd.services.grocy-backup.serviceConfig.TimeoutStartSec == "30min";
     directPaths = syncthing.koch-vm.backup.paths == [ "/data/synchspace" ];
+    syncthingRequirements = syncthing.koch-vm.backup.requiredMounts == [ "/data" ]
+      && syncthing.koch-vm.backup.requiredPaths == [ "/data/synchspace/notes" ];
+    grocyMountRequirement = grocy.koch-vm.backup.requiredMounts == [ "/data" ];
     noDirectMount = !(syncthing.virtualisation.sharedDirectories ? application-backup);
     noDirectMarker = syncthing.koch-vm.backup.freshnessFile == null;
     disabledMount = !(disabled.virtualisation.sharedDirectories ? application-backup);

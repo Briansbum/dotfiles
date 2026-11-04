@@ -9,7 +9,7 @@ let
   manifest = builtins.listToAttrs (map (name: {
     inherit name;
     value = {
-      inherit (backup name) paths freshnessFile maxAgeSeconds;
+      inherit (backup name) paths requiredMounts requiredPaths freshnessFile maxAgeSeconds;
     };
   }) enabled);
   manifests = pkgs.writeText "koch-vm-backup-manifest.json" (builtins.toJSON manifest);

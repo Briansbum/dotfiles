@@ -51,7 +51,10 @@ koch-vm.backup.paths = [ "/data/synchspace" ]; # HOST paths
 `paths` **replaces**, rather than adds to, the default source list. The staging
 mount/directory is omitted unless `hostDirectory` is included. There is no
 producer-age check for direct paths by default; a custom host-side
-`freshnessFile` may be supplied. Syncthing includes current notes, `.stversions`,
+`freshnessFile` may be supplied. `requiredMounts` and `requiredPaths` can
+require host mountpoints and additional paths before transport. The Grocy and
+Syncthing jobs require `/data` to be mounted; Syncthing also requires its notes
+directory. Syncthing includes current notes, `.stversions`,
 and conflict files. This is a live file-tree backup, not a transactional snapshot;
 its `.zk` databases are notebook indexes, not validated database dumps.
 

@@ -1,5 +1,6 @@
 """Fail closed on missing sources or stale application-produced backup material."""
 import json
+import os
 from pathlib import Path
 import sys
 import time
@@ -7,6 +8,12 @@ import time
 
 def check(source, now=None):
     now = time.time() if now is None else now
+    for name in source.get("requiredMounts", []):
+        if not os.path.ismount(name):
+            raise ValueError(f"Required backup filesystem is not mounted: {name}")
+    for name in source.get("requiredPaths", []):
+        if not Path(name).exists():
+            raise ValueError(f"Required backup path missing: {name}")
     for name in source["paths"]:
         path = Path(name)
         if not path.exists():

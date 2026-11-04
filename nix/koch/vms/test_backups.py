@@ -10,6 +10,7 @@ import subprocess
 import tarfile
 import tempfile
 import unittest
+from unittest.mock import patch
 
 
 def load(name):
@@ -51,6 +52,24 @@ class BackupTests(unittest.TestCase):
                 check(spec, now=1061)
             with self.assertRaises(ValueError):
                 check(spec, now=0)
+
+    def test_required_mount_and_path(self):
+        with tempfile.TemporaryDirectory() as root:
+            source = Path(root) / "synchspace"
+            source.mkdir()
+            (source / ".stfolder").mkdir()
+            notes = source / "notes"
+            spec = {"paths": [str(source)], "requiredMounts": [root],
+                    "requiredPaths": [str(notes)], "freshnessFile": None,
+                    "maxAgeSeconds": 60}
+            with patch("os.path.ismount", return_value=False):
+                with self.assertRaisesRegex(ValueError, "not mounted"):
+                    check(spec)
+            with patch("os.path.ismount", return_value=True):
+                with self.assertRaisesRegex(ValueError, "path missing"):
+                    check(spec)
+                notes.mkdir()
+                check(spec)
 
     def test_grocy_archive_can_be_restored(self):
         with tempfile.TemporaryDirectory() as root:

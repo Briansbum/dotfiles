@@ -86,6 +86,7 @@ import ./mk-service-vm.nix {
         };
 
         koch-vm = {
+          backup.requiredMounts = [ "/data" ];
           monitoring.partials = [ ./monitoring/grocy.alloy ];
           memory = 512;
           ports = [

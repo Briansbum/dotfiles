@@ -37,7 +37,8 @@ let
     grocyProducer = builtins.hasAttr "grocy-backup" grocy.systemd.timers;
     grocyGracefulStop = grocy.systemd.services.phpfpm-grocy.serviceConfig.KillSignal == "SIGQUIT"
       && grocy.systemd.services.phpfpm-grocy.serviceConfig.KillMode == "mixed"
-      && grocy.systemd.services.phpfpm-grocy.serviceConfig.TimeoutStopSec == "infinity";
+      && grocy.systemd.services.phpfpm-grocy.serviceConfig.TimeoutStopSec == "5min";
+    grocyBackupTimeout = grocy.systemd.services.grocy-backup.serviceConfig.TimeoutStartSec == "30min";
     directPaths = syncthing.koch-vm.backup.paths == [ "/data/synchspace" ];
     noDirectMount = !(syncthing.virtualisation.sharedDirectories ? application-backup);
     noDirectMarker = syncthing.koch-vm.backup.freshnessFile == null;

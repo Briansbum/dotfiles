@@ -29,7 +29,7 @@ import ./mk-service-vm.nix {
         systemd.services.phpfpm-grocy.serviceConfig = {
           KillSignal = "SIGQUIT";
           KillMode = "mixed";
-          TimeoutStopSec = "infinity";
+          TimeoutStopSec = "5min";
         };
 
         # The application produces recoverable material; the host only ships it.
@@ -41,6 +41,8 @@ import ./mk-service-vm.nix {
           unitConfig.RequiresMountsFor = [ config.koch-vm.backup.directory ];
           serviceConfig = {
             Type = "oneshot";
+            # A stalled filesystem or SQLite operation must not keep Grocy down.
+            TimeoutStartSec = "30min";
             UMask = "0077";
             # Even if the producer fails/times out, restore application service.
             ExecStopPost = "${pkgs.systemd}/bin/systemctl --no-block start phpfpm-grocy.service";
@@ -49,6 +51,8 @@ import ./mk-service-vm.nix {
             set -euo pipefail
             # Gracefully drain PHP requests before capturing files and SQLite.
             ${pkgs.systemd}/bin/systemctl stop phpfpm-grocy.service
+            # Do not publish a snapshot if systemd had to kill stuck workers.
+            test "$(${pkgs.systemd}/bin/systemctl show -p Result --value phpfpm-grocy.service)" = success
             # Match virtiofsd's host UID/GID when creating staged files.
             ${pkgs.util-linux}/bin/runuser -u grocy -g users -- \
               ${pkgs.python3}/bin/python3 ${./grocy-backup.py} \

@@ -108,9 +108,11 @@ checks, and periodic restore tests are not yet implemented.
 The guest's `grocy-backup.timer` runs at 02:30. It briefly stops the PHP-FPM pool
 to coordinate the SQLite snapshot with uploads/configuration, then uses SQLite's
 backup API, validates `integrity_check`, and atomically publishes `grocy.tar.gz`.
-`ExecStopPost` restarts PHP-FPM on success, failure, or timeout. Nginx can return an
-error during this short write pause. Other independent writers must also be
-quiesced if introduced later.
+PHP-FPM drains requests gracefully; if that takes more than five minutes the
+producer refuses to publish. The backup has a 30-minute timeout, and
+`ExecStopPost` requests a PHP-FPM restart on success, failure, or timeout. Nginx
+can return errors throughout the backup, including compression. Other independent
+writers must also be quiesced if introduced later.
 
 The archive contains:
 

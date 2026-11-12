@@ -12,6 +12,12 @@ import ./mk-service-vm.nix {
       {
         users.users.grocy.uid = 1000;
 
+        # Rootless virtiofsd can only create files as host alex:users (1000:100).
+        # The upstream nginx group makes cache writes fail with EPERM, so Grocy
+        # can never persist its version marker and redirects to / forever.
+        # Keep the FPM socket owned by nginx; only change the worker's group.
+        services.phpfpm.pools.grocy.group = lib.mkForce "users";
+
         services.grocy = {
           enable = true;
           hostName = "grocy.koch.brians.skin";

@@ -277,12 +277,31 @@ in
   # ---------------------------------------------------------------------------
   # B2 backups via rclone
   #
-  # Photos sync is bidirectional (pull then push) so it doubles as restore.
+  # One-way photos copy; remote-only objects are retained.
   # B2 credentials provided by sops-nix at /run/secrets/.
   # ---------------------------------------------------------------------------
 
-  sops.secrets."b2_photos_account_id" = { };
-  sops.secrets."b2_photos_application_key" = { };
+  sops.secrets."b2_account_id" = { };
+  sops.secrets."b2_application_key" = { };
+
+  # Render storage credentials at runtime, never into the Nix store or argv.
+  # Shared B2 credentials authenticate transport; restic uses a separate,
+  # independently protected repository encryption password.
+  sops.templates."b2-backup-environment" = {
+    owner = "root";
+    mode = "0400";
+    content = ''
+      B2_ACCOUNT_ID=${config.sops.placeholder.b2_account_id}
+      B2_ACCOUNT_KEY=${config.sops.placeholder.b2_application_key}
+    '';
+  };
+  sops.secrets."vm_backup_password" = { };
+  koch-vm-backups = {
+    enable = true;
+    repository = "b2:koch-vm-backups:koch-vms";
+    passwordFile = config.sops.secrets."vm_backup_password".path;
+    environmentFile = config.sops.templates."b2-backup-environment".path;
+  };
 
   systemd.services.rclone-photos = {
     description = "Push photos to Backblaze B2";
@@ -291,14 +310,16 @@ in
     serviceConfig = {
       Type = "oneshot";
       ExecStart = pkgs.writeShellScript "rclone-photos-sync" ''
-        ACCT=$(cat /run/secrets/b2_photos_account_id)
-        KEY=$(cat /run/secrets/b2_photos_application_key)
+        set -eu
+        RCLONE_B2_ACCOUNT=$(cat /run/secrets/b2_account_id)
+        RCLONE_B2_KEY=$(cat /run/secrets/b2_application_key)
+        export RCLONE_B2_ACCOUNT RCLONE_B2_KEY
         RCLONE="${pkgs.rclone}/bin/rclone"
         # --no-traverse: skip listing the remote bucket on each run, avoiding
         # Class C (list) API charges. Safe here because the photo archive is
         # append-only — new files are added daily to a large existing collection.
         OPTS="--config /dev/null --no-traverse --transfers 4 --log-level INFO --log-file /var/log/rclone-photos.log"
-        REMOTE=":b2,account=$ACCT,key=$KEY:truenas-photos-pool"
+        REMOTE=":b2:truenas-photos-pool"
 
         # Exclude Immich's auto-generated derivatives — regeneratable from
         # originals and not worth the storage or transfer cost.

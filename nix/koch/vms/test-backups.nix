@@ -14,13 +14,16 @@ let
     modules = [ {
       koch-vm-backups = {
         enable = true;
-        repository = "/tmp/koch-test-repository";
-        passwordFile = "/run/koch-test-password";
+        repository = lib.mkForce "/tmp/koch-test-repository";
+        passwordFile = lib.mkForce "/run/koch-test-password";
       };
     } ];
   }).config;
   invalid = (systems.koch.extendModules {
-    modules = [ { koch-vm-backups.enable = true; } ];
+    modules = [ {
+      koch-vm-backups.enable = true;
+      koch-vm-backups.passwordFile = lib.mkForce null;
+    } ];
   }).config;
   jobs = host.services.restic.backups;
   invalidPaths = (systems.koch-grocy.extendModules {
@@ -49,7 +52,23 @@ let
     disabledProducer = !(disabled.systemd.timers ? grocy-backup);
     jobs = builtins.attrNames jobs == [ "koch-vm-grocy" "koch-vm-syncthing" ];
     noPrune = lib.all (job: job.pruneOpts == [ ] && !job.initialize) (builtins.attrValues jobs);
-    noTransportByDefault = systems.koch.config.services.restic.backups == { };
+    productionTransport = systems.koch.config.koch-vm-backups.enable
+      && systems.koch.config.koch-vm-backups.repository == "b2:koch-vm-backups:koch-vms"
+      && systems.koch.config.koch-vm-backups.passwordFile
+        == systems.koch.config.sops.secrets.vm_backup_password.path;
+    genericB2Secrets = host.sops.secrets ? b2_account_id
+      && host.sops.secrets ? b2_application_key
+      && !(host.sops.secrets ? b2_photos_account_id)
+      && !(host.sops.secrets ? b2_photos_application_key);
+    b2EnvironmentTemplate = host.sops.templates."b2-backup-environment".mode == "0400"
+      && host.sops.templates."b2-backup-environment".owner == "root"
+      && lib.hasInfix "B2_ACCOUNT_ID=${host.sops.placeholder.b2_account_id}"
+        host.sops.templates."b2-backup-environment".content
+      && lib.hasInfix "B2_ACCOUNT_KEY=${host.sops.placeholder.b2_application_key}"
+        host.sops.templates."b2-backup-environment".content;
+    sharedB2Transport = lib.all
+      (job: job.environmentFile == host.sops.templates."b2-backup-environment".path)
+      (builtins.attrValues jobs);
     missingSecretsRejected = lib.any (a: !a.assertion) invalid.assertions;
     rootSourceRejected = lib.any (a: !a.assertion) invalidPaths.assertions;
     validHost = lib.all (a: a.assertion) host.assertions;

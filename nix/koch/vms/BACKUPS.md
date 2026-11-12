@@ -73,24 +73,33 @@ also registers its runner and backup contract without another host list.
 
 ## Host transport: explicit provisioning required
 
-Staging is **not offsite protection**. The host transport is deliberately disabled
-until repository credentials are provisioned; evaluation emits a warning while
-VM sources are registered without transport. Configure:
+Staging is **not offsite protection**. The transport module defaults to disabled;
+the Koch host now explicitly enables it with the following destination and
+runtime password path. Deployment, repository initialization, and a verified
+first backup are still required before claiming offsite coverage:
 
 ```nix
 koch-vm-backups = {
   enable = true;
-  repository = "b2:YOUR-DEDICATED-BUCKET:koch-vms";
+  repository = "b2:koch-vm-backups:koch-vms";
   passwordFile = "/run/secrets/vm_backup_password";
-  environmentFile = "/run/secrets/vm_backup_environment";
+  # environmentFile is already wired by the Koch host configuration.
 };
 ```
 
-Those are examples of runtime file paths, not existing secrets. Provision them
-with sops-nix or equivalent. The environment file contains `B2_ACCOUNT_ID` and
-`B2_ACCOUNT_KEY`; use a dedicated appropriately scoped credential. Never put
-secret values in Nix source or command-line arguments. Store the restic password
-and recovery instructions independently of this host/SOPS identity.
+The password is declared as the `vm_backup_password` SOPS secret.
+The Koch host also renders a root-only SOPS template at
+`/run/secrets/rendered/b2-backup-environment` and wires it into the restic jobs.
+It maps the generic `b2_account_id` and `b2_application_key` secrets to
+`B2_ACCOUNT_ID` and `B2_ACCOUNT_KEY`. The photo job uses the same generic secrets
+through rclone environment variables, not command-line arguments.
+
+Confirm those credentials authorize the chosen backup bucket/prefix; renaming
+secrets does not broaden B2 permissions. A dedicated narrowly scoped credential
+is preferable where practical. Provision a separate restic encryption password
+with sops-nix or equivalent; do not use the B2 application key as that password.
+Never put secret values in Nix source or command-line arguments. Store the
+restic password and recovery instructions independently of this host/SOPS identity.
 
 Initialize the chosen repository explicitly using secure runtime credentials.
 The module will **not** initialize repositories, forget snapshots, prune data, or
